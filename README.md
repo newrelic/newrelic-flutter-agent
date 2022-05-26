@@ -1,50 +1,198 @@
-[![Community Project header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
+# New Relic Flutter Agent
 
-# [Name of Project] [build badges go here when available]
+This agent uses native New Relic Android and iOS agents to instrument the Flutter Dart environment. The New Relic SDKs collect crashes, network traffic, and other information for hybrid apps using native components.
 
->[Brief description - what is the project and value does it provide? How often should users expect to get releases? How is versioning set up? Where does this project want to go?]
+**NOTE:** This agent SDK is not yet officially supported. If you’re interested in participating in our Limited Preview, contact Support or your account representative.
+
+## Features
+* Capture Dart errors
+* Network Instrumentation
+* Distributed Tracing 
+* Record debugprint as Breadcrumb
+* Future errors tracking
+* Capture interactions and the sequence in which they were created
+* Pass user information to New Relic to track user sessions
+* Routing Instrumentation (Record as Breadcrumb)
+
+## Current Support:
+- Android API 21+
+- iOS 10
+- Depends on New Relic iOS/XCFramework and Android agents
+
+
+## Requirements
+- Flutter ">= 2.5.0"
+- Dart ">=2.16.2 <3.0.0"
+- [IOS native requirements](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/get-started/new-relic-ios-compatibility-requirements)
+- [Android native requirements](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/get-started/new-relic-android-compatibility-requirements)
 
 ## Installation
+Install NewRelic plugin into your dart project by adding it to dependecies in your pubspec.yaml 
 
-> [Include a step-by-step procedure on how to get your code installed. Be sure to include any third-party dependencies that need to be installed separately]
+```yaml
 
-## Getting Started
->[Simple steps to start working with the software similar to a "Hello World"]
+dependencies:
+  newrelic_mobile: 0.0.1
+  
+```
+
+
+
+## Flutter Setup
+
+Now open your `main.dart` and add the following code to launch NewRelic (don't forget to put proper application tokens):
+
+```dart
+
+import 'package:newrelic_mobile/newrelic_mobile.dart';
+
+
+  var appToken = "";
+
+  if (Platform.isAndroid) {
+    appToken = "<android app token>";
+  } else if (Platform.isIOS) {
+    appToken = "<ios app token>";
+  }
+
+ runZonedGuarded(() {
+    WidgetsFlutterBinding.ensureInitialized();
+    FlutterError.onError = NewrelicMobile.onError;
+    NewrelicMobile.startAgent(appToken);
+    runApp(MyApp());
+  },(Object error,StackTrace stackTrace){
+    NewrelicMobile.recordError(error, stackTrace);
+  });
+
+  class MyApp extends StatelessWidget {
+  ....
+
+```
+AppToken is platform-specific. You need to generate the seprate token for Android and iOS apps.
+
+## Tracking navigation events
+In order to track navigation events you have to add the NewRelicNavigationObserver to your MaterialApp, WidgetsApp or CupertinoApp.
+
+You should provide a name to route settings: RouteSettings(name: 'Your Route Name'). The root route name / will be replaced by root "/" for clarity's sake.
+
+``` dart
+
+import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
+
+//....
+
+MaterialApp(
+  navigatorObservers: [
+    NewRelicNavigationObserver(),
+  ],
+  // other parameters
+)
+
+
+```
+
+### Android Setup
+1. Install the New Relic native Android agent ([instructions here](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/install-android-apps-gradle-android-studio)).
+2. Update `build.gradle`:
+  ```java
+    buildscript {
+      ...
+      repositories {
+        ...
+        mavenCentral()
+      }
+      dependencies {
+        ...
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.6.0"
+      }
+    }
+  ```
+
+3. Update `app/build.gradle`:
+  ``` groovy
+    apply plugin: "com.android.application"
+    apply plugin: 'newrelic' // <-- add this
+  
+  ```
+
+4. Make sure your app requests INTERNET and ACCESS_NETWORK_STATE permissions by adding these lines to your `AndroidManifest.xml`
+  ``` xml
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  ```
+
+### iOS Setup
+
+Run the following, and it will install the New Relic XCFramework agent:
+```shell
+  npx pod-install
+```
 
 ## Usage
->[**Optional** - Include more thorough instructions on how to use the software. This section might not be needed if the Getting Started section is enough. Remove this section if it's not needed.]
+See the examples below, and for more detail, see [New Relic IOS SDK doc](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/ios-sdk-api) or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api).
+
+### [startInteraction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/start-interaction)(interactionName: string): Promise&lt;InteractionId&gt;;
+> Track a method as an interaction.
+
+`InteractionId` is string.
 
 
-## Building
+### [endInteraction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/end-interaction)(id: InteractionId): void;
+> End an interaction
+> (Required). This uses the string ID for the interaction you want to end.
+> This string is returned when you use startInteraction().
 
->[**Optional** - Include this section if users will need to follow specific instructions to build the software from source. Be sure to include any third party build dependencies that need to be installed separately. Remove this section if it's not needed.]
+  ``` dart
+            var id = await NewrelicMobile.startInteraction("Getting Data from Service");
+                try {
+                  var dio = Dio();
+                  var response = await dio.get(
+                      'https://reqres.in/api/users?delay=15');
+                     print(response);
+                    NewrelicMobile.endInteraction(id);
+                    Timeline.finishSync();
+                } catch (e) {
+                  print(e);
+                }
+  
+  ```
 
-## Testing
+### [setAttribute](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-attribute)(name: string, value: boolean | number | string): void;
+> Creates a session-level attribute shared by multiple mobile event types. Overwrites its previous value and type each time it is called.
+  ```
+     NewrelicMobile.setAttribute('RNCustomAttrNumber', 37);
+  ```
 
->[**Optional** - Include instructions on how to run tests if we include tests with the codebase. Remove this section if it's not needed.]
+### [setUserId](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-user-id)(userId: string): void;
+> Set a custom user identifier value to associate user sessions with analytics events and attributes.
+  ```
+     NewrelicMobile.setUserId("RN12934");
+  ```
 
-## Support
+### [recordBreadcrumb](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordbreadcrumb)(name: string, attributes?: {[key: string]: boolean | number | string}): void;
+> Track app activity/screen that may be helpful for troubleshooting crashes.
 
-New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
+  ``` dart
+    NewrelicMobile.recordBreadcrumb("Button Got Pressed on Screen 3"),
+  ```
 
->Add the url for the support thread here: discuss.newrelic.com
+### [recordCustomEvent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordcustomevent-android-sdk-api)(eventType: string, eventName?: string, attributes?: {[key: string]: boolean | number | string}): void;
+> Creates and records a custom event for use in New Relic Insights.
 
-## Contribute
+  ``` dart
+    NewrelicMobile.recordCustomEvent("Major",eventName: "User Purchase",eventAttributes: {"item1":"Clothes","price":34.00}),
+            child: const Text('Record Custom Event'),
+  ```
 
-We encourage your contributions to improve [project name]! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 
-If you have any questions, or to execute our corporate CLA (which is required if your contribution is on behalf of a company), drop us an email at opensource@newrelic.com.
+## Manual Error reporting
 
-**A note about vulnerabilities**
+You can register non fatal exceptions using the following method:
 
-As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
-
-If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
-
-If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
-
-To all contributors, we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [Project Name](<LINK TO https://opensource.newrelic.com/projects/... PAGE>).
-
-## License
-[Project Name] is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
->[If applicable: The [project name] also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.]
+```dart
+try {
+  some_code_that_throws_error();
+} catch (ex) {
+  NewrelicMobile.recordError(error, StackTrace.current);
+}
+```

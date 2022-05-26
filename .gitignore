@@ -1,0 +1,9 @@
+.idea/
+.idea/libraries
+.idea/workspace.xml
+pubspec.lock
+Podfile.lock
+.gradle
+flutter/.gradle
+newrelic_mobile.iml
+analysis_options.yaml
