@@ -1,6 +1,6 @@
 # Uncomment this line to define a global platform for your project
 # platform :ios, '9.0'
-source 'https://source.datanerd.us/bryce/aNRPods'
+source 'ssh://git@source.datanerd.us/bryce/aNRPods'
 source 'https://github.com/cocoapods/specs'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
