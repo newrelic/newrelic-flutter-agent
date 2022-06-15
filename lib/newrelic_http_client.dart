@@ -25,6 +25,16 @@ class NewRelicHttpClient implements HttpClient {
 
   @override
   set userAgent (String? ua) => client.userAgent = ua;
+  
+  @override
+  set connectionFactory(Future<ConnectionTask<Socket>> Function(Uri url, String? proxyHost, int? proxyPort)? f) {
+    // TODO: implement connectionFactory
+  }
+
+  @override
+  set keyLog(Function(String line)? callback) {
+    // TODO: implement keyLog
+  }
 
   @override
   bool get autoUncompress => client.autoUncompress;
