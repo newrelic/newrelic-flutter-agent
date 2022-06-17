@@ -164,16 +164,6 @@ class NewRelicHttpClient implements HttpClient {
   Future<HttpClientRequest> putUrl(Uri url) {
     return _wrapRequest(client.putUrl(url));
   }
-
-  @override
-  set connectionFactory(Future<ConnectionTask<Socket>> Function(Uri url, String? proxyHost, int? proxyPort)? f) {
-    // TODO: implement connectionFactory
-  }
-
-  @override
-  set keyLog(Function(String line)? callback) {
-    // TODO: implement keyLog
-  }
 }
 
 Future<_NewRelicHttpClientRequest> _wrapRequest(
