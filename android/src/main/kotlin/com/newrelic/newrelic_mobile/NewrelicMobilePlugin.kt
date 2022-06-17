@@ -146,11 +146,24 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             val bytesSent: Long = call.argument("bytesSent")!!
             val bytesReceived: Long = call.argument("bytesReceived")!!
             val responseBody: String? = call.argument("responseBody")!!
+            val traceAttributes: HashMap<String, Any>? = call.argument("traceAttributes")
 
-            NewRelic.noticeHttpTransaction(url, httpMethod, statusCode,startTime,endTime,bytesSent,bytesReceived,responseBody)
+            NewRelic.noticeHttpTransaction(url, httpMethod, statusCode,startTime,endTime,bytesSent,bytesReceived,responseBody,null,null,traceAttributes)
             result.success("Http Transcation Recorded")
 
+            }"noticeDistributedTrace" -> {
+
+            val traceContext = NewRelic.noticeDistributedTrace(null);
+
+            val traceAttributes = HashMap<String,Any>();
+
+            traceAttributes.putAll(traceContext.asTraceAttributes());
+
+            for(header in traceContext.headers) {
+                traceAttributes[header.headerName] = header.headerValue;
             }
+            result.success(traceAttributes);
+        }
             else -> {
                 result.notImplemented()
             }

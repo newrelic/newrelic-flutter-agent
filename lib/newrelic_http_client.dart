@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:newrelic_mobile/newrelic_dt_trace.dart';
+
 import 'newrelic_mobile.dart';
 
 class NewRelicHttpClient implements HttpClient {
@@ -152,31 +154,48 @@ class NewRelicHttpClient implements HttpClient {
   Future<HttpClientRequest> putUrl(Uri url) {
     return _wrapRequest(client.putUrl(url));
   }
+
+  @override
+  set connectionFactory(Future<ConnectionTask<Socket>> Function(Uri url, String? proxyHost, int? proxyPort)? f) {
+    // TODO: implement connectionFactory
+  }
+
+  @override
+  set keyLog(Function(String line)? callback) {
+    // TODO: implement keyLog
+  }
 }
 
 Future<_NewRelicHttpClientRequest> _wrapRequest(
     Future<HttpClientRequest> request) async {
   var timestamp = DateTime.now().millisecondsSinceEpoch;
 
+  Map<String,dynamic> traceAttributes = await NewrelicMobile.noticeDistributedTrace({});
+
   return request.then((actualRequest) {
+
+    actualRequest.headers.add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
+    actualRequest.headers.add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
+    actualRequest.headers.add(DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
     if (actualRequest is _NewRelicHttpClientRequest) {
       return request as Future<_NewRelicHttpClientRequest>;
     }
 
-    return Future.value(_NewRelicHttpClientRequest(actualRequest, timestamp));
+    return Future.value(_NewRelicHttpClientRequest(actualRequest, timestamp,traceAttributes));
   });
 }
 
 _NewRelicHttpClientResponse _wrapResponse(
     HttpClientResponse response,
     HttpClientRequest request,
-    int timestamp) {
+    int timestamp,
+    Map<String,dynamic> traceData) {
   if (response is _NewRelicHttpClientResponse) {
     return response;
   }
 
   return _NewRelicHttpClientResponse(
-      response, request, timestamp);
+      response, request, timestamp,traceData);
 }
 
 
@@ -184,12 +203,13 @@ class _NewRelicHttpClientRequest extends HttpClientRequest {
   final int timestamp;
   final HttpClientRequest _httpClientRequest;
   StringBuffer? _sendBuffer = StringBuffer();
+  Map<String,dynamic> traceData;
 
-  _NewRelicHttpClientRequest(this._httpClientRequest, this.timestamp){
+  _NewRelicHttpClientRequest(this._httpClientRequest, this.timestamp,this.traceData){
     var request = this;
     request.done.then((value) {
 
-      var response = _wrapResponse(value, request, this.timestamp);
+      var response = _wrapResponse(value, request, this.timestamp,this.traceData);
 
 
       return response;
@@ -257,7 +277,7 @@ class _NewRelicHttpClientRequest extends HttpClientRequest {
     return _httpClientRequest.close().then((response) => _wrapResponse(
         response,
         _httpClientRequest,
-        this.timestamp));
+        this.timestamp,traceData));
   }
 
   @override
@@ -271,7 +291,7 @@ class _NewRelicHttpClientRequest extends HttpClientRequest {
     return _httpClientRequest.done.then((response) => _wrapResponse(
         response,
         _httpClientRequest,
-        timestamp));
+        timestamp,traceData));
   }
 
   @override
@@ -316,9 +336,10 @@ class _NewRelicHttpClientResponse extends HttpClientResponse {
   Stream<List<int>>? _wrapperStream;
   StringBuffer? _receiveBuffer = StringBuffer();
   String? responseData;
+  dynamic traceData;
 
   _NewRelicHttpClientResponse(this._httpClientResponse,
-      this.request, this.timestamp) {
+      this.request, this.timestamp,this.traceData) {
     _wrapperStream = _readAndRecreateStream(_httpClientResponse);
   }
 
@@ -349,7 +370,7 @@ class _NewRelicHttpClientResponse extends HttpClientResponse {
       responseData =  _receiveBuffer.toString();
     }
 
-    NewrelicMobile.noticeHttpTransaction(request.uri.toString(), request.method, _httpClientResponse.statusCode, timestamp, DateTime.now().millisecondsSinceEpoch, request.contentLength, _httpClientResponse.contentLength,responseBody: responseData!);
+    NewrelicMobile.noticeHttpTransaction(request.uri.toString(), request.method, _httpClientResponse.statusCode, timestamp, DateTime.now().millisecondsSinceEpoch, request.contentLength, _httpClientResponse.contentLength,traceData,responseBody: responseData!);
 
   }
 
@@ -519,7 +540,7 @@ class _NewRelicHttpClientResponse extends HttpClientResponse {
         .redirect(method, url, followLoops)
         .then((response) {
       return _wrapResponse(
-          response, request , timestamp);
+          response, request , timestamp,traceData);
     });
   }
 

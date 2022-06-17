@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'dart:io' show File, HttpClientRequest, HttpClientResponse, HttpOverrides, Platform;
 import 'package:stack_trace/stack_trace.dart';
@@ -132,6 +133,13 @@ class NewrelicMobile {
   }
 
 
+  static Future<Map<String,dynamic>> noticeDistributedTrace(Map<String,dynamic> requestAttributes) async {
+    final dynamic traceAttributes = await _channel.invokeMethod('noticeDistributedTrace');
+    return Map<String, dynamic>.from(traceAttributes);
+  }
+
+
+
   static Future<void> setInteractionName(String interactionName) async {
     final Map<String, String> params = <String, String> {
       'interactionName': interactionName
@@ -176,18 +184,21 @@ class NewrelicMobile {
       startTime!.millisecondsSinceEpoch,
       endTime.millisecondsSinceEpoch,
       response.contentLength,
-      response.contentLength,
+      response.contentLength, null,
       responseBody: response.toString()
     );
   }
 
+  static Future<void> noticeHttpTransaction(String url, String httpMethod,int statusCode,int startTime,int endTime,int bytesSent,int bytesReceived,Map<String,dynamic>? traceData,{String responseBody= ""}) async {
+    Map<String, dynamic>? traceAttributes;
+    if(traceData != null) {
+      traceAttributes ={
+        DTTraceTags.id: traceData[DTTraceTags.id],
+        DTTraceTags.guid: traceData[DTTraceTags.guid],
+        DTTraceTags.traceId: traceData[DTTraceTags.traceId]
+      };
+    }
 
-
-
-
-
-
-  static Future<void> noticeHttpTransaction(String url, String httpMethod,int statusCode,int startTime,int endTime,int bytesSent,int bytesReceived,{String responseBody= ""}) async {
     final Map<String, dynamic> params = <String, dynamic> {
       'url': url ,
       'httpMethod': httpMethod ,
@@ -196,7 +207,8 @@ class NewrelicMobile {
       'endTime': endTime,
       'bytesSent': bytesSent,
       'bytesReceived': bytesReceived,
-      'responseBody':responseBody
+      'responseBody':responseBody,
+      'traceAttributes': traceAttributes
     };
     return await _channel.invokeMethod('noticeHttpTransaction', params);
   }

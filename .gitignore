@@ -7,3 +7,9 @@ Podfile.lock
 flutter/.gradle
 newrelic_mobile.iml
 analysis_options.yaml
+
+.dart_tool/
+.packages
+android/gradle/
+android/gradlew
+android/gradlew.bat
