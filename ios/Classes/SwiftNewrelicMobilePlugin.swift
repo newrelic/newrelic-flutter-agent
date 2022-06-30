@@ -63,15 +63,16 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
           let reason = args!["reason"] as? String
           let fatal = args!["fatal"] as? Bool
           let stackTraceElements = args!["stackTraceElements"] as! [[String : Any?]]
-
+          let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.0"
+          
           let attributes: [String:Any] = [
             "name": exceptionMessage ?? "Exception name not found",
             "reason": reason ?? "Reason not found",
             "cause": reason ?? "Reason not found",
             "fatal": fatal ?? false,
             "stackTraceElements": stackTraceElements,
-            "appBuild": "8",
-            "appVersion": "8"
+            "appBuild": version,
+            "appVersion": version
           ]
 
           NewRelic.recordHandledException(withStackTrace: attributes)
