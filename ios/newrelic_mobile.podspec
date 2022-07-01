@@ -17,7 +17,7 @@ Flutter plugin for NewRelic Mobile.
   s.dependency 'Flutter'
   s.platform = :ios, '9.0'
 
-  s.dependency 'NewRelicAgent', '7.3.6-dev.404'
+  s.dependency 'NewRelicAgent', '7.3.7-dev.404'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
