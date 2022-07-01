@@ -15,14 +15,8 @@ import 'package:http/http.dart' as http;
 
 
 void main()  {
-  var appToken = "";
+  Config config = Config(accessToken: "AAbce843c545b3b8d9209131267fb75ca2d8dea3ad-NRMA");
 
-  if (Platform.isAndroid) {
-    appToken = "AA9c65dc40bbb3d04c41a4daadd36fe4f6a0a22704-NRMA";
-  } else if (Platform.isIOS) {
-    appToken = "AAbc22340b4cc895e5d409fe6baca4d807220b981e-NRMA";
-  }
-  Config config = Config(accessToken: appToken);
    NewrelicMobile.start(config, () {
     runApp(MyApp());
   });
