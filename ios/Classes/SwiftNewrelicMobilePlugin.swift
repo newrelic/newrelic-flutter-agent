@@ -60,11 +60,25 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
               result("interaction Ended")
       case "recordError":
           let exceptionMessage = args!["exception"] as? String
-          let stackTrace = args!["stackTrace"] as? String
+          let reason = args!["reason"] as? String
+          let fatal = args!["fatal"] as? Bool
+          let stackTraceElements = args!["stackTraceElements"] as! [[String : Any?]]
+          let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.0"
           
-          let attributes: [String:Any] = ["exceptionMessage":exceptionMessage!,"stackTrace":stackTrace!]
-          NewRelic.recordCustomEvent("Dart Errors", attributes:attributes)
-          result("return");
+          let attributes: [String:Any] = [
+            "name": exceptionMessage ?? "Exception name not found",
+            "reason": reason ?? "Reason not found",
+            "cause": reason ?? "Reason not found",
+            "fatal": fatal ?? false,
+            "stackTraceElements": stackTraceElements,
+            "appBuild": version,
+            "appVersion": version
+          ]
+
+          NewRelic.recordHandledException(withStackTrace: attributes)
+          
+          result("return")
+
       case "noticeHttpTransaction":
           
           let url = args!["url"] as! String
