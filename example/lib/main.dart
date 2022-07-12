@@ -83,7 +83,7 @@ class Page1Screen extends StatelessWidget {
            ),
           ElevatedButton(
               onPressed: () async {
-                var url = Uri.parse('https://3e6c-2600-1700-1118-20d0-c137-8ab4-66d4-4a5.ngrok.io/data');
+                var url = Uri.parse('https://f449-2600-1700-1118-20d0-a1f7-6415-89e3-9b8d.ngrok.io/hello-world');
                 var response = await http.get(url);
                 print('Response status: ${response.statusCode}');
                 print('Response body: ${response.body}');
@@ -207,9 +207,6 @@ class Page3Screen extends StatelessWidget {
             child: const Text('Record BreadCrumb Event'),
           ), ElevatedButton(
             onPressed: () async {
-
-
-              dynamic traceData = await NewrelicMobile.noticeDistributedTrace({});
 
               var id = await NewrelicMobile.startInteraction("Getting Data from Service");
                 try {

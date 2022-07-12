@@ -166,7 +166,7 @@ class NewRelicHttpClient implements HttpClient {
   }
 }
 
-Future<_NewRelicHttpClientRequest> _wrapRequest(
+Future<NewRelicHttpClientRequest> _wrapRequest(
     Future<HttpClientRequest> request) async {
   var timestamp = DateTime.now().millisecondsSinceEpoch;
 
@@ -177,35 +177,35 @@ Future<_NewRelicHttpClientRequest> _wrapRequest(
     actualRequest.headers.add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
     actualRequest.headers.add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
     actualRequest.headers.add(DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
-    if (actualRequest is _NewRelicHttpClientRequest) {
-      return request as Future<_NewRelicHttpClientRequest>;
+    if (actualRequest is NewRelicHttpClientRequest) {
+      return request as Future<NewRelicHttpClientRequest>;
     }
 
-    return Future.value(_NewRelicHttpClientRequest(actualRequest, timestamp,traceAttributes));
+    return Future.value(NewRelicHttpClientRequest(actualRequest, timestamp,traceAttributes));
   });
 }
 
-_NewRelicHttpClientResponse _wrapResponse(
+NewRelicHttpClientResponse _wrapResponse(
     HttpClientResponse response,
     HttpClientRequest request,
     int timestamp,
     Map<String,dynamic> traceData) {
-  if (response is _NewRelicHttpClientResponse) {
+  if (response is NewRelicHttpClientResponse) {
     return response;
   }
 
-  return _NewRelicHttpClientResponse(
+  return NewRelicHttpClientResponse(
       response, request, timestamp,traceData);
 }
 
 
-class _NewRelicHttpClientRequest extends HttpClientRequest {
+class NewRelicHttpClientRequest extends HttpClientRequest {
   final int timestamp;
   final HttpClientRequest _httpClientRequest;
   StringBuffer? _sendBuffer = StringBuffer();
   Map<String,dynamic> traceData;
 
-  _NewRelicHttpClientRequest(this._httpClientRequest, this.timestamp,this.traceData){
+  NewRelicHttpClientRequest(this._httpClientRequest, this.timestamp,this.traceData){
     var request = this;
     request.done.then((value) {
 
@@ -329,7 +329,7 @@ class _NewRelicHttpClientRequest extends HttpClientRequest {
   }
 }
 
-class _NewRelicHttpClientResponse extends HttpClientResponse {
+class NewRelicHttpClientResponse extends HttpClientResponse {
   final HttpClientResponse _httpClientResponse;
   final HttpClientRequest request;
   final int timestamp;
@@ -338,7 +338,7 @@ class _NewRelicHttpClientResponse extends HttpClientResponse {
   String? responseData;
   dynamic traceData;
 
-  _NewRelicHttpClientResponse(this._httpClientResponse,
+  NewRelicHttpClientResponse(this._httpClientResponse,
       this.request, this.timestamp,this.traceData) {
     _wrapperStream = _readAndRecreateStream(_httpClientResponse);
   }

@@ -43,7 +43,7 @@ void main() {
   const bytesSent = 200;
   const bytesReceived = 200;
   const responseBody = 'test';
-  const traceData = { "id":"1","guid":"2","trace.id":"3","newrelic":"yyyyyryyryr"};
+  const traceData = { "id":"1","guid":"2","trace.id":"3","newrelic":"yyyyyryyryr","tracestate":"testtststst","traceparent":"rereteutueyuyeuyeuye"};
   const dartError =  '#0      Page2Screen.bar.<anonymous closure> (package:newrelic_mobile_example/main.dart:185:17)\n'
                       '#1      new Future.<anonymous closure> (dart:async/future.dart:252:37)\n#2      _rootRun (dart:async/zone.dart:1418:47)\n#3      _CustomZone.run (dart:async/zone.dart:1328:19)\n#4      _CustomZone.runGuarded (dart:async/zone.dart:1236:7)\n#5      _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:1276:23)';
   const obfuscateDartError = 'Warning: This VM has been configured to produce stack traces that violate the Dart standard.\n'
@@ -294,13 +294,52 @@ void main() {
     expect(methodCalLogs, <Matcher>[]);
   });
 
-  test('test noticeHttpTransaction should be called', () async {
+  test('test noticeHttpTransaction should be called on Android Platform', () async {
+
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
 
     var traceAttributes = {
            DTTraceTags.id: traceData[DTTraceTags.id],
            DTTraceTags.guid: traceData[DTTraceTags.guid],
            DTTraceTags.traceId: traceData[DTTraceTags.traceId]
        };
+    await NewrelicMobile.noticeHttpTransaction(url,httpMethod,statusCode,startTime,endTime,bytesSent,bytesReceived,traceData,responseBody: responseBody);
+
+    final Map<String, dynamic> params = <String, dynamic> {
+      'url': url,
+      'httpMethod': httpMethod,
+      'statusCode': statusCode,
+      'startTime': startTime,
+      'endTime': endTime,
+      'bytesSent': bytesSent,
+      'bytesReceived': bytesReceived,
+      'responseBody': responseBody,
+      'traceAttributes':traceAttributes
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeHttpTransaction', arguments: params,
+      )
+    ]);
+
+  });
+
+
+  test('test noticeHttpTransaction should be called on iOS Platform', () async {
+
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
+    when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
+
+
+    var traceAttributes = {
+      DTTraceTags.newrelic: traceData[DTTraceTags.newrelic],
+      DTTraceTags.traceState: traceData[DTTraceTags.traceState],
+      DTTraceTags.traceParent: traceData[DTTraceTags.traceParent]
+    };
     await NewrelicMobile.noticeHttpTransaction(url,httpMethod,statusCode,startTime,endTime,bytesSent,bytesReceived,traceData,responseBody: responseBody);
 
     final Map<String, dynamic> params = <String, dynamic> {
@@ -338,7 +377,7 @@ void main() {
 
     List<Map<String, String>> elements = NewrelicMobile.getStackTraceElements(stackTrace);
 
-    expect(5, elements.length);
+    expect(11, elements.length);
 
   });
 

@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
+import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'dart:io' show File, HttpClientRequest, HttpClientResponse, HttpOverrides, Platform;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:yaml/yaml.dart';
@@ -144,7 +145,7 @@ class NewrelicMobile {
     final Map<String, String> params = <String, String> {
       'interactionName': interactionName
     };
-    if(Platform.isAndroid) {
+    if(PlatformManager.instance.isAndroid()) {
       await _channel.invokeMethod('setInteractionName', params);
       return;
     } else {
@@ -192,11 +193,19 @@ class NewrelicMobile {
   static Future<void> noticeHttpTransaction(String url, String httpMethod,int statusCode,int startTime,int endTime,int bytesSent,int bytesReceived,Map<String,dynamic>? traceData,{String responseBody= ""}) async {
     Map<String, dynamic>? traceAttributes;
     if(traceData != null) {
-      traceAttributes ={
-        DTTraceTags.id: traceData[DTTraceTags.id],
-        DTTraceTags.guid: traceData[DTTraceTags.guid],
-        DTTraceTags.traceId: traceData[DTTraceTags.traceId]
-      };
+      if(PlatformManager.instance.isAndroid()) {
+        traceAttributes = {
+          DTTraceTags.id: traceData[DTTraceTags.id],
+          DTTraceTags.guid: traceData[DTTraceTags.guid],
+          DTTraceTags.traceId: traceData[DTTraceTags.traceId]
+        };
+      } else if(PlatformManager.instance.isIOS()) {
+        traceAttributes = {
+          DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
+          DTTraceTags.traceState: traceData[DTTraceTags.traceState],
+          DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
+        };
+      }
     }
 
     final Map<String, dynamic> params = <String, dynamic> {

@@ -1,0 +1,16 @@
+ #00  virt 00000000001f0d27 _kDartIsolateSnapshotInstructions+0x114537
+ #01  virt 00000000002d7a9b _kDartIsolateSnapshotInstructions+0x1fb2ab
+ #02  virt 00000000002d0177 _kDartIsolateSnapshotInstructions+0x1f3987
+ #03  virt 00000000000df817 _kDartIsolateSnapshotInstructions+0x3027
+ #04  virt 0000000000288ecf _kDartIsolateSnapshotInstructions+0x1ac6df
+ #05  virt 00000000003020bb _kDartIsolateSnapshotInstructions+0x2258cb
+ #06  virt 0000000000288bf7 _kDartIsolateSnapshotInstructions+0x1ac407
+ #07  virt 00000000002d01cf _kDartIsolateSnapshotInstructions+0x1f39df
+ #08  virt 00000000000df817 _kDartIsolateSnapshotInstructions+0x3027
+ #09  virt 0000000000288ecf _kDartIsolateSnapshotInstructions+0x1ac6df
+ #10  virt 000000000028298f _kDartIsolateSnapshotInstructions+0x1a619f
+ #11  virt 000000000012aaa3 _kDartIsolateSnapshotInstructions+0x4e2b3
+ #12  virt 00000000002e33fb _kDartIsolateSnapshotInstructions+0x206c0b
+ #13  virt 0000000000124d63 _kDartIsolateSnapshotInstructions+0x48573
+ #14  virt 0000000000124ce7 _kDartIsolateSnapshotInstructions+0x484f7
+ #15  virt 00000000000f5eef _kDartIsolateSnapshotInstructions+0x196ff

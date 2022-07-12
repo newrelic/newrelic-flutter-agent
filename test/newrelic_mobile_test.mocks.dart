@@ -25,7 +25,7 @@ class MockPlatformManager extends _i1.Mock implements _i2.PlatformManager {
 
   @override
   bool isAndroid() =>
-      (super.noSuchMethod(Invocation.method(#isAndroid, []), returnValue: true)
+      (super.noSuchMethod(Invocation.method(#isAndroid, []), returnValue: false)
           as bool);
   @override
   bool isIOS() =>
