@@ -1,3 +1,7 @@
-## 0.0.1
+## 0.0.1-beta.1
 
-* TODO: Describe initial release.
+🎉🎊 Presenting the new NewRelic SDK for Flutter:
+
+Allows instrumenting Flutter apps and getting valuable insights in the NewRelic UI.
+Features: request tracking, error/crash reporting,distributed tracing, info points, and many more.
+Thoroughly maintained and ready for production.
