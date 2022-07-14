@@ -83,7 +83,7 @@ class Page1Screen extends StatelessWidget {
            ),
           ElevatedButton(
               onPressed: () async {
-                var url = Uri.parse('https://f449-2600-1700-1118-20d0-a1f7-6415-89e3-9b8d.ngrok.io/hello-world');
+                var url = Uri.parse('https://8510-4-15-128-42.ngrok.io/hello-world');
                 var response = await http.get(url);
                 print('Response status: ${response.statusCode}');
                 print('Response body: ${response.body}');
@@ -102,6 +102,18 @@ class Page1Screen extends StatelessWidget {
                 }
               },
               child: Text('Http Dio Library ',maxLines: 1,textDirection: TextDirection.ltr)
+          ),ElevatedButton(
+              onPressed: () async {
+                try {
+                  var dio = Dio();
+                  var response = await dio.get(
+                      'https://speed.hetzner.de/1GB.bin');
+                  print(response);
+                } catch (e) {
+                  print(e);
+                }
+              },
+              child: Text('OOM Issue Library ',maxLines: 1,textDirection: TextDirection.ltr)
           ), ElevatedButton(
               onPressed: () async {
                 try {
@@ -200,7 +212,7 @@ class Page3Screen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           ElevatedButton(
-            onPressed: () =>  NewrelicMobile.recordCustomEvent("Major",eventName: "User Purchase",eventAttributes: {"item1":"Clothes","price":34.00}),
+            onPressed: () =>  NewrelicMobile.recordCustomEvent("Test Custom Event",eventName: "User Purchase",eventAttributes: {"item1":"Clothes","price":34.00}),
             child: const Text('Record Custom Event'),
           ), ElevatedButton(
             onPressed: () =>  NewrelicMobile.recordBreadcrumb("Button Got Pressed on Screen 3"),

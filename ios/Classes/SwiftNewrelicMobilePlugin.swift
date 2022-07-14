@@ -38,14 +38,14 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
            result(attributeIsRemoved)
           case "recordBreadcrumb":
            let name = args!["name"] as? String
-          let eventAttributes = args?["eventAttributes"] as! [String : Any]
+          let eventAttributes = args?["eventAttributes"] as?[String : Any]
 
            let eventRecorded = NewRelic.recordBreadcrumb(name!, attributes: eventAttributes)
            result(eventRecorded)
           case "recordCustomEvent":
            let eventType = args!["eventType"] as? String
            let eventName = args!["eventName"] as? String
-           let eventAttributes = args!["eventAttributes"] as! [String : Any]
+          let eventAttributes = args?["eventAttributes"] as? [String : Any]
            let eventRecorded = NewRelic.recordCustomEvent(eventType!, name: eventName!, attributes: eventAttributes)
            result(eventRecorded)
           case "startInteraction":
@@ -95,13 +95,8 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
           let responseBody = args!["responseBody"] as! NSString
           let traceHeaders = args?["traceAttributes"] as! [String : Any]
 
-          
-          
           NewRelic.noticeNetworkRequest(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), responseHeaders: nil, statusCode: statusCode, bytesSent: UInt(truncating: bytesSent), bytesReceived: UInt(truncating: bytesReceived), responseData: responseBody.data(using: String.Encoding.utf8.rawValue), traceHeaders: traceHeaders, andParams: nil)
-
-//          NewRelic.noticeNetworkRequest(for: URL.init(string: url), httpMethod: httpMethod,with:nil,responseHeaders:nil, statusCode: statusCode, bytesSent: bytesSent, bytesReceived: bytesReceived,responseData:NSKeyedArchiver.archivedData(withRootObject: responseBody),andParams:nil)
           result(true)
-        
 
            default:
              result(FlutterMethodNotImplemented)

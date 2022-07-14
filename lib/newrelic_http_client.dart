@@ -11,7 +11,7 @@ class NewRelicHttpClient implements HttpClient {
 
   final HttpClient client;
 
-  NewRelicHttpClient({required HttpClient? client}) : client = client ?? HttpClient();
+  NewRelicHttpClient({HttpClient? client}) : client = client ?? HttpClient();
 
   @override
   set autoUncompress(bool au) => client.autoUncompress = au;

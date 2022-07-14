@@ -13,3 +13,5 @@ analysis_options.yaml
 android/gradle/
 android/gradlew
 android/gradlew.bat
+build/
+coverage/

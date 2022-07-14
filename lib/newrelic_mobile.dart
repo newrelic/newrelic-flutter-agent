@@ -54,6 +54,8 @@ class NewrelicMobile {
       'fatal': isFatal
     };
 
+    NewrelicMobile.recordCustomEvent("Dart Errors",eventAttributes: params);
+
     await _channel.invokeMethod('recordError', params);
   }
 
@@ -214,8 +216,8 @@ class NewrelicMobile {
       'statusCode': statusCode,
       'startTime': startTime,
       'endTime': endTime,
-      'bytesSent': bytesSent,
-      'bytesReceived': bytesReceived,
+      'bytesSent': bytesSent != -1 ? bytesSent:0,
+      'bytesReceived': bytesReceived != -1 ? bytesReceived:0,
       'responseBody':responseBody,
       'traceAttributes': traceAttributes
     };

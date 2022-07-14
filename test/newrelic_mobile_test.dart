@@ -596,8 +596,8 @@ void main() {
 
   test('test navigation observer from route null name',(){
 
-    final currentRoute = route(RouteSettings());
-    final nextRoute = route(RouteSettings(name: nextRouteName));
+    final currentRoute = route(const RouteSettings());
+    final nextRoute = route(const RouteSettings(name: nextRouteName));
 
 
     navigationObserver.didReplace(newRoute:nextRoute, oldRoute: currentRoute);
@@ -639,11 +639,4 @@ void main() {
     expect(methodCalLogs,<Matcher>[isMethodCall('recordBreadcrumb',arguments: params)]);
 
   });
-
-
-
-
-
-
-
 }
