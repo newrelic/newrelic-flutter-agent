@@ -1,5 +1,3 @@
-
-
 class DTTraceTags {
   static const id = "id";
   static const newrelic = "newrelic";

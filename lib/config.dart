@@ -1,4 +1,3 @@
-
 class Config {
   final String accessToken;
 

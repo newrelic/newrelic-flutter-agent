@@ -1,7 +1,7 @@
 name: newrelic_mobile
 description: Flutter plugin for NewRelic Mobile.
-version: 0.0.1
-homepage:
+version: 0.0.1-dev.0
+homepage: https://github.com/newrelic/newrelic-flutter-agent
 
 environment:
   sdk: ">=2.16.2 <3.0.0"
@@ -11,8 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   stack_trace: ^1.10.0
-  yaml: ^3.1.1
-  path: any
+  path: ^1.8.1
 
 
 
@@ -21,6 +20,9 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^1.0.0
   dio: ^4.0.6
+  mockito: ^5.2.0
+  build_runner: ^2.2.0
+
 
 
 # For information on the generic Dart part of this file, see the
