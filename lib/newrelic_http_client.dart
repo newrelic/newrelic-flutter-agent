@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -8,7 +6,6 @@ import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'newrelic_mobile.dart';
 
 class NewRelicHttpClient implements HttpClient {
-
   final HttpClient client;
 
   NewRelicHttpClient({HttpClient? client}) : client = client ?? HttpClient();
@@ -23,13 +20,17 @@ class NewRelicHttpClient implements HttpClient {
   set idleTimeout(Duration it) => client.idleTimeout = it;
 
   @override
-  set maxConnectionsPerHost(int? maxConnectionsPerHost) => client.maxConnectionsPerHost = maxConnectionsPerHost;
+  set maxConnectionsPerHost(int? maxConnectionsPerHost) =>
+      client.maxConnectionsPerHost = maxConnectionsPerHost;
 
   @override
-  set userAgent (String? ua) => client.userAgent = ua;
-  
+  set userAgent(String? ua) => client.userAgent = ua;
+
   @override
-  set connectionFactory(Future<ConnectionTask<Socket>> Function(Uri url, String? proxyHost, int? proxyPort)? f) {
+  set connectionFactory(
+      Future<ConnectionTask<Socket>> Function(
+              Uri url, String? proxyHost, int? proxyPort)?
+          f) {
     // TODO: implement connectionFactory
   }
 
@@ -73,8 +74,9 @@ class NewRelicHttpClient implements HttpClient {
 
   @override
   set authenticateProxy(
-      Future<bool> Function(String host, int port, String scheme, String? realm)?
-      f) {
+      Future<bool> Function(
+              String host, int port, String scheme, String? realm)?
+          f) {
     client.authenticateProxy = f;
   }
 
@@ -96,7 +98,7 @@ class NewRelicHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> deleteUrl(Uri url) {
-    return  _wrapRequest(client.deleteUrl(url));
+    return _wrapRequest(client.deleteUrl(url));
   }
 
   @override
@@ -170,59 +172,52 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
     Future<HttpClientRequest> request) async {
   var timestamp = DateTime.now().millisecondsSinceEpoch;
 
-  Map<String,dynamic> traceAttributes = await NewrelicMobile.noticeDistributedTrace({});
+  Map<String, dynamic> traceAttributes =
+      await NewrelicMobile.noticeDistributedTrace({});
 
   return request.then((actualRequest) {
-
-    actualRequest.headers.add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
-    actualRequest.headers.add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
-    actualRequest.headers.add(DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
+    actualRequest.headers
+        .add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
+    actualRequest.headers
+        .add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
+    actualRequest.headers
+        .add(DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
     if (actualRequest is NewRelicHttpClientRequest) {
       return request as Future<NewRelicHttpClientRequest>;
     }
 
-    return Future.value(NewRelicHttpClientRequest(actualRequest, timestamp,traceAttributes));
+    return Future.value(
+        NewRelicHttpClientRequest(actualRequest, timestamp, traceAttributes));
   });
 }
 
-NewRelicHttpClientResponse _wrapResponse(
-    HttpClientResponse response,
-    HttpClientRequest request,
-    int timestamp,
-    Map<String,dynamic> traceData) {
+NewRelicHttpClientResponse _wrapResponse(HttpClientResponse response,
+    HttpClientRequest request, int timestamp, Map<String, dynamic> traceData) {
   if (response is NewRelicHttpClientResponse) {
     return response;
   }
 
-  return NewRelicHttpClientResponse(
-      response, request, timestamp,traceData);
+  return NewRelicHttpClientResponse(response, request, timestamp, traceData);
 }
-
 
 class NewRelicHttpClientRequest extends HttpClientRequest {
   final int timestamp;
   final HttpClientRequest _httpClientRequest;
   StringBuffer? _sendBuffer = StringBuffer();
-  Map<String,dynamic> traceData;
+  Map<String, dynamic> traceData;
 
-  NewRelicHttpClientRequest(this._httpClientRequest, this.timestamp,this.traceData){
+  NewRelicHttpClientRequest(
+      this._httpClientRequest, this.timestamp, this.traceData) {
     var request = this;
     request.done.then((value) {
-
-      var response = _wrapResponse(value, request, this.timestamp,this.traceData);
-
-
+      var response =
+          _wrapResponse(value, request, this.timestamp, this.traceData);
       return response;
-    }, onError: (dynamic err) {
-      // print(err);
-      // _registerErrorEvent()
-    });
+    }, onError: (dynamic err) {});
   }
 
   void _checkAndResetBufferIfRequired() {
-    if (_sendBuffer != null &&
-        _sendBuffer!.length > 2048) {
-      // we have collected too many bytes -> reset buffer
+    if (_sendBuffer != null && _sendBuffer!.length > 2048) {
       _sendBuffer = null;
     }
   }
@@ -241,11 +236,11 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
       _addItems(chunk);
       yield chunk;
     }
-
   }
 
   @override
   Encoding get encoding => _httpClientRequest.encoding;
+
   set encoding(Encoding value) {
     _httpClientRequest.encoding = value;
   }
@@ -274,10 +269,8 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
 
   @override
   Future<HttpClientResponse> close() {
-    return _httpClientRequest.close().then((response) => _wrapResponse(
-        response,
-        _httpClientRequest,
-        this.timestamp,traceData));
+    return _httpClientRequest.close().then((response) =>
+        _wrapResponse(response, _httpClientRequest, this.timestamp, traceData));
   }
 
   @override
@@ -288,10 +281,8 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
 
   @override
   Future<HttpClientResponse> get done {
-    return _httpClientRequest.done.then((response) => _wrapResponse(
-        response,
-        _httpClientRequest,
-        timestamp,traceData));
+    return _httpClientRequest.done.then((response) =>
+        _wrapResponse(response, _httpClientRequest, timestamp, traceData));
   }
 
   @override
@@ -338,40 +329,39 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
   String? responseData;
   dynamic traceData;
 
-  NewRelicHttpClientResponse(this._httpClientResponse,
-      this.request, this.timestamp,this.traceData) {
+  NewRelicHttpClientResponse(
+      this._httpClientResponse, this.request, this.timestamp, this.traceData) {
     _wrapperStream = _readAndRecreateStream(_httpClientResponse);
   }
 
-  void _checkAndResetBufferIfRequired() {
-    if (_receiveBuffer != null &&
-        _receiveBuffer!.length > 2048) {
-      // we have collected too many bytes -> reset buffer
-      _receiveBuffer = null;
-    }
-  }
-
-  void _addItems(List<int> data) {
-    if (headers.contentType != ContentType.binary) {
-      try {
-        _receiveBuffer?.write(utf8.decode(data));
-      } catch (ex) {}
-      _checkAndResetBufferIfRequired();
-    }
-  }
-
   Stream<List<int>> _readAndRecreateStream(Stream<List<int>> source) async* {
-    await for (var chunk in source) {
-      _addItems(chunk);
-      yield chunk;
-    }
+    source.listen((chunk) {
+      _receiveBuffer?.write(utf8.decode(chunk));
+    }, onDone: () {
+      responseData = _receiveBuffer.toString();
 
-    if(this.contentLength < 2048) {
-      responseData =  _receiveBuffer.toString();
-    }
-
-    NewrelicMobile.noticeHttpTransaction(request.uri.toString(), request.method, _httpClientResponse.statusCode, timestamp, DateTime.now().millisecondsSinceEpoch, request.contentLength, _httpClientResponse.contentLength,traceData,responseBody: responseData!);
-
+      NewrelicMobile.noticeHttpTransaction(
+          request.uri.toString(),
+          request.method,
+          _httpClientResponse.statusCode,
+          timestamp,
+          DateTime.now().millisecondsSinceEpoch,
+          request.contentLength,
+          _httpClientResponse.contentLength,
+          traceData,
+          responseBody: responseData!);
+    }, onError: (e, StackTrace st) {
+      NewrelicMobile.noticeHttpTransaction(
+          request.uri.toString(),
+          request.method,
+          _httpClientResponse.statusCode,
+          timestamp,
+          DateTime.now().millisecondsSinceEpoch,
+          request.contentLength,
+          _httpClientResponse.contentLength,
+          traceData,
+          responseBody: responseData!);
+    });
   }
 
   @override
@@ -382,7 +372,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
   @override
   Stream<List<int>> asBroadcastStream(
       {void Function(StreamSubscription<List<int>> subscription)? onListen,
-        void Function(StreamSubscription<List<int>> subscription)? onCancel}) {
+      void Function(StreamSubscription<List<int>> subscription)? onCancel}) {
     return _wrapperStream!
         .asBroadcastStream(onListen: onListen, onCancel: onCancel);
   }
@@ -410,8 +400,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
       _httpClientResponse.compressionState;
 
   @override
-  HttpConnectionInfo? get connectionInfo =>
-      _httpClientResponse.connectionInfo;
+  HttpConnectionInfo? get connectionInfo => _httpClientResponse.connectionInfo;
 
   @override
   Future<bool> contains(Object? needle) {
@@ -512,8 +501,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
   @override
   StreamSubscription<List<int>> listen(void Function(List<int> event)? onData,
       {Function? onError, void Function()? onDone, bool? cancelOnError}) {
-    return _wrapperStream!
-        .listen(onData, onError: onError, onDone: onDone);
+    return _wrapperStream!.listen(onData, onError: onError, onDone: onDone);
   }
 
   @override
@@ -522,8 +510,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
   }
 
   @override
-  bool get persistentConnection =>
-      _httpClientResponse.persistentConnection;
+  bool get persistentConnection => _httpClientResponse.persistentConnection;
 
   @override
   Future pipe(StreamConsumer<List<int>> streamConsumer) {
@@ -539,8 +526,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
     return _httpClientResponse
         .redirect(method, url, followLoops)
         .then((response) {
-      return _wrapResponse(
-          response, request , timestamp,traceData);
+      return _wrapResponse(response, request, timestamp, traceData);
     });
   }
 

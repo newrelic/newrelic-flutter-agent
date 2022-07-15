@@ -43,10 +43,10 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val dartVersion: String? = call.argument("dartVersion")
                 NewRelic.withApplicationToken(
                     applicationToken
-                ).withApplicationFramework(ApplicationFramework.Flutter,"2.0.3").start(context)
+                ).withApplicationFramework(ApplicationFramework.Flutter, "2.0.3").start(context)
 
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.0);
                 result.success("Agent Started")
             }
             "setUserId" -> {
@@ -113,80 +113,94 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
             "recordError" -> {
 
-              val exceptionMessage: String? = call.argument("exception")
-              val reason:String? = call.argument("reason")
-              val fatal:Boolean? = call.argument("fatal")
+                val exceptionMessage: String? = call.argument("exception")
+                val reason: String? = call.argument("reason")
+                val fatal: Boolean? = call.argument("fatal")
 
-              val exceptionAttributes = mapOf("reason" to reason,"fatal" to fatal)
+                val exceptionAttributes = mapOf("reason" to reason, "fatal" to fatal)
 
-              val exception = FlutterError(exceptionMessage)
+                val exception = FlutterError(exceptionMessage)
 
-              val elements: MutableList<StackTraceElement> = ArrayList()
-              val errorElements: List<Map<String, String>>? =
-                call.argument("stackTraceElements")
+                val elements: MutableList<StackTraceElement> = ArrayList()
+                val errorElements: List<Map<String, String>>? =
+                    call.argument("stackTraceElements")
 
-              if (errorElements != null) {
-                for (errorElement in errorElements) {
-                  val stackTraceElement = generateStackTraceElement(errorElement)
-                  if (stackTraceElement != null) {
-                    elements.add(stackTraceElement)
-                  }
+                if (errorElements != null) {
+                    for (errorElement in errorElements) {
+                        val stackTraceElement = generateStackTraceElement(errorElement)
+                        if (stackTraceElement != null) {
+                            elements.add(stackTraceElement)
+                        }
+                    }
                 }
-              }
-              exception.stackTrace = elements.toTypedArray()
-              val bool = NewRelic.recordHandledException(exception,exceptionAttributes)
-              result.success(bool)
-            } "noticeHttpTransaction" -> {
-
-            val url: String = call.argument("url")!!
-            val httpMethod: String = call.argument("httpMethod")!!
-            val statusCode: Int = call.argument("statusCode")!!
-            val startTime: Long = call.argument("startTime")!!
-            val endTime: Long = call.argument("endTime")!!
-            val bytesSent: Long = call.argument("bytesSent")!!
-            val bytesReceived: Long = call.argument("bytesReceived")!!
-            val responseBody: String? = call.argument("responseBody")!!
-            val traceAttributes: HashMap<String, Any>? = call.argument("traceAttributes")
-
-            NewRelic.noticeHttpTransaction(url, httpMethod, statusCode,startTime,endTime,bytesSent,bytesReceived,responseBody,null,null,traceAttributes)
-            result.success("Http Transcation Recorded")
-
-            }"noticeDistributedTrace" -> {
-
-            val traceContext = NewRelic.noticeDistributedTrace(null);
-
-            val traceAttributes = HashMap<String,Any>();
-
-            traceAttributes.putAll(traceContext.asTraceAttributes());
-
-            for(header in traceContext.headers) {
-                traceAttributes[header.headerName] = header.headerValue;
+                exception.stackTrace = elements.toTypedArray()
+                val bool = NewRelic.recordHandledException(exception, exceptionAttributes)
+                result.success(bool)
             }
-            result.success(traceAttributes);
-        }
+            "noticeHttpTransaction" -> {
+
+                val url: String = call.argument("url")!!
+                val httpMethod: String = call.argument("httpMethod")!!
+                val statusCode: Int = call.argument("statusCode")!!
+                val startTime: Long = call.argument("startTime")!!
+                val endTime: Long = call.argument("endTime")!!
+                val bytesSent: Long = call.argument("bytesSent")!!
+                val bytesReceived: Long = call.argument("bytesReceived")!!
+                val responseBody: String? = call.argument("responseBody")!!
+                val traceAttributes: HashMap<String, Any>? = call.argument("traceAttributes")
+
+                NewRelic.noticeHttpTransaction(
+                    url,
+                    httpMethod,
+                    statusCode,
+                    startTime,
+                    endTime,
+                    bytesSent,
+                    bytesReceived,
+                    responseBody,
+                    null,
+                    null,
+                    traceAttributes
+                )
+                result.success("Http Transcation Recorded")
+
+            }
+            "noticeDistributedTrace" -> {
+
+                val traceContext = NewRelic.noticeDistributedTrace(null);
+
+                val traceAttributes = HashMap<String, Any>();
+
+                traceAttributes.putAll(traceContext.asTraceAttributes());
+
+                for (header in traceContext.headers) {
+                    traceAttributes[header.headerName] = header.headerValue;
+                }
+                result.success(traceAttributes);
+            }
             else -> {
                 result.notImplemented()
             }
         }
 
-  private fun generateStackTraceElement(errorElement: Map<String, String>): StackTraceElement? {
-    return try {
-      val fileName = errorElement["file"]
-      val lineNumber: String? = errorElement["line"]
-      val className = errorElement["class"]
-      val methodName = errorElement["method"]
-      lineNumber?.let {
-        StackTraceElement(
-          className ?: "",
-          methodName,
-          fileName, it.toInt()
-        )
-      }
-    } catch (e: Exception) {
-      NewRelic.recordHandledException(e)
-      null
+    private fun generateStackTraceElement(errorElement: Map<String, String>): StackTraceElement? {
+        return try {
+            val fileName = errorElement["file"]
+            val lineNumber: String? = errorElement["line"]
+            val className = errorElement["class"]
+            val methodName = errorElement["method"]
+            lineNumber?.let {
+                StackTraceElement(
+                    className ?: "",
+                    methodName,
+                    fileName, it.toInt()
+                )
+            }
+        } catch (e: Exception) {
+            NewRelic.recordHandledException(e)
+            null
+        }
     }
-  }
 
     override fun onDetachedFromActivity() {
         TODO("Not yet implemented")

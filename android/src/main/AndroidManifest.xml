@@ -1,3 +1,2 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.newrelic.newrelic_mobile">
-</manifest>
+    package="com.newrelic.newrelic_mobile"></manifest>

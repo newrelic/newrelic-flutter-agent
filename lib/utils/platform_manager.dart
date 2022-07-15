@@ -10,5 +10,6 @@ class PlatformManager {
   }
 
   bool isAndroid() => Platform.isAndroid;
+
   bool isIOS() => Platform.isIOS;
 }

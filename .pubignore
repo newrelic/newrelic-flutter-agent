@@ -3,3 +3,13 @@ test/
 coverage/
 .github/
 build/
+README_agent.md
+CONTRIBUTING.md
+cla.md
+.gitignore
+.github/
+analysis_options.yaml
+newrelic_mobile.iml
+android/gradle/
+android/gradlew
+android/gradlew.bat

@@ -1,3 +1,4 @@
-## 0.0.1
+## 0.0.1-beta.1 (07-15-2022)
 
-* TODO: Describe initial release.
+* Newrelic Flutter Agent Beta Release
+
