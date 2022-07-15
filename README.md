@@ -1,18 +1,18 @@
 # New Relic Flutter Agent
 
-This agent uses native New Relic Android and iOS agents to instrument the Flutter Dart environment. The New Relic SDKs collect crashes, network traffic, and other information for hybrid apps using native components.
+This agent allows you to instrument Flutter apps with help of native New Relic Android and iOS agents. The New Relic SDKs collect crashes, network traffic, and other information for hybrid apps using native components.
 
 **NOTE:** This agent SDK is not yet officially supported. If you’re interested in participating in our Limited Preview, contact Support or your account representative.
 
 ## Features
 * Capture Dart errors
-* Network Instrumentation
+* Network Request tracking
 * Distributed Tracing 
-* Record debugprint as Breadcrumb
 * Future errors tracking
 * Capture interactions and the sequence in which they were created
 * Pass user information to New Relic to track user sessions
-* Routing Instrumentation (Record as Breadcrumb)
+* Screen tracking via NavigationObserver
+* Automatic detection and reporting of the app-is-not-responding cases (ANR).
 
 ## Current Support:
 - Android API 21+
@@ -35,8 +35,6 @@ dependencies:
   newrelic_mobile: 0.0.1
   
 ```
-
-
 
 ## Flutter Setup
 
@@ -70,7 +68,7 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
 ```
 AppToken is platform-specific. You need to generate the seprate token for Android and iOS apps.
 
-## Tracking navigation events
+## Screen Tracking Events
 In order to track navigation events you have to add the NewRelicNavigationObserver to your MaterialApp, WidgetsApp or CupertinoApp.
 
 You should provide a name to route settings: RouteSettings(name: 'Your Route Name'). The root route name / will be replaced by root "/" for clarity's sake.
@@ -92,9 +90,9 @@ MaterialApp(
 ```
 
 ### Android Setup
-1. Install the New Relic native Android agent ([instructions here](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/install-android-apps-gradle-android-studio)).
-2. Update `build.gradle`:
-  ```java
+
+1. Add the following changes to android/build.gradle:
+  ```groovy
     buildscript {
       ...
       repositories {
@@ -103,30 +101,24 @@ MaterialApp(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.6.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.7.0"
       }
     }
   ```
 
-3. Update `app/build.gradle`:
+2. Apply the newrelic plugin to the top of the android/app/build.gradle file::
   ``` groovy
     apply plugin: "com.android.application"
     apply plugin: 'newrelic' // <-- add this
   
   ```
 
-4. Make sure your app requests INTERNET and ACCESS_NETWORK_STATE permissions by adding these lines to your `AndroidManifest.xml`
+3. Make sure your app requests INTERNET and ACCESS_NETWORK_STATE permissions by adding these lines to your `AndroidManifest.xml`
   ``` xml
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   ```
 
-### iOS Setup
-
-Run the following, and it will install the New Relic XCFramework agent:
-```shell
-  npx pod-install
-```
 
 ## Usage
 See the examples below, and for more detail, see [New Relic IOS SDK doc](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/ios-sdk-api) or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api).
