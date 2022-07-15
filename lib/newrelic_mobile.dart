@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -49,7 +48,11 @@ class NewrelicMobile {
       'fatal': isFatal
     };
 
-    NewrelicMobile.recordCustomEvent("Dart Errors", eventAttributes: params);
+    final Map<String, dynamic> eventParams = Map<String,dynamic>.from(params);
+    eventParams.remove('stackTraceElements');
+
+    NewrelicMobile.recordCustomEvent("Dart Errors",
+        eventAttributes: eventParams);
 
     await _channel.invokeMethod('recordError', params);
   }

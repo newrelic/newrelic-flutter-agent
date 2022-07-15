@@ -334,34 +334,41 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
     _wrapperStream = _readAndRecreateStream(_httpClientResponse);
   }
 
-  Stream<List<int>> _readAndRecreateStream(Stream<List<int>> source) async* {
-    source.listen((chunk) {
-      _receiveBuffer?.write(utf8.decode(chunk));
-    }, onDone: () {
-      responseData = _receiveBuffer.toString();
+  void _checkAndResetBufferIfRequired() {
+    if (_receiveBuffer != null && _receiveBuffer!.length > 2048) {
+      _receiveBuffer = null;
+    }
+  }
 
-      NewrelicMobile.noticeHttpTransaction(
-          request.uri.toString(),
-          request.method,
-          _httpClientResponse.statusCode,
-          timestamp,
-          DateTime.now().millisecondsSinceEpoch,
-          request.contentLength,
-          _httpClientResponse.contentLength,
-          traceData,
-          responseBody: responseData!);
-    }, onError: (e, StackTrace st) {
-      NewrelicMobile.noticeHttpTransaction(
-          request.uri.toString(),
-          request.method,
-          _httpClientResponse.statusCode,
-          timestamp,
-          DateTime.now().millisecondsSinceEpoch,
-          request.contentLength,
-          _httpClientResponse.contentLength,
-          traceData,
-          responseBody: responseData!);
-    });
+  void _addItems(List<int> data) {
+    if (headers.contentType != ContentType.binary) {
+      try {
+        _receiveBuffer?.write(utf8.decode(data));
+      } catch (ex) {}
+      _checkAndResetBufferIfRequired();
+    }
+  }
+
+  Stream<List<int>> _readAndRecreateStream(Stream<List<int>> source) async* {
+    await for (var chunk in source) {
+      _addItems(chunk);
+      yield chunk;
+    }
+
+    if (this.contentLength < 2048) {
+      responseData = _receiveBuffer.toString();
+    }
+
+    NewrelicMobile.noticeHttpTransaction(
+        request.uri.toString(),
+        request.method,
+        _httpClientResponse.statusCode,
+        timestamp,
+        DateTime.now().millisecondsSinceEpoch,
+        request.contentLength,
+        _httpClientResponse.contentLength,
+        traceData,
+        responseBody: responseData!);
   }
 
   @override

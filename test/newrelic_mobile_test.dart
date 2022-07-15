@@ -433,16 +433,19 @@ void main() {
       'fatal': false
     };
 
-    final Map<String, dynamic> eventParams = <String, dynamic>{
+    final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
+    eventParams.remove('stackTraceElements');
+
+    final Map<String, dynamic> customEventParams = <String, dynamic>{
       'eventType': 'Dart Errors',
       'eventName': '',
-      'eventAttributes': params
+      'eventAttributes': eventParams
     };
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'recordCustomEvent',
-        arguments: eventParams,
+        arguments: customEventParams,
       ),
       isMethodCall(
         'recordError',
@@ -552,14 +555,17 @@ void main() {
       'fatal': true
     };
 
-    final Map<String, dynamic> eventParams = <String, dynamic>{
+    final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
+    eventParams.remove('stackTraceElements');
+
+    final Map<String, dynamic> customEventParams = <String, dynamic>{
       'eventType': 'Dart Errors',
       'eventName': '',
-      'eventAttributes': params
+      'eventAttributes': eventParams
     };
 
     expect(methodCalLogs, <Matcher>[
-      isMethodCall('recordCustomEvent', arguments: eventParams),
+      isMethodCall('recordCustomEvent', arguments: customEventParams),
       isMethodCall('recordError', arguments: params)
     ]);
   });

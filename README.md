@@ -15,7 +15,7 @@ This agent allows you to instrument Flutter apps with help of native New Relic A
 * Automatic detection and reporting of the app-is-not-responding cases (ANR).
 
 ## Current Support:
-- Android API 21+
+- Android API 24+
 - iOS 10
 - Depends on New Relic iOS/XCFramework and Android agents
 
