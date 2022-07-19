@@ -1,3 +1,9 @@
+
+## 0.0.1-dev.1
+
+Bug fixes
+
+
 ## 0.0.1-dev.0
 
 🎉🎊 Presenting the new NewRelic SDK for Flutter:

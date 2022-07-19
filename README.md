@@ -32,7 +32,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 0.0.1
+  newrelic_mobile: 0.0.1-dev.1
   
 ```
 
@@ -53,13 +53,11 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
     appToken = "<ios app token>";
   }
 
- runZonedGuarded(() {
-    WidgetsFlutterBinding.ensureInitialized();
-    FlutterError.onError = NewrelicMobile.onError;
-    NewrelicMobile.startAgent(appToken);
+  Config config =
+      Config(accessToken: appToken);
+
+  NewrelicMobile.start(config, () {
     runApp(MyApp());
-  },(Object error,StackTrace stackTrace){
-    NewrelicMobile.recordError(error, stackTrace);
   });
 
   class MyApp extends StatelessWidget {

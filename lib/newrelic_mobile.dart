@@ -8,7 +8,7 @@ import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'dart:io'
-    show File, HttpClientRequest, HttpClientResponse, HttpOverrides, Platform;
+    show HttpClientRequest, HttpClientResponse, HttpOverrides, Platform;
 import 'package:stack_trace/stack_trace.dart';
 
 class NewrelicMobile {
@@ -48,7 +48,7 @@ class NewrelicMobile {
       'fatal': isFatal
     };
 
-    final Map<String, dynamic> eventParams = Map<String,dynamic>.from(params);
+    final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
     eventParams.remove('stackTraceElements');
 
     NewrelicMobile.recordCustomEvent("Dart Errors",

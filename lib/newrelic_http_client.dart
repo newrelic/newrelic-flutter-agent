@@ -368,7 +368,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
         request.contentLength,
         _httpClientResponse.contentLength,
         traceData,
-        responseBody: responseData!);
+        responseBody: responseData ?? '');
   }
 
   @override

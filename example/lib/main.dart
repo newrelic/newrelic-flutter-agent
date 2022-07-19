@@ -13,8 +13,17 @@ import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
+
+  var appToken = "";
+
+  if (Platform.isAndroid) {
+    appToken = "<android app token>";
+  } else if (Platform.isIOS) {
+    appToken = "<ios app token>";
+  }
+
   Config config =
-      Config(accessToken: "AAbce843c545b3b8d9209131267fb75ca2d8dea3ad-NRMA");
+      Config(accessToken: appToken);
 
   NewrelicMobile.start(config, () {
     runApp(MyApp());
@@ -73,7 +82,7 @@ class Page1Screen extends StatelessWidget {
                       print(contents);
                     });
                   },
-                  child: Text('Http Default Client',
+                  child: const Text('Http Default Client',
                       maxLines: 1, textDirection: TextDirection.ltr)),
               ElevatedButton(
                   onPressed: () async {
@@ -83,7 +92,7 @@ class Page1Screen extends StatelessWidget {
                     print('Response status: ${response.statusCode}');
                     print('Response body: ${response.body}');
                   },
-                  child: Text('Http Library ',
+                  child: const Text('Http Library ',
                       maxLines: 1, textDirection: TextDirection.ltr)),
               ElevatedButton(
                   onPressed: () async {
@@ -96,7 +105,7 @@ class Page1Screen extends StatelessWidget {
                       print(e);
                     }
                   },
-                  child: Text('Http Dio Library ',
+                  child: const Text('Http Dio Library ',
                       maxLines: 1, textDirection: TextDirection.ltr)),
               ElevatedButton(
                   onPressed: () async {
@@ -109,7 +118,7 @@ class Page1Screen extends StatelessWidget {
                       print(e);
                     }
                   },
-                  child: Text('OOM Issue Library ',
+                  child: const Text('OOM Issue Library ',
                       maxLines: 1, textDirection: TextDirection.ltr)),
               ElevatedButton(
                   onPressed: () async {
@@ -123,8 +132,9 @@ class Page1Screen extends StatelessWidget {
                       print(e);
                     }
                   },
-                  child: Text('Http Dio Post Library ',
+                  child: const Text('Http Dio Post Library ',
                       maxLines: 1, textDirection: TextDirection.ltr)),
+              Image.network('https://picsum.photos/250?image=9'),
               ElevatedButton(
                 onPressed: () => Navigator.pushNamed(context, 'pagetwo'),
                 child: const Text('Go to page 2'),

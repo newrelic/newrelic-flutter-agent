@@ -34,8 +34,8 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
     Map<String, String?> attributes = <String, String?>{
       'methodType': methodType,
       // ignore: prefer_if_null_operators
-      'from': fromRoute?.name != null ? fromRoute?.name : '',
-      'to': toRoute?.name ?? ''
+      'from': fromRoute?.name != null ? fromRoute?.name : '/',
+      'to': toRoute?.name ?? '/'
     };
     NewrelicMobile.recordBreadcrumb(breadCrumbName,
         eventAttributes: attributes);
