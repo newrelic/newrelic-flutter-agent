@@ -11,7 +11,6 @@ import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
-import 'package:stack_trace/stack_trace.dart';
 
 import 'newrelic_mobile_test.mocks.dart';
 
@@ -310,9 +309,7 @@ void main() {
     PlatformManager.setPlatformInstance(platformManger);
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
     NewrelicMobile.setInteractionName(interActionName);
-    final Map<String, dynamic> params = <String, dynamic>{
-      'interactionName': interActionName,
-    };
+
     expect(methodCalLogs, <Matcher>[]);
   });
 
@@ -641,7 +638,7 @@ void main() {
 
     Map<String, String?> attributes = <String, String?>{
       'methodType': 'didReplace',
-      'from': '',
+      'from': '/',
       'to': nextRouteName
     };
 
