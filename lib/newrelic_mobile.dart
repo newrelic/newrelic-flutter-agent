@@ -29,10 +29,10 @@ class NewrelicMobile {
       runApp();
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.recordError(error, stackTrace);
-    },zoneSpecification: ZoneSpecification(
-        print: (self, parent, zone, line) {
-          recordCustomEvent("Dart Console Events", eventAttributes: {"message":line});
-          parent.print(zone, line);
+    }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
+      recordCustomEvent("Dart Console Events",
+          eventAttributes: {"message": line});
+      parent.print(zone, line);
     }));
   }
 
@@ -43,15 +43,13 @@ class NewrelicMobile {
 
   static void recordError(Object error, StackTrace? stackTrace,
       {bool isFatal = false}) async {
-
-
     String stackTraceStr = '';
-    if(stackTrace != null) {
-       if(stackTrace.toString().length > 4096) {
-         stackTraceStr = stackTrace.toString().substring(0,4094);
-       } else {
-         stackTraceStr = stackTrace.toString();
-       }
+    if (stackTrace != null) {
+      if (stackTrace.toString().length > 4096) {
+        stackTraceStr = stackTrace.toString().substring(0, 4094);
+      } else {
+        stackTraceStr = stackTrace.toString();
+      }
     }
 
     final Map<String, dynamic> params = <String, dynamic>{
