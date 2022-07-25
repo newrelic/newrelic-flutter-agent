@@ -488,10 +488,21 @@ void main() {
       'applicationToken': appToken,
       'dartVersion': Platform.version
     };
+
+    final Map<String, String> eventParams = <String, String>{
+      'message': 'test'
+    };
+
+
+    final Map<String, dynamic> customParams = <String, dynamic>{'eventType': 'Dart Console Events', 'eventName':'' , 'eventAttributes': eventParams };
+
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'startAgent',
         arguments: params,
+      ),isMethodCall(
+        'recordCustomEvent',
+        arguments: customParams,
       )
     ]);
   });
@@ -521,7 +532,10 @@ void main() {
         ));
     expect(methodCalLogs[1].method, 'recordCustomEvent');
 
-    expect(methodCalLogs[2].method, 'recordError');
+    expect(methodCalLogs[2].method, 'recordCustomEvent');
+
+
+    expect(methodCalLogs[3].method, 'recordError');
   });
 
   test('test onError should called record error and record error as Fatal', () {
