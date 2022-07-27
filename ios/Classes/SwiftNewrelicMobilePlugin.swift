@@ -18,6 +18,9 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
               NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
               NewRelic.start(withApplicationToken:applicationToken!)
               NewRelic.setAttribute("DartVersion", value:dartVersion!)
+              NewRelic.recordMetric(withName: "Mobile/iOS/Flutter/Agent/0.0.1-dev.1", category: "Supportability", value: 1)
+
+          
               result("Agent Started")
            case "getPlatformVersion":
              result("iOS " + UIDevice.current.systemVersion)
