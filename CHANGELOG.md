@@ -1,4 +1,9 @@
 
+## 0.0.1-dev.2
+
+Added Functionality to Capture Print Statement as Custom Events
+Bug fix for Error Stacktrace
+
 ## 0.0.1-dev.1
 
 Bug fixes
