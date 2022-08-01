@@ -49,6 +49,6 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.newrelic.agent.android:android-agent:6.7.0'
+    implementation 'com.newrelic.agent.android:android-agent:6.8.0'
 
 }

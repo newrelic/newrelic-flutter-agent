@@ -12,7 +12,7 @@ This agent allows you to instrument Flutter apps with help of native New Relic A
 * Capture interactions and the sequence in which they were created
 * Pass user information to New Relic to track user sessions
 * Screen tracking via NavigationObserver
-* Automatic detection and reporting of the app-is-not-responding cases (ANR).
+* Capture print statement as CustomEvents
 
 ## Current Support:
 - Android API 24+
@@ -32,7 +32,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 0.0.1-dev.1
+  newrelic_mobile: 0.0.1-dev.2
   
 ```
 
@@ -99,7 +99,7 @@ MaterialApp(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.7.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.8.0"
       }
     }
   ```
