@@ -1,19 +1,19 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:newrelic_mobile/config.dart';
-import 'dart:async';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
-import 'package:http/http.dart' as http;
 
 void main() {
-
   var appToken = "";
 
   if (Platform.isAndroid) {
@@ -22,10 +22,9 @@ void main() {
     appToken = "<ios app token>";
   }
 
-  Config config =
-      Config(accessToken: appToken);
+  Config config = Config(accessToken: appToken);
 
-  NewrelicMobile.start(config, () {
+  NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
   });
 }
@@ -60,86 +59,100 @@ class Page1Screen extends StatelessWidget {
   const Page1Screen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text("Http Demo")),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ElevatedButton(
-                  onPressed: () async {
-                    final client = HttpClient();
-                    final request = await client.postUrl(Uri.parse(
-                        "https://jsonplaceholder.typicode.com/posts"));
-                    request.headers.set(HttpHeaders.contentTypeHeader,
-                        "application/json; charset=UTF-8");
-                    request
-                        .write('{"title": "Foo","body": "Bar", "userId": 99}');
+  Widget build(BuildContext context) => GraphQLProvider(
+        client: client,
+        child: Scaffold(
+          appBar: AppBar(title: const Text("Http Demo")),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                ElevatedButton(
+                    onPressed: () async {
+                      final client = HttpClient();
+                      final request = await client.postUrl(Uri.parse(
+                          "https://jsonplaceholder.typicode.com/posts"));
+                      request.headers.set(HttpHeaders.contentTypeHeader,
+                          "application/json; charset=UTF-8");
+                      request.write(
+                          '{"title": "Foo","body": "Bar", "userId": 99}');
 
-                    final response = await request.close();
+                      final response = await request.close();
 
-                    response.transform(utf8.decoder).listen((contents) {
-                      print(contents);
-                    });
-                  },
-                  child: const Text('Http Default Client',
-                      maxLines: 1, textDirection: TextDirection.ltr)),
-              ElevatedButton(
-                  onPressed: () async {
-                    var url = Uri.parse(
-                        'http://c9d5909c-fb65-42e6-9637-d998074a2811.mock.pstmn.io/getData');
-                    var response = await http.get(url);
-                    print('Response status: ${response.statusCode}');
-                    print('Response body: ${response.body}');
-                  },
-                  child: const Text('Http Library ',
-                      maxLines: 1, textDirection: TextDirection.ltr)),
-              ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      var dio = Dio();
-                      var response =
-                          await dio.get('https://reactnative.dev/movies.json');
-                      print(response);
-                    } catch (e) {
-                      print(e);
-                    }
-                  },
-                  child: const Text('Http Dio Library ',
-                      maxLines: 1, textDirection: TextDirection.ltr)),
-              ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      var dio = Dio();
-                      var response = await dio.get(
-                          'https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage');
-                      print(response);
-                    } catch (e) {
-                      print(e);
-                    }
-                  },
-                  child: const Text('OOM Issue Library ',
-                      maxLines: 1, textDirection: TextDirection.ltr)),
-              ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      var dio = Dio();
-                      var response = await dio.post(
-                          'https://reqres.in/api/register',
-                          data: "{ 'email': 'sydney@fife'}");
-                      print(response.data);
-                    } catch (e) {
-                      print(e);
-                    }
-                  },
-                  child: const Text('Http Dio Post Library ',
-                      maxLines: 1, textDirection: TextDirection.ltr)),
-              Image.network('https://picsum.photos/250?image=9'),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, 'pagetwo'),
-                child: const Text('Go to page 2'),
-              ),
-            ],
+                      response.transform(utf8.decoder).listen((contents) {
+                        print(contents);
+                      });
+                    },
+                    child: const Text('Http Default Client',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                ElevatedButton(
+                    onPressed: () async {
+                      var url = Uri.parse(
+                          'https://754e-2600-1700-1118-20d0-b1f5-5075-cd0-e03a.ngrok.io/hello-world');
+                      var response = await http.get(url);
+                      print('Response status: ${response.statusCode}');
+                      print('Response body: ${response.body}');
+                    },
+                    child: const Text('Http Library ',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        var dio = Dio();
+                        var response = await dio
+                            .get('https://reactnative.dev/movies.json');
+                        print(response);
+                      } catch (e) {
+                        print(e);
+                      }
+                    },
+                    child: const Text('Http Dio Library ',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        var dio = Dio();
+                        var response = await dio.get(
+                            'https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage');
+                        print(response);
+                      } catch (e) {
+                        print(e);
+                      }
+                    },
+                    child: const Text('OOM Issue Library ',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        var dio = Dio();
+                        var response = await dio.post(
+                            'https://reqres.in/api/register',
+                            data: "{ 'email': 'sydney@fife'}");
+                        print(response.data);
+                      } catch (e) {
+                        print(e);
+                      }
+                    },
+                    child: const Text('Http Dio Post Library ',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                Query(
+                    options: QueryOptions(document: gql(rickCharacters)),
+                    builder: (result, {fetchMore, refetch}) {
+                      // If stements here to check handle different states;
+                      if (result.isLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      return Text(result.data.toString());
+                    }),
+                Image.network('https://picsum.photos/250?image=9'),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, 'pagetwo'),
+                  child: const Text('Go to page 2'),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -193,14 +206,15 @@ class Page2Screen extends StatelessWidget {
       );
 
   Future<void> foo() async {
-    await bar();
-
     try {
-      await bar();
-    } on Exception catch (exception) {
-      print(exception);
+      throw 42;
     } catch (error) {
-      NewrelicMobile.recordError(error, StackTrace.current);
+      Map<String, dynamic> attributes = {
+        "error attribute": "12344",
+        "error attribute": 1234
+      };
+      NewrelicMobile.instance
+          .recordError(error, StackTrace.current, attributes: attributes);
     }
   }
 
@@ -223,27 +237,27 @@ class Page3Screen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               ElevatedButton(
-                onPressed: () => NewrelicMobile.recordCustomEvent(
+                onPressed: () => NewrelicMobile.instance.recordCustomEvent(
                     "Test Custom Event",
                     eventName: "User Purchase",
                     eventAttributes: {"item1": "Clothes", "price": 34.00}),
                 child: const Text('Record Custom Event'),
               ),
               ElevatedButton(
-                onPressed: () => NewrelicMobile.recordBreadcrumb(
-                    "Button Got Pressed on Screen 3"),
+                onPressed: () => NewrelicMobile.instance
+                    .recordBreadcrumb("Button Got Pressed on Screen 3"),
                 child: const Text('Record BreadCrumb Event'),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  var id = await NewrelicMobile.startInteraction(
-                      "Getting Data from Service");
+                  var id = await NewrelicMobile.instance
+                      .startInteraction("Getting Data from Service");
                   try {
                     var dio = Dio();
                     var response =
                         await dio.get('https://reqres.in/api/users?delay=15');
                     print(response);
-                    NewrelicMobile.endInteraction(id);
+                    NewrelicMobile.instance.endInteraction(id);
                   } catch (e) {
                     print(e);
                   }
@@ -357,3 +371,28 @@ class SpawnService {
     sendPort.send(Person(dataMap["name"]));
   }
 }
+
+final HttpLink rickAndMortyHttpLink =
+    HttpLink('https://countries.trevorblades.com/');
+ValueNotifier<GraphQLClient> client = ValueNotifier(
+  GraphQLClient(
+    link: rickAndMortyHttpLink,
+    cache: GraphQLCache(
+      store: InMemoryStore(),
+    ),
+  ),
+);
+
+const rickCharacters = '''
+ query country(\$code: IN) {
+    name
+    native
+    capital
+    emoji
+    currency
+    languages {
+      code
+      name
+    }
+  }
+ ''';

@@ -37,7 +37,7 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
       'from': fromRoute?.name != null ? fromRoute?.name : '/',
       'to': toRoute?.name ?? '/'
     };
-    NewrelicMobile.recordBreadcrumb(breadCrumbName,
-        eventAttributes: attributes);
+    NewrelicMobile.instance
+        .recordBreadcrumb(breadCrumbName, eventAttributes: attributes);
   }
 }

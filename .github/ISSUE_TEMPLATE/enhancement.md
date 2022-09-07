@@ -1,9 +1,6 @@
 ---
-name: Enhancement request
-about: Suggest an idea for a future version of this project
-title: ''
-labels: enhancement, needs-triage
-assignees: ''
+name: Enhancement request about: Suggest an idea for a future version of this project title: ''
+labels: enhancement, needs-triage assignees: ''
 
 ---
 
@@ -16,6 +13,7 @@ assignees: ''
 ## Desired Behavior
 
 [NOTE]: # ( Tell us how the new feature should work. Be specific. )
+
 [TIP]:  # ( Do NOT give us access or passwords to your New Relic account or API keys! )
 
 ## Possible Solution

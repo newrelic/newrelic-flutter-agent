@@ -14,6 +14,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import java.lang.ref.WeakReference
 import java.util.ArrayList
 
 /** NewrelicMobilePlugin */
@@ -24,7 +25,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     /// when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
-    private lateinit var activity: Activity
+    private var activity: WeakReference<Activity>? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "newrelic_mobile")
@@ -116,8 +117,14 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val exceptionMessage: String? = call.argument("exception")
                 val reason: String? = call.argument("reason")
                 val fatal: Boolean? = call.argument("fatal")
+                val attributes: Map<String, Any>? = call.argument("attributes")
 
-                val exceptionAttributes = mapOf("reason" to reason, "fatal" to fatal)
+                val exceptionAttributes: MutableMap<String, Any?> = mutableMapOf()
+                exceptionAttributes["reason"] = reason
+                exceptionAttributes["isFatal"] = fatal
+                if (attributes != null) {
+                    exceptionAttributes.putAll(attributes)
+                }
 
                 val exception = FlutterError(exceptionMessage)
 
@@ -203,7 +210,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onDetachedFromActivity() {
-        TODO("Not yet implemented")
+        activity = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -211,7 +218,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        activity = binding.activity;
+        activity = WeakReference(binding.activity);
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
