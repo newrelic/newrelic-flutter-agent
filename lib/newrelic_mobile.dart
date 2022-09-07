@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io'
+    show HttpClientRequest, HttpClientResponse, HttpOverrides, Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -7,28 +9,30 @@ import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
-import 'dart:io'
-    show HttpClientRequest, HttpClientResponse, HttpOverrides, Platform;
 import 'package:stack_trace/stack_trace.dart';
 
 class NewrelicMobile {
+  static final NewrelicMobile instance = NewrelicMobile._();
+
+  NewrelicMobile._();
+
   static const MethodChannel _channel = MethodChannel('newrelic_mobile');
 
   static DebugPrintCallback? _originalDebugPrint;
 
-  static Future<String?> get platformVersion async {
+  Future<String?> get platformVersion async {
     final String? version = await _channel.invokeMethod('getPlatformVersion');
     return version;
   }
 
-  static Future<void> start(Config config, Function runApp) async {
+  Future<void> start(Config config, Function runApp) async {
     runZonedGuarded(() async {
       WidgetsFlutterBinding.ensureInitialized();
       FlutterError.onError = NewrelicMobile.onError;
-      await NewrelicMobile.startAgent(config.accessToken);
+      await NewrelicMobile.instance.startAgent(config.accessToken);
       runApp();
     }, (Object error, StackTrace stackTrace) {
-      NewrelicMobile.recordError(error, stackTrace);
+      NewrelicMobile.instance.recordError(error, stackTrace);
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
       recordCustomEvent("Dart Console Events",
           eventAttributes: {"message": line});
@@ -38,11 +42,12 @@ class NewrelicMobile {
 
   static void onError(FlutterErrorDetails errorDetails) async {
     FlutterError.presentError(errorDetails);
-    recordError(errorDetails.exception, errorDetails.stack, isFatal: true);
+    NewrelicMobile.instance
+        .recordError(errorDetails.exception, errorDetails.stack, isFatal: true);
   }
 
-  static void recordError(Object error, StackTrace? stackTrace,
-      {bool isFatal = false}) async {
+  void recordError(Object error, StackTrace? stackTrace,
+      {Map<String, dynamic>? attributes, bool isFatal = false}) async {
     String stackTraceStr = '';
     if (stackTrace != null) {
       if (stackTrace.toString().length > 4096) {
@@ -61,27 +66,31 @@ class NewrelicMobile {
       'fatal': isFatal
     };
 
+    if (attributes != null) {
+      params['attributes'] = attributes;
+    }
+
     final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
     eventParams.remove('stackTraceElements');
 
-    NewrelicMobile.recordCustomEvent("Dart Errors",
-        eventAttributes: eventParams);
+    NewrelicMobile.instance
+        .recordCustomEvent("Dart Errors", eventAttributes: eventParams);
 
     await _channel.invokeMethod('recordError', params);
   }
 
-  static redirectDebugPrint() {
+  redirectDebugPrint() {
     if (_originalDebugPrint != null) return;
     _originalDebugPrint = debugPrint;
     debugPrint = (String? message, {int? wrapWidth}) {
       if (_originalDebugPrint != null) {
-        NewrelicMobile.recordBreadcrumb(message!);
+        NewrelicMobile.instance.recordBreadcrumb(message!);
         _originalDebugPrint!(message, wrapWidth: wrapWidth);
       }
     };
   }
 
-  static Future<void> startAgent(String applicationToken) async {
+  Future<void> startAgent(String applicationToken) async {
     final Map<String, dynamic> params = <String, String>{
       'applicationToken': applicationToken,
       'dartVersion': Platform.version
@@ -93,7 +102,7 @@ class NewrelicMobile {
     await _channel.invokeMethod('startAgent', params);
   }
 
-  static Future<bool?> setUserId(String userId) async {
+  Future<bool?> setUserId(String userId) async {
     final Map<String, dynamic> params = <String, dynamic>{
       'userId': userId,
     };
@@ -101,7 +110,7 @@ class NewrelicMobile {
     return userIdWasSet;
   }
 
-  static Future<bool> setAttribute(String name, dynamic value) async {
+  Future<bool> setAttribute(String name, dynamic value) async {
     final Map<String, dynamic> params = <String, dynamic>{
       'name': name,
       'value': value
@@ -110,14 +119,14 @@ class NewrelicMobile {
     return result;
   }
 
-  static Future<bool> removeAttribute(String name) async {
+  Future<bool> removeAttribute(String name) async {
     final Map<String, dynamic> params = <String, dynamic>{'name': name};
     final bool attributeIsRemoved =
         await _channel.invokeMethod('removeAttribute', params);
     return attributeIsRemoved;
   }
 
-  static Future<bool> recordBreadcrumb(String name,
+  Future<bool> recordBreadcrumb(String name,
       {Map<String, dynamic>? eventAttributes}) async {
     final Map<String, dynamic> params = <String, dynamic>{
       'name': name,
@@ -128,7 +137,7 @@ class NewrelicMobile {
     return eventRecorded;
   }
 
-  static Future<bool> recordCustomEvent(String eventType,
+  Future<bool> recordCustomEvent(String eventType,
       {String eventName = "", Map<String, dynamic>? eventAttributes}) async {
     final Map<String, dynamic> params = <String, dynamic>{
       'eventType': eventType,
@@ -140,7 +149,7 @@ class NewrelicMobile {
     return eventRecorded;
   }
 
-  static Future<String> startInteraction(String actionName) async {
+  Future<String> startInteraction(String actionName) async {
     final Map<String, String> params = <String, String>{
       'actionName': actionName
     };
@@ -149,14 +158,14 @@ class NewrelicMobile {
     return interactionId;
   }
 
-  static Future<Map<String, dynamic>> noticeDistributedTrace(
+  Future<Map<String, dynamic>> noticeDistributedTrace(
       Map<String, dynamic> requestAttributes) async {
     final dynamic traceAttributes =
         await _channel.invokeMethod('noticeDistributedTrace');
     return Map<String, dynamic>.from(traceAttributes);
   }
 
-  static Future<void> setInteractionName(String interactionName) async {
+  Future<void> setInteractionName(String interactionName) async {
     final Map<String, String> params = <String, String>{
       'interactionName': interactionName
     };
@@ -168,7 +177,7 @@ class NewrelicMobile {
     }
   }
 
-  static void endInteraction(String interactionId) async {
+  void endInteraction(String interactionId) async {
     final Map<String, String> params = <String, String>{
       'interactionId': interactionId
     };
@@ -177,7 +186,7 @@ class NewrelicMobile {
     return;
   }
 
-  static Future<void> logNetworkIoRequest(
+  Future<void> logNetworkIoRequest(
     HttpClientRequest request, {
     DateTime? startTime,
     DateTime? endTime,
@@ -189,14 +198,14 @@ class NewrelicMobile {
         startTime: startTime, endTime: endTime);
   }
 
-  static Future<void> logNetworkIoRequestResponse(
+  Future<void> logNetworkIoRequestResponse(
     HttpClientRequest request,
     HttpClientResponse response, {
     DateTime? startTime,
     DateTime? endTime,
   }) async {
     endTime = DateTime.now();
-    await NewrelicMobile.noticeHttpTransaction(
+    await NewrelicMobile.instance.noticeHttpTransaction(
         request.uri.toString(),
         request.method,
         response.statusCode,
@@ -208,7 +217,7 @@ class NewrelicMobile {
         responseBody: response.toString());
   }
 
-  static Future<void> noticeHttpTransaction(
+  Future<void> noticeHttpTransaction(
       String url,
       String httpMethod,
       int statusCode,

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 
 import 'newrelic_mobile.dart';
@@ -173,7 +174,7 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
   var timestamp = DateTime.now().millisecondsSinceEpoch;
 
   Map<String, dynamic> traceAttributes =
-      await NewrelicMobile.noticeDistributedTrace({});
+      await NewrelicMobile.instance.noticeDistributedTrace({});
 
   return request.then((actualRequest) {
     actualRequest.headers
@@ -359,7 +360,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
       responseData = _receiveBuffer.toString();
     }
 
-    NewrelicMobile.noticeHttpTransaction(
+    NewrelicMobile.instance.noticeHttpTransaction(
         request.uri.toString(),
         request.method,
         _httpClientResponse.statusCode,

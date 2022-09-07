@@ -1,9 +1,6 @@
 ---
-name: Bug report
-about: Describe a scenario in which this project behaves unexpectedly
-title: ''
-labels: bug, needs-triage
-assignees: ''
+name: Bug report about: Describe a scenario in which this project behaves unexpectedly title: ''
+labels: bug, needs-triage assignees: ''
 
 ---
 
@@ -12,6 +9,7 @@ assignees: ''
 ## Description
 
 [NOTE]: # ( Describe the problem you're encountering. )
+
 [TIP]:  # ( Do NOT give us access or passwords to your New Relic account or API keys! )
 
 ## Steps to Reproduce

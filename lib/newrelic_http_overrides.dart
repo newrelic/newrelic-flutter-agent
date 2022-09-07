@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:newrelic_mobile/newrelic_http_client.dart';
 
 class NewRelicHttpOverrides extends HttpOverrides {
