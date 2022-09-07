@@ -1,3 +1,9 @@
+## 0.0.1-dev.3
+
+Added Singleton Instance for Agent to support Unit testing.
+
+Fixed Crash Where App is crashing from flutter android plugin.
+
 ## 0.0.1-dev.2
 
 Added Functionality to Capture Print Statement as Custom Events Bug fix for Error Stacktrace
