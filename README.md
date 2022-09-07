@@ -63,7 +63,7 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
   Config config =
       Config(accessToken: appToken);
 
-  NewrelicMobile.start(config, () {
+  NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
   });
 
@@ -152,13 +152,13 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > This string is returned when you use startInteraction().
 
   ``` dart
-            var id = await NewrelicMobile.startInteraction("Getting Data from Service");
+            var id = await NewrelicMobile.instance.startInteraction("Getting Data from Service");
                 try {
                   var dio = Dio();
                   var response = await dio.get(
                       'https://reqres.in/api/users?delay=15');
                      print(response);
-                    NewrelicMobile.endInteraction(id);
+                    NewrelicMobile.instance.endInteraction(id);
                     Timeline.finishSync();
                 } catch (e) {
                   print(e);
@@ -171,7 +171,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > Creates a session-level attribute shared by multiple mobile event types. Overwrites its previous value and type each time it is called.
 
   ```
-     NewrelicMobile.setAttribute('RNCustomAttrNumber', 37);
+     NewrelicMobile.instance.setAttribute('RNCustomAttrNumber', 37);
   ```
 
 ### [setUserId](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-user-id)(userId: string): void;
@@ -179,7 +179,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > Set a custom user identifier value to associate user sessions with analytics events and attributes.
 
   ```
-     NewrelicMobile.setUserId("RN12934");
+     NewrelicMobile.instance.setUserId("RN12934");
   ```
 
 ### [recordBreadcrumb](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordbreadcrumb)(name: string, attributes?: {[key: string]: boolean | number | string}): void;
@@ -187,7 +187,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > Track app activity/screen that may be helpful for troubleshooting crashes.
 
   ``` dart
-    NewrelicMobile.recordBreadcrumb("Button Got Pressed on Screen 3"),
+    NewrelicMobile.instance.recordBreadcrumb("Button Got Pressed on Screen 3"),
   ```
 
 ### [recordCustomEvent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordcustomevent-android-sdk-api)(eventType: string, eventName?: string, attributes?: {[key: string]: boolean | number | string}): void;
@@ -195,7 +195,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > Creates and records a custom event for use in New Relic Insights.
 
   ``` dart
-    NewrelicMobile.recordCustomEvent("Major",eventName: "User Purchase",eventAttributes: {"item1":"Clothes","price":34.00}),
+    NewrelicMobile.instance.recordCustomEvent("Major",eventName: "User Purchase",eventAttributes: {"item1":"Clothes","price":34.00}),
             child: const Text('Record Custom Event'),
   ```
 
@@ -207,6 +207,6 @@ You can register non fatal exceptions using the following method:
 try {
   some_code_that_throws_error();
 } catch (ex) {
-  NewrelicMobile.recordError(error, StackTrace.current);
+  NewrelicMobile.instance.recordError(error, StackTrace.current);
 }
 ```
