@@ -32,6 +32,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config.accessToken);
       await NewrelicMobile.instance.setAttribute("Flutter Agent Version", "0.0.1-dev.4");
       runApp();
+      await NewrelicMobile.instance.setAttribute("Flutter Agent Version", "0.0.1-dev.4");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {

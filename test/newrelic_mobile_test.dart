@@ -434,7 +434,7 @@ void main() {
     eventParams.remove('stackTraceElements');
 
     final Map<String, dynamic> customEventParams = <String, dynamic>{
-      'eventType': 'Dart Errors',
+      'eventType': 'Mobile Dart Errors',
       'eventName': '',
       'eventAttributes': eventParams
     };
@@ -492,9 +492,13 @@ void main() {
     final Map<String, String> eventParams = <String, String>{'message': 'test'};
 
     final Map<String, dynamic> customParams = <String, dynamic>{
-      'eventType': 'Dart Console Events',
+      'eventType': 'Mobile Dart Console Events',
       'eventName': '',
       'eventAttributes': eventParams
+    };
+
+    final Map<String, dynamic> attributeParams = <String, dynamic>{
+      'name':'Flutter Agent Version','value':'0.0.1-dev.4',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -505,6 +509,10 @@ void main() {
       isMethodCall(
         'recordCustomEvent',
         arguments: customParams,
+      ),
+     isMethodCall(
+        'setAttribute',
+        arguments: attributeParams,
       )
     ]);
   });
@@ -532,12 +540,14 @@ void main() {
           'startAgent',
           arguments: params,
         ));
+
     expect(methodCalLogs[1].method, 'recordCustomEvent');
 
     expect(methodCalLogs[2].method, 'recordCustomEvent');
 
     expect(methodCalLogs[3].method, 'recordError');
-  });
+
+   });
 
   test('test onError should called record error and record error as Fatal', () {
     const exception = 'foo exception';
@@ -571,7 +581,7 @@ void main() {
     eventParams.remove('stackTraceElements');
 
     final Map<String, dynamic> customEventParams = <String, dynamic>{
-      'eventType': 'Dart Errors',
+      'eventType': 'Mobile Dart Errors',
       'eventName': '',
       'eventAttributes': eventParams
     };
