@@ -18,7 +18,7 @@ import java.lang.ref.WeakReference
 import java.util.ArrayList
 
 /** NewrelicMobilePlugin */
-class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -47,7 +47,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 ).withApplicationFramework(ApplicationFramework.Flutter, "2.0.3").start(context)
 
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.0");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.4");
                 result.success("Agent Started")
             }
             "setUserId" -> {
@@ -209,21 +209,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         }
     }
 
-    override fun onDetachedFromActivity() {
-        activity = null
-    }
 
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        activity = WeakReference(binding.activity);
-    }
-
-    override fun onDetachedFromActivityForConfigChanges() {
-        TODO("Not yet implemented")
-    }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)

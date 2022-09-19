@@ -1,3 +1,7 @@
+## 0.0.1-dev.4
+
+Fixed Crashes Where App is crashing from flutter android plugin.
+
 ## 0.0.1-dev.3
 
 Added Singleton Instance for Agent to support Unit testing.
