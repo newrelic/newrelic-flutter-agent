@@ -31,10 +31,11 @@ class NewrelicMobile {
       FlutterError.onError = NewrelicMobile.onError;
       await NewrelicMobile.instance.startAgent(config.accessToken);
       runApp();
+      await NewrelicMobile.instance.setAttribute("Flutter Agent Version", "0.0.1-dev.4");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
-      recordCustomEvent("Dart Console Events",
+      recordCustomEvent("Mobile Dart Console Events",
           eventAttributes: {"message": line});
       parent.print(zone, line);
     }));
@@ -74,7 +75,7 @@ class NewrelicMobile {
     eventParams.remove('stackTraceElements');
 
     NewrelicMobile.instance
-        .recordCustomEvent("Dart Errors", eventAttributes: eventParams);
+        .recordCustomEvent("Mobile Dart Errors", eventAttributes: eventParams);
 
     await _channel.invokeMethod('recordError', params);
   }

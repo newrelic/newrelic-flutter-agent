@@ -148,7 +148,13 @@ class Page1Screen extends StatelessWidget {
                     }),
                 Image.network('https://picsum.photos/250?image=9'),
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, 'pagetwo'),
+                  onPressed: () async {
+
+                    var id = await NewrelicMobile.instance.startInteraction("Going to Page 2");
+                    Future.delayed(const Duration(milliseconds: 10000), () {
+                      Navigator.pushNamed(context, 'pagetwo',arguments: {'id':id});
+                    });
+                    },
                   child: const Text('Go to page 2'),
                 ),
               ],
@@ -161,49 +167,61 @@ class Page1Screen extends StatelessWidget {
 /// The screen of the second page.
 class Page2Screen extends StatelessWidget {
   /// Creates a [Page2Screen].
-  const Page2Screen({Key? key}) : super(key: key);
+
+  var interActionId;
+
+   Page2Screen({Key? key,this.interActionId}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text("Error Demo")),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ElevatedButton(
-                onPressed: () {
-                  bar();
-                },
-                child: const Text('Async Error'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  foo();
-                },
-                child: const Text('Async Error'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  throw StateError("State Error");
-                },
-                child: const Text('State Error'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  print("test");
-                  debugPrint("test");
-                  throw NullThrownError();
-                },
-                child: const Text('NullThrownError'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, 'pagethree'),
-                child: const Text('Go to home page'),
-              ),
-            ],
-          ),
+  Widget build(BuildContext context) {
+    final args = ModalRoute
+        .of(context)!
+        .settings
+        .arguments as Map;
+
+    NewrelicMobile.instance.endInteraction(args['id']);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Error Demo")),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                bar();
+              },
+              child: const Text('Async Error'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                foo();
+              },
+              child: const Text('Async Error'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                throw StateError("State Error");
+              },
+              child: const Text('State Error'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                print("test");
+                debugPrint("test");
+                throw NullThrownError();
+              },
+              child: const Text('NullThrownError'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, 'pagethree'),
+              child: const Text('Go to home page'),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 
   Future<void> foo() async {
     try {
