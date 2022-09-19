@@ -30,7 +30,6 @@ class NewrelicMobile {
       WidgetsFlutterBinding.ensureInitialized();
       FlutterError.onError = NewrelicMobile.onError;
       await NewrelicMobile.instance.startAgent(config.accessToken);
-      await NewrelicMobile.instance.setAttribute("Flutter Agent Version", "0.0.1-dev.4");
       runApp();
       await NewrelicMobile.instance.setAttribute("Flutter Agent Version", "0.0.1-dev.4");
     }, (Object error, StackTrace stackTrace) {
