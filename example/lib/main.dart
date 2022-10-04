@@ -22,11 +22,22 @@ void main() {
     appToken = "<ios app token>";
   }
 
-  Config config = Config(accessToken: appToken);
+  Config config = Config(
+      accessToken: appToken,
+      analyticsEventEnabled: true,
+      networkErrorRequestEnabled: true,
+      networkRequestEnabled: true,
+      crashReportingEnabled: true,
+      interactionTracingEnabled: true,
+      httpRequestBodyCaptureEnabled: true,
+      loggingEnabled: true,
+      webViewInstrumentation: true);
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
   });
+  NewrelicMobile.instance.setMaxEventPoolSize(10000);
+  NewrelicMobile.instance.setMaxEventBufferTime(200);
 }
 
 /// The main app.
@@ -149,12 +160,13 @@ class Page1Screen extends StatelessWidget {
                 Image.network('https://picsum.photos/250?image=9'),
                 ElevatedButton(
                   onPressed: () async {
-
-                    var id = await NewrelicMobile.instance.startInteraction("Going to Page 2");
-                    Future.delayed(const Duration(milliseconds: 10000), () {
-                      Navigator.pushNamed(context, 'pagetwo',arguments: {'id':id});
+                    var id = await NewrelicMobile.instance
+                        .startInteraction("Going to Page 2");
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      Navigator.pushNamed(context, 'pagetwo',
+                          arguments: {'id': id});
                     });
-                    },
+                  },
                   child: const Text('Go to page 2'),
                 ),
               ],
@@ -170,14 +182,11 @@ class Page2Screen extends StatelessWidget {
 
   var interActionId;
 
-   Page2Screen({Key? key,this.interActionId}) : super(key: key);
+  Page2Screen({Key? key, this.interActionId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute
-        .of(context)!
-        .settings
-        .arguments as Map;
+    final args = ModalRoute.of(context)!.settings.arguments as Map;
 
     NewrelicMobile.instance.endInteraction(args['id']);
 
@@ -197,7 +206,7 @@ class Page2Screen extends StatelessWidget {
               onPressed: () {
                 foo();
               },
-              child: const Text('Async Error'),
+              child: const Text('Record Error with Attributes'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -224,12 +233,13 @@ class Page2Screen extends StatelessWidget {
   }
 
   Future<void> foo() async {
+    var bar = {};
     try {
-      throw 42;
+      throw bar['name'];
     } catch (error) {
       Map<String, dynamic> attributes = {
         "error attribute": "12344",
-        "error attribute": 1234
+        "error test attribute": 1234
       };
       NewrelicMobile.instance
           .recordError(error, StackTrace.current, attributes: attributes);
@@ -255,10 +265,17 @@ class Page3Screen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               ElevatedButton(
-                onPressed: () => NewrelicMobile.instance.recordCustomEvent(
-                    "Test Custom Event",
-                    eventName: "User Purchase",
-                    eventAttributes: {"item1": "Clothes", "price": 34.00}),
+                onPressed: () {
+                  for (var i = 0; i < 10000; i++)
+                    NewrelicMobile.instance.recordCustomEvent(
+                        "Test Custom Event",
+                        eventName: "User Purchase",
+                        eventAttributes: {
+                          "item1": "Clothes",
+                          "price": 34.00,
+                          "loop test": i
+                        });
+                },
                 child: const Text('Record Custom Event'),
               ),
               ElevatedButton(
