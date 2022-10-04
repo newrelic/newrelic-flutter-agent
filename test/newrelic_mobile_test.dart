@@ -400,11 +400,70 @@ void main() {
   });
 
   test('agent should start with AppToken', () async {
-    await NewrelicMobile.instance.startAgent(appToken);
+    Config config = Config(accessToken: "test1234");
+    await NewrelicMobile.instance.startAgent(config);
 
-    final Map<String, dynamic> params = <String, String>{
-      'applicationToken': appToken,
-      'dartVersion': Platform.version
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation':true,
+      'analyticsEventEnabled':true,
+      'crashReportingEnabled':true,
+      'interactionTracingEnabled':true,
+      'networkRequestEnabled':true,
+      'networkErrorRequestEnabled':true,
+      'httpRequestBodyCaptureEnabled':true,
+      'loggingEnabled':true
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('agent should start with AppToken with network disabled', () async {
+    Config config = Config(accessToken: "test1234",networkRequestEnabled: false,networkErrorRequestEnabled: false);
+    await NewrelicMobile.instance.startAgent(config);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation':true,
+      'analyticsEventEnabled':true,
+      'crashReportingEnabled':true,
+      'interactionTracingEnabled':true,
+      'networkRequestEnabled':false,
+      'networkErrorRequestEnabled':false,
+      'httpRequestBodyCaptureEnabled':true,
+      'loggingEnabled':true
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('agent should start with AppToken with analytics disabled', () async {
+    Config config = Config(accessToken: "test1234",analyticsEventEnabled: false);
+    await NewrelicMobile.instance.startAgent(config);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation':true,
+      'analyticsEventEnabled':false,
+      'crashReportingEnabled':true,
+      'interactionTracingEnabled':true,
+      'networkRequestEnabled':true,
+      'networkErrorRequestEnabled':true,
+      'httpRequestBodyCaptureEnabled':true,
+      'loggingEnabled':true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -452,16 +511,25 @@ void main() {
   });
 
   test('test Record DebugPrint method', () {
-    NewrelicMobile.instance.startAgent(appToken);
+    Config config = Config(accessToken: appToken);
+    NewrelicMobile.instance.startAgent(config);
     debugPrint(name);
     final Map<String, dynamic> params = <String, dynamic>{
       'name': name,
       'eventAttributes': null
     };
 
-    final Map<String, dynamic> params1 = <String, String>{
-      'applicationToken': appToken,
-      'dartVersion': Platform.version
+    final Map<String, dynamic> params1 = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation':true,
+      'analyticsEventEnabled':true,
+      'crashReportingEnabled':true,
+      'interactionTracingEnabled':true,
+      'networkRequestEnabled':true,
+      'networkErrorRequestEnabled':true,
+      'httpRequestBodyCaptureEnabled':true,
+      'loggingEnabled':true
     };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -475,8 +543,8 @@ void main() {
     ]);
   });
 
-  test('test Start of Agent should also start method ', () async {
-    Config config = Config(accessToken: appToken);
+  test('test Start of Agent should also start method with logging disabled ', () async {
+    Config config = Config(accessToken: appToken,loggingEnabled: false);
 
     Function fun = () {
       print('test');
@@ -484,9 +552,17 @@ void main() {
 
     await NewrelicMobile.instance.start(config, fun);
 
-    final Map<String, dynamic> params = <String, String>{
+    final Map<String, dynamic> params = <String, dynamic>{
       'applicationToken': appToken,
-      'dartVersion': Platform.version
+      'dartVersion': Platform.version,
+      'webViewInstrumentation':true,
+      'analyticsEventEnabled':true,
+      'crashReportingEnabled':true,
+      'interactionTracingEnabled':true,
+      'networkRequestEnabled':true,
+      'networkErrorRequestEnabled':true,
+      'httpRequestBodyCaptureEnabled':true,
+      'loggingEnabled':false
     };
 
     final Map<String, String> eventParams = <String, String>{'message': 'test'};
@@ -529,9 +605,18 @@ void main() {
 
     await NewrelicMobile.instance.start(config, fun);
 
-    final Map<String, dynamic> params = <String, String>{
+    final Map<String, dynamic> params = <String, dynamic>{
       'applicationToken': appToken,
-      'dartVersion': Platform.version
+      'dartVersion': Platform.version,
+      'webViewInstrumentation':true,
+      'analyticsEventEnabled':true,
+      'crashReportingEnabled':true,
+      'interactionTracingEnabled':true,
+      'networkRequestEnabled':true,
+      'networkErrorRequestEnabled':true,
+      'httpRequestBodyCaptureEnabled':true,
+      'loggingEnabled':true
+
     };
 
     expect(

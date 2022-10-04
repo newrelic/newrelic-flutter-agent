@@ -1,21 +1,17 @@
 package com.newrelic.newrelic_mobile
 
-import android.app.Activity
-import android.content.ContentValues
 import android.content.Context
 import androidx.annotation.NonNull
 import com.newrelic.agent.android.ApplicationFramework
+import com.newrelic.agent.android.FeatureFlag
 import com.newrelic.agent.android.NewRelic
 import com.newrelic.agent.android.stats.StatsEngine
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.embedding.engine.plugins.activity.ActivityAware
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import java.lang.ref.WeakReference
-import java.util.ArrayList
+
 
 /** NewrelicMobilePlugin */
 class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
@@ -25,7 +21,6 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
     /// when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
-    private var activity: WeakReference<Activity>? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "newrelic_mobile")
@@ -42,12 +37,52 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
                 val applicationToken: String? = call.argument("applicationToken")
                 val dartVersion: String? = call.argument("dartVersion")
+                val loggingEnabled: Boolean? = call.argument("loggingEnabled")
+
+
+                if (call.argument<Boolean>("analyticsEventEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.AnalyticsEvents)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.AnalyticsEvents)
+                }
+
+                if (call.argument<Boolean>("networkRequestEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.NetworkRequests)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.NetworkRequests)
+                }
+                if (call.argument<Boolean>("networkErrorRequestEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.NetworkErrorRequests)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.NetworkErrorRequests)
+                }
+
+                if (call.argument<Boolean>("httpRequestBodyCaptureEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.HttpResponseBodyCapture)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.HttpResponseBodyCapture)
+                }
+
+                if (call.argument<Boolean>("crashReportingEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.CrashReporting)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.CrashReporting)
+                }
+
+                if (call.argument<Boolean>("interactionTracingEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.InteractionTracing)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.InteractionTracing)
+                }
+
+
+
                 NewRelic.withApplicationToken(
                     applicationToken
-                ).withApplicationFramework(ApplicationFramework.Flutter, "2.0.3").start(context)
-
+                ).withLoggingEnabled(loggingEnabled!!)
+                    .withApplicationFramework(ApplicationFramework.Flutter, "2.0.3").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.4");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.5");
                 result.success("Agent Started")
             }
             "setUserId" -> {
@@ -185,6 +220,23 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 }
                 result.success(traceAttributes);
             }
+            "setMaxEventBufferTime" -> {
+                val maxBufferTimeInSec: Int? = call.argument("maxBufferTimeInSec")
+
+                if (maxBufferTimeInSec != null) {
+                    NewRelic.setMaxEventBufferTime(maxBufferTimeInSec)
+                }
+                result.success("MaxEvent BufferTime set")
+            }
+            "setMaxEventPoolSize" -> {
+                val maxSize: Int? = call.argument("maxSize")
+
+                if (maxSize != null) {
+                    NewRelic.setMaxEventPoolSize(maxSize)
+                }
+                result.success("maxSize set")
+
+            }
             else -> {
                 result.notImplemented()
             }
@@ -208,7 +260,6 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
             null
         }
     }
-
 
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
