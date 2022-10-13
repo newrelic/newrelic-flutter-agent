@@ -1,4 +1,9 @@
 #
+#   Copyright (c) 2022-present New Relic Corporation. All rights reserved.
+#   SPDX-License-Identifier: Apache-2.0
+#
+
+#
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 # Run `pod lib lint newrelic_mobile.podspec` to validate before publishing.
 #
