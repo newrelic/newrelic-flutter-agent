@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
