@@ -8,15 +8,15 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
         let instance = SwiftNewrelicMobilePlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
-    
+
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult)  {
         let args = call.arguments as? [String : Any?]
-        
+
         switch call.method {
         case "startAgent":
             let applicationToken = args?["applicationToken"] as? String
             let dartVersion = args?["dartVersion"] as? String
-            
+
             if(args?["crashReportingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_CrashReporting)
             }
@@ -35,18 +35,18 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             if(args?["interactionTracingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_InteractionTracing)
             }
-            
+
             if(args?["loggingEnabled"] as! Bool == true) {
                 NRLogger.setLogLevels(NRLogLevelALL.rawValue)
             }
-            
-        
+
+
             NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
             NewRelic.start(withApplicationToken:applicationToken!)
                           NewRelic.setAttribute("DartVersion", value:dartVersion!)
                           NewRelic.recordMetric(withName: "Mobile/iOS/Flutter/Agent/0.0.1-dev.5", category: "Supportability", value: 1)
 
-            
+
             result("Agent Started")
         case "getPlatformVersion":
             result("iOS " + UIDevice.current.systemVersion)
@@ -57,18 +57,18 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
         case "setAttribute":
             let name = args?["name"] as? String
             let value = args?["value"]
-            
+
             let attributeIsSet = NewRelic.setAttribute(name!, value: value as Any)
             result(attributeIsSet)
         case "removeAttribute":
             let name = args?["name"] as? String
-            
+
             let attributeIsRemoved = NewRelic.removeAttribute(name!)
             result(attributeIsRemoved)
         case "recordBreadcrumb":
             let name = args!["name"] as? String
             let eventAttributes = args?["eventAttributes"] as?[String : Any]
-            
+
             let eventRecorded = NewRelic.recordBreadcrumb(name!, attributes: eventAttributes)
             result(eventRecorded)
         case "recordCustomEvent":
@@ -79,23 +79,23 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             result(eventRecorded)
         case "startInteraction":
             let actionName = args!["actionName"] as? String
-            
+
             let interactionId = NewRelic.startInteraction(withName: actionName)
             print("interactionId" + (interactionId ?? ""))
             result(interactionId)
         case "endInteraction":
             let interactionId = args!["interactionId"] as? String
-            
+
             NewRelic.stopCurrentInteraction(interactionId)
             result("interaction Ended")
         case "setMaxEventBufferTime":
             let maxBufferTimeInSec = args!["maxBufferTimeInSec"] as? UInt32
-            
+
             NewRelic.setMaxEventBufferTime(maxBufferTimeInSec ?? 60)
             result("maxBufferTimeInSec set")
         case "setMaxEventPoolSize":
             let maxSize = args!["maxSize"] as? UInt32
-            
+
             NewRelic.setMaxEventPoolSize(maxSize ?? 4000)
             result("maxSize set")
         case "recordError":
@@ -104,7 +104,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let fatal = args!["fatal"] as? Bool
             let stackTraceElements = args!["stackTraceElements"] as! [[String : Any?]]
             let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.0"
-            
+
             let attributes: [String:Any] = [
                 "name": exceptionMessage ?? "Exception name not found",
                 "reason": reason ?? "Reason not found",
@@ -114,17 +114,17 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                 "appBuild": version,
                 "appVersion": version
             ]
-            
+
             NewRelic.recordHandledException(withStackTrace: attributes)
-            
+
             result("return")
-            
+
         case "noticeDistributedTrace":
-            
+
             result(NewRelic.generateDistributedTracingHeaders())
-            
+
         case "noticeHttpTransaction":
-            
+
             let url = args!["url"] as! String
             let httpMethod = args!["httpMethod"] as! String
             let statusCode = args!["statusCode"] as! Int
@@ -134,21 +134,21 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let bytesReceived = args!["bytesReceived"] as! NSNumber
             let responseBody = args!["responseBody"] as! NSString
             let traceHeaders = args?["traceAttributes"] as! [String : Any]
-            
+
             NewRelic.noticeNetworkRequest(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), responseHeaders: nil, statusCode: statusCode, bytesSent: UInt(truncating: bytesSent), bytesReceived: UInt(truncating: bytesReceived), responseData: responseBody.data(using: String.Encoding.utf8.rawValue), traceHeaders: traceHeaders, andParams: nil)
             result(true)
-            
+
         default:
             result(FlutterMethodNotImplemented)
-            
-            
-            
+
+
+
         }
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
     }
 }
