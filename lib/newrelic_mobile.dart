@@ -29,9 +29,10 @@ class NewrelicMobile {
     runZonedGuarded(() async {
       WidgetsFlutterBinding.ensureInitialized();
       FlutterError.onError = NewrelicMobile.onError;
-      await NewrelicMobile.instance.startAgent(config.accessToken);
+      await NewrelicMobile.instance.startAgent(config);
       runApp();
-      await NewrelicMobile.instance.setAttribute("Flutter Agent Version", "0.0.1-dev.4");
+      await NewrelicMobile.instance
+          .setAttribute("Flutter Agent Version", "0.0.1-dev.5");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
@@ -91,10 +92,18 @@ class NewrelicMobile {
     };
   }
 
-  Future<void> startAgent(String applicationToken) async {
-    final Map<String, dynamic> params = <String, String>{
-      'applicationToken': applicationToken,
-      'dartVersion': Platform.version
+  Future<void> startAgent(Config config) async {
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation': config.webViewInstrumentation,
+      'analyticsEventEnabled': config.analyticsEventEnabled,
+      'crashReportingEnabled': config.crashReportingEnabled,
+      'interactionTracingEnabled': config.interactionTracingEnabled,
+      'networkRequestEnabled': config.networkRequestEnabled,
+      'networkErrorRequestEnabled': config.networkErrorRequestEnabled,
+      'httpRequestBodyCaptureEnabled': config.httpRequestBodyCaptureEnabled,
+      'loggingEnabled': config.loggingEnabled
     };
 
     redirectDebugPrint();
@@ -176,6 +185,20 @@ class NewrelicMobile {
     } else {
       return;
     }
+  }
+
+  Future<void> setMaxEventPoolSize(int maxSize) async {
+    final Map<String, int> params = <String, int>{'maxSize': maxSize};
+    await _channel.invokeMethod('setMaxEventPoolSize', params);
+    return;
+  }
+
+  Future<void> setMaxEventBufferTime(int maxBufferTimeInSec) async {
+    final Map<String, int> params = <String, int>{
+      'maxBufferTimeInSec': maxBufferTimeInSec
+    };
+    await _channel.invokeMethod('setMaxEventBufferTime', params);
+    return;
   }
 
   void endInteraction(String interactionId) async {

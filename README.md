@@ -61,7 +61,33 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
   }
 
   Config config =
-      Config(accessToken: appToken);
+      Config(accessToken: appToken,
+
+      //Android Specific
+      // Optional:Enable or disable collection of event data.
+      analyticsEventEnabled: true,
+
+      // Optional:Enable or disable reporting successful HTTP requests to the MobileRequest event type.
+      networkErrorRequestEnabled: true,
+
+      // Optional:Enable or disable reporting network and HTTP request errors to the MobileRequestError event type.
+      networkRequestEnabled: true,
+
+      // Optional:Enable or disable crash reporting.
+      crashReportingEnabled: true,
+
+      // Optional:Enable or disable interaction tracing. Trace instrumentation still occurs, but no traces are harvested. This will disable default and custom interactions.
+      interactionTracingEnabled: true,
+
+      // Optional:Enable or disable capture of HTTP response bodies for HTTP error traces, and MobileRequestError events.
+      httpRequestBodyCaptureEnabled: true,
+
+      // Optional: Enable or disable agent logging.
+      loggingEnabled: true,
+
+      //iOS Specific
+      // Optional:Enable/Disable automatic instrumentation of WebViews
+      webViewInstrumentation: true));
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
@@ -166,12 +192,12 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
   
   ```
 
-### [setAttribute](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-attribute)(name: string, value: boolean | number | string): void;
+### [setAttribute] (https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/ios-sdk-api)(name: string, value: boolean | number | string): void;
 
 > Creates a session-level attribute shared by multiple mobile event types. Overwrites its previous value and type each time it is called.
 
   ```
-     NewrelicMobile.instance.setAttribute('RNCustomAttrNumber', 37);
+      NewrelicMobile.instance.setAttribute('RNCustomAttrNumber', 37);
   ```
 
 ### [setUserId](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-user-id)(userId: string): void;
@@ -179,7 +205,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > Set a custom user identifier value to associate user sessions with analytics events and attributes.
 
   ```
-     NewrelicMobile.instance.setUserId("RN12934");
+      NewrelicMobile.instance.setUserId("RN12934");
   ```
 
 ### [recordBreadcrumb](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordbreadcrumb)(name: string, attributes?: {[key: string]: boolean | number | string}): void;
@@ -187,7 +213,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > Track app activity/screen that may be helpful for troubleshooting crashes.
 
   ``` dart
-    NewrelicMobile.instance.recordBreadcrumb("Button Got Pressed on Screen 3"),
+      NewrelicMobile.instance.recordBreadcrumb("Button Got Pressed on Screen 3"),
   ```
 
 ### [recordCustomEvent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordcustomevent-android-sdk-api)(eventType: string, eventName?: string, attributes?: {[key: string]: boolean | number | string}): void;
@@ -195,18 +221,34 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > Creates and records a custom event for use in New Relic Insights.
 
   ``` dart
-    NewrelicMobile.instance.recordCustomEvent("Major",eventName: "User Purchase",eventAttributes: {"item1":"Clothes","price":34.00}),
+      NewrelicMobile.instance.recordCustomEvent("Major",eventName: "User Purchase",eventAttributes: {"item1":"Clothes","price":34.00}),
             child: const Text('Record Custom Event'),
   ```
+### [setMaxEventBufferTime](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-max-event-buffer-time)(maxBufferTimeInSec : int): void;
+
+> Sets the event harvest cycle length.
+
+  ``` dart
+      NewrelicMobile.instance.setMaxEventBufferTime(200);
+  ```
+### [setMaxEventPoolSize](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-max-event-pool-size)(maxSize : int): void;
+
+> Sets the maximum size of the event pool.
+
+  ``` dart
+      NewrelicMobile.instance.setMaxEventPoolSize(10000);
+  ```
+
 
 ## Manual Error reporting
 
-You can register non fatal exceptions using the following method:
+You can register non fatal exceptions using the following method with Custom Attributes:
 
 ```dart
 try {
   some_code_that_throws_error();
 } catch (ex) {
-  NewrelicMobile.instance.recordError(error, StackTrace.current);
+NewrelicMobile.instance
+        .recordError(error, StackTrace.current, attributes: attributes);
 }
 ```
