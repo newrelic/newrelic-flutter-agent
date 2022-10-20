@@ -94,16 +94,16 @@ class NewrelicMobile {
 
   Future<void> startAgent(Config config) async {
     final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken':  config.accessToken,
+      'applicationToken': config.accessToken,
       'dartVersion': Platform.version,
-      'webViewInstrumentation':config.webViewInstrumentation,
-      'analyticsEventEnabled':config.analyticsEventEnabled,
-      'crashReportingEnabled':config.crashReportingEnabled,
-      'interactionTracingEnabled':config.interactionTracingEnabled,
-      'networkRequestEnabled':config.networkRequestEnabled,
-      'networkErrorRequestEnabled':config.networkErrorRequestEnabled,
-      'httpRequestBodyCaptureEnabled':config.httpRequestBodyCaptureEnabled,
-      'loggingEnabled':config.loggingEnabled
+      'webViewInstrumentation': config.webViewInstrumentation,
+      'analyticsEventEnabled': config.analyticsEventEnabled,
+      'crashReportingEnabled': config.crashReportingEnabled,
+      'interactionTracingEnabled': config.interactionTracingEnabled,
+      'networkRequestEnabled': config.networkRequestEnabled,
+      'networkErrorRequestEnabled': config.networkErrorRequestEnabled,
+      'httpRequestBodyCaptureEnabled': config.httpRequestBodyCaptureEnabled,
+      'loggingEnabled': config.loggingEnabled
     };
 
     redirectDebugPrint();
