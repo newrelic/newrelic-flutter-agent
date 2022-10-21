@@ -38,7 +38,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 0.0.1-dev.4
+  newrelic_mobile: 0.0.1-dev.5
   
 ```
 
@@ -137,7 +137,7 @@ MaterialApp(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.8.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.9.0"
       }
     }
   ```
