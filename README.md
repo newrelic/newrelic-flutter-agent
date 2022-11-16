@@ -125,6 +125,26 @@ MaterialApp(
 
 ```
 
+## GoRouter Instrumentation
+When using the go_router[https://pub.dev/packages/go_router] library, the automatic routing instrumentation can be enabled by adding an instance of NewRelicNavigationObserver to your application's GoRouter.observers:
+
+``` dart
+
+//....
+
+import 'package:go_router/go_router.dart';
+import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
+
+
+final router = GoRouter(
+  routes: ...,
+    observers: [NewRelicNavigationObserver()],
+);
+
+
+```
+
+
 ### Android Setup
 
 1. Add the following changes to android/build.gradle:
