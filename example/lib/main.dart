@@ -28,7 +28,7 @@ void main() {
   }
 
   Config config = Config(
-      accessToken: appToken,
+      accessToken: "AA080388ded4f38a1e32dadf9c2cf2695b7e161081-NRMA",
       analyticsEventEnabled: true,
       networkErrorRequestEnabled: true,
       networkRequestEnabled: true,
@@ -41,7 +41,7 @@ void main() {
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
   });
-  NewrelicMobile.instance.setMaxEventPoolSize(10000);
+  NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
 }
 
@@ -271,7 +271,7 @@ class Page3Screen extends StatelessWidget {
             children: <Widget>[
               ElevatedButton(
                 onPressed: () {
-                  for (var i = 0; i < 10000; i++)
+                  for (var i = 0; i < 100; i++)
                     NewrelicMobile.instance.recordCustomEvent(
                         "Test Custom Event",
                         eventName: "User Purchase",
