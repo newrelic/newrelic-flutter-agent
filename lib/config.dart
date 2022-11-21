@@ -13,6 +13,7 @@ class Config {
   final bool httpRequestBodyCaptureEnabled;
   final bool loggingEnabled;
   final bool webViewInstrumentation;
+  final bool printStatementAsEventsEnabled;
 
   Config(
       {required this.accessToken,
@@ -23,5 +24,6 @@ class Config {
       this.loggingEnabled = true,
       this.networkErrorRequestEnabled = true,
       this.networkRequestEnabled = true,
-      this.webViewInstrumentation = true});
+      this.webViewInstrumentation = true,
+      this.printStatementAsEventsEnabled = true});
 }

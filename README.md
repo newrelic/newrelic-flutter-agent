@@ -17,7 +17,7 @@ our Limited Preview, contact Support or your account representative.
 * Capture interactions and the sequence in which they were created
 * Pass user information to New Relic to track user sessions
 * Screen tracking via NavigationObserver
-* Capture print statement as CustomEvents
+* Capture print and debug print statement as CustomEvents
 
 ## Current Support:
 
@@ -88,7 +88,12 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
 
       //iOS Specific
       // Optional:Enable/Disable automatic instrumentation of WebViews
-      webViewInstrumentation: true));
+      webViewInstrumentation: true,
+      
+      //Optional: Enable or Disable Print Statements as Analytics Events
+      printStatementAsEventsEnabled : true
+      
+      );
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
@@ -273,3 +278,13 @@ NewrelicMobile.instance
         .recordError(error, StackTrace.current, attributes: attributes);
 }
 ```
+
+## Troubleshoot
+
+No Http data appears:
+
+Problem
+After installing the Flutter agent and waiting at least 5 minutes, no http data appears in New Relic UI.
+
+Solution
+If no http data appears after you wait at least five minutes, check you are not overriding HttpOverrides.global inside your flutter app.  

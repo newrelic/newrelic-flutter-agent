@@ -520,12 +520,13 @@ void main() {
   });
 
   test('test Record DebugPrint method', () {
-    Config config = Config(accessToken: appToken);
+    Config config = Config(accessToken: appToken,printStatementAsEventsEnabled: false);
     NewrelicMobile.instance.startAgent(config);
     debugPrint(name);
     final Map<String, dynamic> params = <String, dynamic>{
-      'name': name,
-      'eventAttributes': null
+      'eventType': 'Mobile Dart Console Events',
+      'eventName':'',
+      'eventAttributes': {'message': test}
     };
 
     final Map<String, dynamic> params1 = <String, dynamic>{
@@ -538,20 +539,25 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpRequestBodyCaptureEnabled': true,
-      'loggingEnabled': true
-    };
+      'loggingEnabled': true};
+
+
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'startAgent',
         arguments: params1,
-      ),
-      isMethodCall(
-        'recordBreadcrumb',
-        arguments: params,
       )
     ]);
   });
 
+  test('test Record DebugPrint method as Custom Events', () {
+    Config config = Config(
+        accessToken: appToken, printStatementAsEventsEnabled: true);
+    NewrelicMobile.instance.startAgent(config);
+    debugPrint(name);
+    expect(methodCalLogs[1].method, 'recordCustomEvent');
+  }
+  );
   test('test Start of Agent should also start method with logging disabled ',
       () async {
     Config config = Config(accessToken: appToken, loggingEnabled: false);
@@ -603,6 +609,48 @@ void main() {
       )
     ]);
   });
+
+  test('test Start of Agent should also start method with print statement as custom Events disabled ',
+          () async {
+        Config config = Config(accessToken: appToken,printStatementAsEventsEnabled: false);
+
+        Function fun = () {
+          print('test');
+        };
+
+        await NewrelicMobile.instance.start(config, fun);
+
+        final Map<String, dynamic> params = <String, dynamic>{
+          'applicationToken': appToken,
+          'dartVersion': Platform.version,
+          'webViewInstrumentation': true,
+          'analyticsEventEnabled': true,
+          'crashReportingEnabled': true,
+          'interactionTracingEnabled': true,
+          'networkRequestEnabled': true,
+          'networkErrorRequestEnabled': true,
+          'httpRequestBodyCaptureEnabled': true,
+          'loggingEnabled': true
+        };
+
+        final Map<String, String> eventParams = <String, String>{'message': 'test'};
+
+        final Map<String, dynamic> attributeParams = <String, dynamic>{
+          'name': 'Flutter Agent Version',
+          'value': '0.0.1-dev.5',
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'startAgent',
+            arguments: params,
+          ),
+          isMethodCall(
+            'setAttribute',
+            arguments: attributeParams,
+          )
+        ]);
+      });
 
   test(
       'test Start of Agent should also start method and also record error if run app throw error ',
