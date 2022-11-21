@@ -36,7 +36,9 @@ void main() {
       interactionTracingEnabled: true,
       httpRequestBodyCaptureEnabled: true,
       loggingEnabled: true,
-      webViewInstrumentation: true);
+      webViewInstrumentation: true,
+      printStatementAsEventsEnabled:true
+   );
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());

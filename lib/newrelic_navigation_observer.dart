@@ -18,9 +18,9 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
 
         var goPreviousRoute = previousRoute.settings as MaterialPage;
 
-        _addGoRouterBreadcrumb('didReplace', goPreviousRoute, goRoute);
+        _addGoRouterBreadcrumb('didPop', goPreviousRoute, goRoute);
       } else {
-        _addBreadcrumb('didReplace', previousRoute.settings, route.settings);
+        _addBreadcrumb('didPop', previousRoute.settings, route.settings);
       }
     }
   }
