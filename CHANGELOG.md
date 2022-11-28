@@ -1,3 +1,7 @@
+## 0.0.1-dev.6
+
+Feat: Update Native SDKs to their latest versions
+
 ## 0.0.1-dev.5
 
 Added support for Native Agent's Features Configuration.

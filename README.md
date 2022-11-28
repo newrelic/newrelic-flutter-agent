@@ -1,3 +1,4 @@
+[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 # New Relic Flutter Agent
 
 This agent allows you to instrument Flutter apps with help of native New Relic Android and iOS
@@ -38,7 +39,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 0.0.1-dev.4
+  newrelic_mobile: 0.0.1-dev.6
   
 ```
 
@@ -137,7 +138,7 @@ MaterialApp(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.8.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.9.0"
       }
     }
   ```

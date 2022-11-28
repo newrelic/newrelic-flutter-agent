@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #import "NewrelicMobilePlugin.h"
 #if __has_include(<newrelic_mobile/newrelic_mobile-Swift.h>)
 #import <newrelic_mobile/newrelic_mobile-Swift.h>
