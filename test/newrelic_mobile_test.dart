@@ -542,12 +542,13 @@ void main() {
       'loggingEnabled': true};
 
 
-    expect(methodCalLogs, <Matcher>[
+    expect(methodCalLogs[0],
       isMethodCall(
         'startAgent',
         arguments: params1,
-      )
-    ]);
+      ),
+    );
+
   });
 
   test('test Record DebugPrint method as Custom Events', () {
@@ -591,7 +592,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '0.0.1-dev.5',
+      'value': '0.0.1-dev.7',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -637,7 +638,7 @@ void main() {
 
         final Map<String, dynamic> attributeParams = <String, dynamic>{
           'name': 'Flutter Agent Version',
-          'value': '0.0.1-dev.5',
+          'value': '0.0.1-dev.7',
         };
 
         expect(methodCalLogs, <Matcher>[
