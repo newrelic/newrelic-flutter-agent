@@ -28,7 +28,7 @@ void main() {
   }
 
   Config config = Config(
-      accessToken: "AA080388ded4f38a1e32dadf9c2cf2695b7e161081-NRMA",
+      accessToken: appToken,
       analyticsEventEnabled: true,
       networkErrorRequestEnabled: true,
       networkRequestEnabled: true,
