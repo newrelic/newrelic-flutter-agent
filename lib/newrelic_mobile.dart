@@ -37,12 +37,14 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "0.0.1-dev.5");
+          .setAttribute("Flutter Agent Version", "0.0.1-dev.7");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
-      recordCustomEvent("Mobile Dart Console Events",
-          eventAttributes: {"message": line});
+      if(config.printStatementAsEventsEnabled) {
+        recordCustomEvent("Mobile Dart Console Events",
+            eventAttributes: {"message": line});
+      }
       parent.print(zone, line);
     }));
   }
@@ -91,8 +93,9 @@ class NewrelicMobile {
     _originalDebugPrint = debugPrint;
     debugPrint = (String? message, {int? wrapWidth}) {
       if (_originalDebugPrint != null) {
-        NewrelicMobile.instance.recordBreadcrumb(message!);
-        _originalDebugPrint!(message, wrapWidth: wrapWidth);
+          recordCustomEvent("Mobile Dart Console Events",
+              eventAttributes: {"message": message});
+           _originalDebugPrint!(message, wrapWidth: wrapWidth);
       }
     };
   }
@@ -111,7 +114,9 @@ class NewrelicMobile {
       'loggingEnabled': config.loggingEnabled
     };
 
-    redirectDebugPrint();
+    if(config.printStatementAsEventsEnabled) {
+      redirectDebugPrint();
+    }
     HttpOverrides.global =
         NewRelicHttpOverrides(current: HttpOverrides.current);
     await _channel.invokeMethod('startAgent', params);

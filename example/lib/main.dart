@@ -36,12 +36,14 @@ void main() {
       interactionTracingEnabled: true,
       httpRequestBodyCaptureEnabled: true,
       loggingEnabled: true,
-      webViewInstrumentation: true);
+      webViewInstrumentation: true,
+      printStatementAsEventsEnabled:true
+   );
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
   });
-  NewrelicMobile.instance.setMaxEventPoolSize(10000);
+  NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
 }
 
@@ -271,7 +273,7 @@ class Page3Screen extends StatelessWidget {
             children: <Widget>[
               ElevatedButton(
                 onPressed: () {
-                  for (var i = 0; i < 10000; i++)
+                  for (var i = 0; i < 100; i++)
                     NewrelicMobile.instance.recordCustomEvent(
                         "Test Custom Event",
                         eventName: "User Purchase",

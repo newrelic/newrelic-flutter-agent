@@ -8,9 +8,11 @@ import 'package:newrelic_mobile/config.dart';
 
 void main() {
   const accessToken = "12345678";
+  const printStatementAsEvents =  false;
 
   test("Test Config Create", () {
-    var config = Config(accessToken: accessToken);
+    var config = Config(accessToken: accessToken,printStatementAsEventsEnabled: false);
     expect(accessToken, config.accessToken);
+    expect(printStatementAsEvents, config.printStatementAsEventsEnabled);
   });
 }

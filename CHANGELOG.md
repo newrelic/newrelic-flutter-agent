@@ -1,3 +1,8 @@
+## 0.0.1-dev.7
+
+Feat: Added Instrumentation for Go Router Package
+Feat: Added Flag to disable Print Statement as Analytics Events.
+
 ## 0.0.1-dev.6
 
 Feat: Update Native SDKs to their latest versions

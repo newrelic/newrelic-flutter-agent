@@ -17,7 +17,7 @@ our Limited Preview, contact Support or your account representative.
 * Capture interactions and the sequence in which they were created
 * Pass user information to New Relic to track user sessions
 * Screen tracking via NavigationObserver
-* Capture print statement as CustomEvents
+* Capture print and debug print statement as CustomEvents
 
 ## Current Support:
 
@@ -39,7 +39,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 0.0.1-dev.6
+  newrelic_mobile: 0.0.1-dev.7
   
 ```
 
@@ -88,7 +88,12 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
 
       //iOS Specific
       // Optional:Enable/Disable automatic instrumentation of WebViews
-      webViewInstrumentation: true));
+      webViewInstrumentation: true,
+      
+      //Optional: Enable or Disable Print Statements as Analytics Events
+      printStatementAsEventsEnabled : true
+      
+      );
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
@@ -124,6 +129,26 @@ MaterialApp(
 
 
 ```
+
+## GoRouter Instrumentation
+When using the go_router[https://pub.dev/packages/go_router] library, the automatic routing instrumentation can be enabled by adding an instance of NewRelicNavigationObserver to your application's GoRouter.observers:
+
+``` dart
+
+//....
+
+import 'package:go_router/go_router.dart';
+import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
+
+
+final router = GoRouter(
+  routes: ...,
+    observers: [NewRelicNavigationObserver()],
+);
+
+
+```
+
 
 ### Android Setup
 
@@ -253,3 +278,13 @@ NewrelicMobile.instance
         .recordError(error, StackTrace.current, attributes: attributes);
 }
 ```
+
+## Troubleshoot
+
+No Http data appears:
+
+Problem
+After installing the Flutter agent and waiting at least 5 minutes, no http data appears in New Relic UI.
+
+Solution
+If no http data appears after you wait at least five minutes, check you are not overriding HttpOverrides.global inside your flutter app.  
