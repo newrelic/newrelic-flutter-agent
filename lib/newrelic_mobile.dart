@@ -40,6 +40,9 @@ class NewrelicMobile {
           .setAttribute("Flutter Agent Version", "0.0.1-dev.8");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
+      if (kDebugMode) {
+        print('$error \n $stackTrace');
+      }
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
       if (config.printStatementAsEventsEnabled) {
         recordCustomEvent("Mobile Dart Console Events",

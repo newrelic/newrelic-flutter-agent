@@ -42,7 +42,6 @@ void main() {
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
-    print("my app is running");
   });
   NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);

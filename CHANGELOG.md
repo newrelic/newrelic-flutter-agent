@@ -1,3 +1,7 @@
+## 0.0.1-dev.8
+
+Bug fixes and Update Native Android SDK version
+
 ## 0.0.1-dev.7
 
 Feat: Added Instrumentation for Go Router Package
