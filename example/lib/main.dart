@@ -37,11 +37,11 @@ void main() {
       httpRequestBodyCaptureEnabled: true,
       loggingEnabled: true,
       webViewInstrumentation: true,
-      printStatementAsEventsEnabled:true
-   );
+      printStatementAsEventsEnabled: true);
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
+    print("my app is running");
   });
   NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
@@ -375,9 +375,6 @@ class ComputeService {
 
   Person deserializeJson(String data) {
     throw new Error();
-
-    Map<String, dynamic> dataMap = jsonDecode(data);
-    return Person(dataMap["name"]);
   }
 }
 
@@ -406,11 +403,7 @@ class SpawnService {
     var dio = Dio();
     var response = await dio.get('https://reqres.in/api/users?delay=15');
     print(response);
-    SendPort sendPort = values[0];
-    String data = values[1];
-    Map<String, dynamic> dataMap = jsonDecode(data);
     throw new Exception("this is isplation error");
-    sendPort.send(Person(dataMap["name"]));
   }
 }
 

@@ -41,7 +41,7 @@ class NewrelicMobile {
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
-      if(config.printStatementAsEventsEnabled) {
+      if (config.printStatementAsEventsEnabled) {
         recordCustomEvent("Mobile Dart Console Events",
             eventAttributes: {"message": line});
       }
@@ -93,9 +93,9 @@ class NewrelicMobile {
     _originalDebugPrint = debugPrint;
     debugPrint = (String? message, {int? wrapWidth}) {
       if (_originalDebugPrint != null) {
-          recordCustomEvent("Mobile Dart Console Events",
-              eventAttributes: {"message": message});
-           _originalDebugPrint!(message, wrapWidth: wrapWidth);
+        recordCustomEvent("Mobile Dart Console Events",
+            eventAttributes: {"message": message});
+        _originalDebugPrint!(message, wrapWidth: wrapWidth);
       }
     };
   }
@@ -114,7 +114,7 @@ class NewrelicMobile {
       'loggingEnabled': config.loggingEnabled
     };
 
-    if(config.printStatementAsEventsEnabled) {
+    if (config.printStatementAsEventsEnabled) {
       redirectDebugPrint();
     }
     HttpOverrides.global =
