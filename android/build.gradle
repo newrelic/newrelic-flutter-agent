@@ -1,15 +1,13 @@
+package android
+
 group 'com.newrelic.newrelic_mobile'
 version '1.0-SNAPSHOT'
 
 buildscript {
     ext.kotlin_version = '1.7.10'
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
-        maven {
-            url "https://oss.sonatype.org/content/repositories/comnewrelic-2557"
-        }
     }
 
     dependencies {
@@ -20,7 +18,6 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
     }
