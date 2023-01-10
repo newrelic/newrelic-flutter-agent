@@ -81,7 +81,7 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
       interactionTracingEnabled: true,
 
       // Optional:Enable or disable capture of HTTP response bodies for HTTP error traces, and MobileRequestError events.
-      httpRequestBodyCaptureEnabled: true,
+       httpResponseBodyCaptureEnabled: true,
 
       // Optional: Enable or disable agent logging.
       loggingEnabled: true,

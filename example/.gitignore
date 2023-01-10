@@ -44,3 +44,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+lib/app_config.dart
+android/app/src/main/res/xml/network_security_config.xml

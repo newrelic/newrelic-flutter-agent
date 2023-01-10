@@ -7,6 +7,6 @@
     </debug-overrides>
 
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.193</domain>
+        <domain includeSubdomains="true">10.0.0.14</domain>
     </domain-config>
 </network-security-config>
