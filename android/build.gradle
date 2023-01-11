@@ -1,5 +1,3 @@
-package android
-
 group 'com.newrelic.newrelic_mobile'
 version '1.0-SNAPSHOT'
 
