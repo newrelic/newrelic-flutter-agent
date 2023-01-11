@@ -10,7 +10,7 @@ class Config {
   final bool interactionTracingEnabled;
   final bool networkRequestEnabled;
   final bool networkErrorRequestEnabled;
-  final bool httpRequestBodyCaptureEnabled;
+  final bool httpResponseBodyCaptureEnabled;
   final bool loggingEnabled;
   final bool webViewInstrumentation;
   final bool printStatementAsEventsEnabled;
@@ -19,7 +19,7 @@ class Config {
       {required this.accessToken,
       this.analyticsEventEnabled = true,
       this.crashReportingEnabled = true,
-      this.httpRequestBodyCaptureEnabled = true,
+      this.httpResponseBodyCaptureEnabled = true,
       this.interactionTracingEnabled = true,
       this.loggingEnabled = true,
       this.networkErrorRequestEnabled = true,

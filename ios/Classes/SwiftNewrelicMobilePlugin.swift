@@ -31,7 +31,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             if(args?["networkErrorRequestEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_RequestErrorEvents)
             }
-            if(args?["httpRequestBodyCaptureEnabled"] as! Bool == false) {
+            if(args?["httpResponseBodyCaptureEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_HttpResponseBodyCapture)
             }
             if(args?["webViewInstrumentation"] as! Bool == false) {
@@ -107,7 +107,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let exceptionMessage = args!["exception"] as? String
             let reason = args!["reason"] as? String
             let fatal = args!["fatal"] as? Bool
-            let stackTraceElements = args!["stackTraceElements"] as! [[String : Any?]]
+            let stackTraceElements = args!["stackTraceElements"] as? [[String : Any]] ?? [[String : Any]]()
             let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.0"
 
             let attributes: [String:Any] = [

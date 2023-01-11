@@ -62,7 +62,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.disableFeature(FeatureFlag.NetworkErrorRequests)
                 }
 
-                if (call.argument<Boolean>("httpRequestBodyCaptureEnabled") as Boolean) {
+                if (call.argument<Boolean>("httpResponseBodyCaptureEnabled") as Boolean) {
                     NewRelic.enableFeature(FeatureFlag.HttpResponseBodyCapture)
                 } else {
                     NewRelic.disableFeature(FeatureFlag.HttpResponseBodyCapture)
@@ -80,14 +80,15 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.disableFeature(FeatureFlag.InteractionTracing)
                 }
 
-
+                NewRelic.enableFeature(FeatureFlag.NativeReporting);
 
                 NewRelic.withApplicationToken(
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!)
-                    .withApplicationFramework(ApplicationFramework.Flutter, "2.0.3").start(context)
+                    .withLogLevel(5)
+                    .withApplicationFramework(ApplicationFramework.Flutter, "3.0.0").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.7");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.8");
                 result.success("Agent Started")
             }
             "setUserId" -> {

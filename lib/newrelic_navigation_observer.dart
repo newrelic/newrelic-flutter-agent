@@ -85,7 +85,7 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
       'from': fromRoute?.child != null
           ? ((fromRoute?.child.toString())! + '(' + fromKey! + ')')
           : '/',
-      'to': (toRoute?.child.toString())! + '(' + toKey! + ')' ?? '/'
+      'to': (toRoute?.child.toString())! + '(' + toKey! + ')'
     };
     NewrelicMobile.instance
         .recordBreadcrumb(breadCrumbName, eventAttributes: attributes);

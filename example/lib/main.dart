@@ -17,14 +17,15 @@ import 'package:http/http.dart' as http;
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
+import 'package:newrelic_mobile_example/app_config.dart';
 
 void main() {
   var appToken = "";
 
   if (Platform.isAndroid) {
-    appToken = "<android app token>";
+    appToken = AppConfig.androidToken;
   } else if (Platform.isIOS) {
-    appToken = "<ios app token>";
+    appToken = AppConfig.iOSToken;
   }
 
   Config config = Config(
@@ -34,11 +35,10 @@ void main() {
       networkRequestEnabled: true,
       crashReportingEnabled: true,
       interactionTracingEnabled: true,
-      httpRequestBodyCaptureEnabled: true,
+      httpResponseBodyCaptureEnabled: true,
       loggingEnabled: true,
       webViewInstrumentation: true,
-      printStatementAsEventsEnabled:true
-   );
+      printStatementAsEventsEnabled: true);
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
@@ -221,6 +221,14 @@ class Page2Screen extends StatelessWidget {
               },
               child: const Text('State Error'),
             ),
+            Row(
+              children: [
+                Text(
+                  "ErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorError",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                )
+              ],
+            ),
             ElevatedButton(
               onPressed: () {
                 print("test");
@@ -375,9 +383,6 @@ class ComputeService {
 
   Person deserializeJson(String data) {
     throw new Error();
-
-    Map<String, dynamic> dataMap = jsonDecode(data);
-    return Person(dataMap["name"]);
   }
 }
 
@@ -406,11 +411,7 @@ class SpawnService {
     var dio = Dio();
     var response = await dio.get('https://reqres.in/api/users?delay=15');
     print(response);
-    SendPort sendPort = values[0];
-    String data = values[1];
-    Map<String, dynamic> dataMap = jsonDecode(data);
     throw new Exception("this is isplation error");
-    sendPort.send(Person(dataMap["name"]));
   }
 }
 
