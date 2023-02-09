@@ -15,9 +15,23 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:newrelic_mobile_example/app_config.dart';
+
+const String readCounters = """
+   query (\$id: Int) { # Define which variables will be used in the query (id)
+  Media (id: \$id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+    id
+    title {
+      romaji
+      english
+      native
+    }
+  }
+}
+""";
 
 void main() {
   var appToken = "";
@@ -38,7 +52,8 @@ void main() {
       httpResponseBodyCaptureEnabled: true,
       loggingEnabled: true,
       webViewInstrumentation: true,
-      printStatementAsEventsEnabled: true);
+      printStatementAsEventsEnabled: true,
+      httpInstrumentationEnabled: true);
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
@@ -105,11 +120,17 @@ class Page1Screen extends StatelessWidget {
                         maxLines: 1, textDirection: TextDirection.ltr)),
                 ElevatedButton(
                     onPressed: () async {
-                      var url = Uri.parse(
-                          'https://754e-2600-1700-1118-20d0-b1f5-5075-cd0-e03a.ngrok.io/hello-world');
-                      var response = await http.get(url);
-                      print('Response status: ${response.statusCode}');
-                      print('Response body: ${response.body}');
+                      final client = HttpClient();
+                      var uri = Uri.parse("http://graph.facebook.com/");
+                      var request = await client.getUrl(uri);
+                      request.followRedirects = false;
+                      var response = await request.close();
+
+                      // var url = Uri.parse(
+                      //     'http://graph.facebook.com/');
+                      // var response = await http.get(url);
+                      // print('Response status: ${await response.stream.bytesToString()}');
+                      print('Response body: ${response.statusCode}');
                     },
                     child: const Text('Http Library ',
                         maxLines: 1, textDirection: TextDirection.ltr)),
@@ -117,8 +138,9 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       try {
                         var dio = Dio();
-                        var response = await dio
-                            .get('https://reactnative.dev/movies.json');
+                        dio.options.followRedirects = false;
+                        var response =
+                            await dio.get('http://graph.facebook.com/');
                         print(response);
                       } catch (e) {
                         print(e);
@@ -141,6 +163,17 @@ class Page1Screen extends StatelessWidget {
                         maxLines: 1, textDirection: TextDirection.ltr)),
                 ElevatedButton(
                     onPressed: () async {
+                      NewrelicMobile.instance.noticeNetworkFailure(
+                          "https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage",
+                          "GET",
+                          1000,
+                          2000,
+                          NetworkFailure.dnsLookupFailed);
+                    },
+                    child: const Text('NetWork Failure',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                ElevatedButton(
+                    onPressed: () async {
                       try {
                         var dio = Dio();
                         var response = await dio.post(
@@ -154,8 +187,9 @@ class Page1Screen extends StatelessWidget {
                     child: const Text('Http Dio Post Library ',
                         maxLines: 1, textDirection: TextDirection.ltr)),
                 Query(
-                    options: QueryOptions(document: gql(rickCharacters)),
+                    options: QueryOptions(document: gql(readCounters)),
                     builder: (result, {fetchMore, refetch}) {
+                      print(result.data.toString());
                       // If stements here to check handle different states;
                       if (result.isLoading) {
                         return const Center(
@@ -415,8 +449,7 @@ class SpawnService {
   }
 }
 
-final HttpLink rickAndMortyHttpLink =
-    HttpLink('https://countries.trevorblades.com/');
+final HttpLink rickAndMortyHttpLink = HttpLink('https://graphql.anilist.co');
 ValueNotifier<GraphQLClient> client = ValueNotifier(
   GraphQLClient(
     link: rickAndMortyHttpLink,
