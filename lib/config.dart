@@ -14,6 +14,7 @@ class Config {
   final bool loggingEnabled;
   final bool webViewInstrumentation;
   final bool printStatementAsEventsEnabled;
+  final bool httpInstrumentationEnabled;
 
   Config(
       {required this.accessToken,
@@ -25,5 +26,6 @@ class Config {
       this.networkErrorRequestEnabled = true,
       this.networkRequestEnabled = true,
       this.webViewInstrumentation = true,
-      this.printStatementAsEventsEnabled = true});
+      this.printStatementAsEventsEnabled = true,
+      this.httpInstrumentationEnabled = true});
 }

@@ -39,13 +39,13 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 0.0.1-dev.7
+  newrelic_mobile: 0.0.1-dev.9
   
 ```
 
 ## Flutter Setup
 
-Now open your `main.dart` and add the following code to launch NewRelic (don't forget to put proper
+1. Now open your `main.dart` and add the following code to launch NewRelic (don't forget to put proper
 application tokens):
 
 ```dart
@@ -91,8 +91,10 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
       webViewInstrumentation: true,
       
       //Optional: Enable or Disable Print Statements as Analytics Events
-      printStatementAsEventsEnabled : true
-      
+      printStatementAsEventsEnabled : true,
+
+       // Optional:Enable/Disable automatic instrumentation of Http Request
+      httpInstrumentationEnabled:true
       );
 
   NewrelicMobile.instance.start(config, () {
@@ -102,6 +104,42 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
   class MyApp extends StatelessWidget {
   ....
 
+
+```
+2. Alternatively, you can manually set up error tracking and resource tracking. Because NewRelic Mobile Start calls WidgetsFlutterBinding.ensureInitialized, if you are not using NewRelic Mobile Start, you need to call this method prior to calling NewrelicMobile.instance.startAgent.
+
+```dart
+if (Platform.isAndroid) {
+  appToken = AppConfig.androidToken;
+} else if (Platform.isIOS) {
+  appToken = AppConfig.iOSToken;
+}
+
+Config config = Config(
+    accessToken: appToken,
+    analyticsEventEnabled: true,
+    networkErrorRequestEnabled: true,
+    networkRequestEnabled: true,
+    crashReportingEnabled: true,
+    interactionTracingEnabled: true,
+    httpResponseBodyCaptureEnabled: true,
+    loggingEnabled: true,
+    webViewInstrumentation: true,
+    printStatementAsEventsEnabled: true,
+    httpInstrumentationEnabled:true);
+
+// NewrelicMobile.instance.start(config, () {
+//   runApp(MyApp());
+// });
+
+runZonedGuarded(() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterError.onError = NewrelicMobile.onError;
+  await NewrelicMobile.instance.startAgent(config);
+  runApp(MyApp());
+}, (Object error, StackTrace stackTrace) {
+  NewrelicMobile.instance.recordError(error, stackTrace);
+});
 ```
 
 AppToken is platform-specific. You need to generate the seprate token for Android and iOS apps.
@@ -163,7 +201,7 @@ final router = GoRouter(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.9.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.9.2"
       }
     }
   ```
@@ -191,13 +229,13 @@ see [New Relic IOS SDK doc](https://docs.newrelic.com/docs/mobile-monitoring/new
 or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api)
 .
 
-### [startInteraction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/start-interaction)(interactionName: string): Promise&lt;InteractionId&gt;;
+### [startInteraction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/start-interaction)(String actionName) Future<String>;
 
 > Track a method as an interaction.
 
 `InteractionId` is string.
 
-### [endInteraction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/end-interaction)(id: InteractionId): void;
+### [endInteraction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/end-interaction)(String interactionId): void;
 
 > End an interaction
 > (Required). This uses the string ID for the interaction you want to end.
@@ -218,7 +256,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
   
   ```
 
-### [setAttribute] (https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/ios-sdk-api)(name: string, value: boolean | number | string): void;
+### [setAttribute] (https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/ios-sdk-api)(String name, dynamic value) : void;
 
 > Creates a session-level attribute shared by multiple mobile event types. Overwrites its previous value and type each time it is called.
 
@@ -226,7 +264,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
       NewrelicMobile.instance.setAttribute('RNCustomAttrNumber', 37);
   ```
 
-### [setUserId](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-user-id)(userId: string): void;
+### [setUserId](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-user-id)(String userId): void;
 
 > Set a custom user identifier value to associate user sessions with analytics events and attributes.
 
@@ -234,7 +272,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
       NewrelicMobile.instance.setUserId("RN12934");
   ```
 
-### [recordBreadcrumb](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordbreadcrumb)(name: string, attributes?: {[key: string]: boolean | number | string}): void;
+### [recordBreadcrumb](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordbreadcrumb)(String name,{Map<String, dynamic>? eventAttributes}): void;
 
 > Track app activity/screen that may be helpful for troubleshooting crashes.
 
@@ -242,7 +280,7 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
       NewrelicMobile.instance.recordBreadcrumb("Button Got Pressed on Screen 3"),
   ```
 
-### [recordCustomEvent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordcustomevent-android-sdk-api)(eventType: string, eventName?: string, attributes?: {[key: string]: boolean | number | string}): void;
+### [recordCustomEvent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordcustomevent-android-sdk-api)(String eventType,{String eventName = "", Map<String, dynamic>? eventAttributes}): void;
 
 > Creates and records a custom event for use in New Relic Insights.
 
@@ -250,20 +288,37 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
       NewrelicMobile.instance.recordCustomEvent("Major",eventName: "User Purchase",eventAttributes: {"item1":"Clothes","price":34.00}),
             child: const Text('Record Custom Event'),
   ```
-### [setMaxEventBufferTime](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-max-event-buffer-time)(maxBufferTimeInSec : int): void;
+### [setMaxEventBufferTime](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-max-event-buffer-time)(int maxBufferTimeInSec) void;
 
 > Sets the event harvest cycle length.
 
   ``` dart
       NewrelicMobile.instance.setMaxEventBufferTime(200);
   ```
-### [setMaxEventPoolSize](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-max-event-pool-size)(maxSize : int): void;
+### [setMaxEventPoolSize](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-max-event-pool-size)(int maxSize): void;
 
 > Sets the maximum size of the event pool.
 
   ``` dart
       NewrelicMobile.instance.setMaxEventPoolSize(10000);
   ```
+
+### [noticeHttpTransaction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/notice-http-transaction/)(String url,String httpMethod,int statusCode,int startTime,int endTime,int bytesSent,int bytesReceived,Map<String, dynamic>? traceData,{String responseBody = ""}): void;
+
+> Tracks network requests manually. You can use this method to record HTTP transactions, with an option to also send a response body.
+ 
+ ``` dart
+     NewrelicMobile.instance.noticeNetworkFailure("https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage", "GET", 1000, 2000,'Test Network Failure', NetworkFailure.dnsLookupFailed);
+  ```
+
+### [noticeNetworkFailure](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/notice-network-failure/)(String url,String httpMethod,int startTime,int endTime,NetworkFailure errorCode): void;
+
+> Records network failures. If a network request fails, use this method to record details about the failures. In most cases, place this call inside exception handlers, such as catch blocks. Supported failures are: Unknown, BadURL, TimedOut, CannotConnectToHost, DNSLookupFailed, BadServerResponse, SecureConnectionFailed.
+
+  ``` dart
+     NewrelicMobile.instance.noticeNetworkFailure("https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage", "GET", 1000, 2000,'Test Network Failure', NetworkFailure.dnsLookupFailed);
+  ```
+
 
 
 ## Manual Error reporting

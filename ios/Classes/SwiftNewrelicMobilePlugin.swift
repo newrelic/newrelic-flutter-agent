@@ -143,6 +143,19 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             NewRelic.noticeNetworkRequest(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), responseHeaders: nil, statusCode: statusCode, bytesSent: UInt(truncating: bytesSent), bytesReceived: UInt(truncating: bytesReceived), responseData: responseBody.data(using: String.Encoding.utf8.rawValue), traceHeaders: traceHeaders, andParams: nil)
             result(true)
 
+        case "noticeNetworkFailure":
+
+            let url = args!["url"] as! String
+            let httpMethod = args!["httpMethod"] as! String
+            let startTime = args!["startTime"] as! NSNumber
+            let endTime = args!["endTime"] as! NSNumber
+            let errorCode = args!["errorCode"] as! NSNumber
+
+
+            NewRelic.noticeNetworkFailure(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), andFailureCode: Int(truncating: errorCode))
+            result(true)
+
+
         default:
             result(FlutterMethodNotImplemented)
 

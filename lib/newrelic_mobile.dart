@@ -4,13 +4,13 @@
  */
 
 import 'dart:async';
-import 'dart:io'
-    show HttpClientRequest, HttpClientResponse, HttpOverrides, Platform;
+import 'dart:io' show HttpOverrides, Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
@@ -37,12 +37,11 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "0.0.1-dev.8");
+          .setAttribute("Flutter Agent Version", "0.0.1-dev.9");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
-      if (kDebugMode) {
-        print('$error \n $stackTrace');
-      }
+      FlutterError.presentError(
+          FlutterErrorDetails(exception: error, stack: stackTrace));
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
       if (config.printStatementAsEventsEnabled) {
         recordCustomEvent("Mobile Dart Console Events",
@@ -120,8 +119,11 @@ class NewrelicMobile {
     if (config.printStatementAsEventsEnabled) {
       redirectDebugPrint();
     }
-    HttpOverrides.global =
-        NewRelicHttpOverrides(current: HttpOverrides.current);
+
+    if (config.httpInstrumentationEnabled) {
+      HttpOverrides.global =
+          NewRelicHttpOverrides(current: HttpOverrides.current);
+    }
     await _channel.invokeMethod('startAgent', params);
   }
 
@@ -223,37 +225,6 @@ class NewrelicMobile {
     return;
   }
 
-  Future<void> logNetworkIoRequest(
-    HttpClientRequest request, {
-    DateTime? startTime,
-    DateTime? endTime,
-  }) async {
-    startTime ??= DateTime.now();
-    final response = await request.done;
-
-    return await logNetworkIoRequestResponse(request, response,
-        startTime: startTime, endTime: endTime);
-  }
-
-  Future<void> logNetworkIoRequestResponse(
-    HttpClientRequest request,
-    HttpClientResponse response, {
-    DateTime? startTime,
-    DateTime? endTime,
-  }) async {
-    endTime = DateTime.now();
-    await NewrelicMobile.instance.noticeHttpTransaction(
-        request.uri.toString(),
-        request.method,
-        response.statusCode,
-        startTime!.millisecondsSinceEpoch,
-        endTime.millisecondsSinceEpoch,
-        response.contentLength,
-        response.contentLength,
-        null,
-        responseBody: response.toString());
-  }
-
   Future<void> noticeHttpTransaction(
       String url,
       String httpMethod,
@@ -293,6 +264,18 @@ class NewrelicMobile {
       'traceAttributes': traceAttributes
     };
     return await _channel.invokeMethod('noticeHttpTransaction', params);
+  }
+
+  Future<void> noticeNetworkFailure(String url, String httpMethod,
+      int startTime, int endTime, NetworkFailure errorCode) async {
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'startTime': startTime,
+      'endTime': endTime,
+      'errorCode': errorCode.code
+    };
+    return await _channel.invokeMethod('noticeNetworkFailure', params);
   }
 
   static List<Map<String, String>> getStackTraceElements(

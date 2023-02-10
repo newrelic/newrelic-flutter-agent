@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
@@ -45,6 +46,8 @@ void main() {
   const bytesSent = 200;
   const bytesReceived = 200;
   const responseBody = 'test';
+  const maxSize = 10000;
+  const maxBufferTime = 300;
   const traceData = {
     "id": "1",
     "guid": "2",
@@ -291,6 +294,35 @@ void main() {
     ]);
   });
 
+  test('test setMaxEventPoolSize should be called with maxSize', () async {
+    NewrelicMobile.instance.setMaxEventPoolSize(maxSize);
+    final Map<String, dynamic> params = <String, dynamic>{
+      'maxSize': maxSize,
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'setMaxEventPoolSize',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test setMaxEventBufferTime should be called with maxBufferTime',
+      () async {
+    NewrelicMobile.instance.setMaxEventBufferTime(maxBufferTime);
+    final Map<String, dynamic> params = <String, dynamic>{
+      'maxBufferTimeInSec': maxBufferTime,
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'setMaxEventBufferTime',
+        arguments: params,
+      )
+    ]);
+  });
+
   test(
       'test interactionName should be called with interActionName on Android Platform ',
       () async {
@@ -381,6 +413,26 @@ void main() {
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'noticeHttpTransaction',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test noticeNetworkFailure should be called with NetworkFailure Enum',
+      () async {
+    await NewrelicMobile.instance.noticeNetworkFailure(
+        url, httpMethod, startTime, endTime, NetworkFailure.unknown);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'startTime': startTime,
+      'endTime': endTime,
+      'errorCode': NetworkFailure.unknown.code,
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeNetworkFailure',
         arguments: params,
       )
     ]);
@@ -587,7 +639,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '0.0.1-dev.8',
+      'value': '0.0.1-dev.9',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -633,7 +685,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '0.0.1-dev.8',
+      'value': '0.0.1-dev.9',
     };
 
     expect(methodCalLogs, <Matcher>[

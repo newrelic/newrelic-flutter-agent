@@ -37,12 +37,12 @@ class NewRelicHttpClient implements HttpClient {
       Future<ConnectionTask<Socket>> Function(
               Uri url, String? proxyHost, int? proxyPort)?
           f) {
-    // TODO: implement connectionFactory
+    client.connectionFactory = f;
   }
 
   @override
   set keyLog(Function(String line)? callback) {
-    // TODO: implement keyLog
+    client.keyLog = callback;
   }
 
   @override
@@ -194,6 +194,8 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
 
     return Future.value(
         NewRelicHttpClientRequest(actualRequest, timestamp, traceAttributes));
+  }, onError: (dynamic err) {
+    NewrelicMobile.instance.recordError(err, StackTrace.current);
   });
 }
 
@@ -219,7 +221,9 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
       var response =
           _wrapResponse(value, request, this.timestamp, this.traceData);
       return response;
-    }, onError: (dynamic err) {});
+    }, onError: (dynamic err) {
+      NewrelicMobile.instance.recordError(err, StackTrace.current);
+    });
   }
 
   void _checkAndResetBufferIfRequired() {
@@ -275,8 +279,12 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
 
   @override
   Future<HttpClientResponse> close() {
-    return _httpClientRequest.close().then((response) =>
-        _wrapResponse(response, _httpClientRequest, this.timestamp, traceData));
+    return _httpClientRequest.close().then(
+        (response) => _wrapResponse(
+            response, _httpClientRequest, this.timestamp, traceData),
+        onError: (dynamic err) {
+      NewrelicMobile.instance.recordError(err, StackTrace.current);
+    });
   }
 
   @override
@@ -287,8 +295,12 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
 
   @override
   Future<HttpClientResponse> get done {
-    return _httpClientRequest.done.then((response) =>
-        _wrapResponse(response, _httpClientRequest, timestamp, traceData));
+    return _httpClientRequest.done.then(
+        (response) =>
+            _wrapResponse(response, _httpClientRequest, timestamp, traceData),
+        onError: (dynamic err) {
+      NewrelicMobile.instance.recordError(err, StackTrace.current);
+    });
   }
 
   @override
@@ -309,6 +321,32 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
   void write(Object? object) {
     _httpClientRequest.write(object);
   }
+
+  @override
+  bool get followRedirects => _httpClientRequest.followRedirects;
+  @override
+  set followRedirects(bool value) => _httpClientRequest.followRedirects = value;
+
+  @override
+  bool get bufferOutput => _httpClientRequest.bufferOutput;
+  @override
+  set bufferOutput(bool value) => _httpClientRequest.bufferOutput = value;
+
+  @override
+  int get contentLength => _httpClientRequest.contentLength;
+  @override
+  set contentLength(int value) => _httpClientRequest.contentLength = value;
+
+  @override
+  int get maxRedirects => _httpClientRequest.maxRedirects;
+  @override
+  set maxRedirects(int value) => _httpClientRequest.maxRedirects = value;
+
+  @override
+  bool get persistentConnection => _httpClientRequest.persistentConnection;
+  @override
+  set persistentConnection(bool value) =>
+      _httpClientRequest.persistentConnection = value;
 
   @override
   void writeAll(Iterable objects, [String separator = ""]) {
@@ -536,10 +574,11 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
   @override
   Future<HttpClientResponse> redirect(
       [String? method, Uri? url, bool? followLoops]) async {
-    return _httpClientResponse
-        .redirect(method, url, followLoops)
-        .then((response) {
+    return _httpClientResponse.redirect(method, url, followLoops).then(
+        (response) {
       return _wrapResponse(response, request, timestamp, traceData);
+    }, onError: (dynamic err) {
+      NewrelicMobile.instance.recordError(err, StackTrace.current);
     });
   }
 

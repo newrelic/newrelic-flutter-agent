@@ -11,6 +11,7 @@ import com.newrelic.agent.android.ApplicationFramework
 import com.newrelic.agent.android.FeatureFlag
 import com.newrelic.agent.android.NewRelic
 import com.newrelic.agent.android.stats.StatsEngine
+import com.newrelic.agent.android.util.NetworkFailure
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -88,7 +89,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     .withLogLevel(5)
                     .withApplicationFramework(ApplicationFramework.Flutter, "3.0.0").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.8");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.9");
                 result.success("Agent Started")
             }
             "setUserId" -> {
@@ -211,6 +212,25 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     traceAttributes
                 )
                 result.success("Http Transcation Recorded")
+
+            }
+            "noticeNetworkFailure" -> {
+
+                val url: String = call.argument("url")!!
+                val httpMethod: String = call.argument("httpMethod")!!
+                val startTime: Long = call.argument("startTime")!!
+                val endTime: Long = call.argument("endTime")!!
+                val errorCode:Int = call.argument("errorCode")!!
+
+                val nf = NetworkFailure.fromErrorCode(errorCode);
+
+                NewRelic.noticeNetworkFailure(
+                    url,
+                    httpMethod,
+                    startTime,
+                    endTime,
+                    nf)
+                result.success("Network Failure Recorded")
 
             }
             "noticeDistributedTrace" -> {
