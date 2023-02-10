@@ -229,7 +229,7 @@ see [New Relic IOS SDK doc](https://docs.newrelic.com/docs/mobile-monitoring/new
 or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api)
 .
 
-### [startInteraction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/start-interaction)(String actionName) Future<String&gt;
+### [startInteraction](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/start-interaction)(String actionName) Future<String>;
 
 > Track a method as an interaction.
 
