@@ -153,7 +153,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
 
 
             NewRelic.noticeNetworkFailure(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), andFailureCode: Int(truncating: errorCode))
-            traceHeaders    [String : Any]        result(true)
+            result(true)
 
 
         default:

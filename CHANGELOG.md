@@ -1,3 +1,13 @@
+## 0.0.1-dev.9
+
+The following updates have been made for this release:
+
+* A new static method, 'RecordNetworkFailure,' has been added to specifically track network failure errors.
+* A previously identified issue with the agent not handling 'followRedirect' for HTTP requests has been resolved.
+* Enhanced error handling has been added around the HTTP Instrumentation to improve overall stability.
+
+These changes have been made to improve the overall performance and reliability of the product. We hope you find these updates valuable and welcome any feedback you may have.
+
 ## 0.0.1-dev.8
 
 Bug fixes and Update Native Android SDK version
