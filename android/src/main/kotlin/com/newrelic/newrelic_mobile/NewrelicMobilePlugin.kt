@@ -89,7 +89,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     .withLogLevel(5)
                     .withApplicationFramework(ApplicationFramework.Flutter, "3.0.0").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.9");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.10");
                 result.success("Agent Started")
             }
             "setUserId" -> {
