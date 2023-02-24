@@ -1,3 +1,7 @@
+## 0.0.1-dev.10
+
+The Native iOS Agent has been updated to version 7.4.2.
+
 ## 0.0.1-dev.9
 
 The following updates have been made for this release:

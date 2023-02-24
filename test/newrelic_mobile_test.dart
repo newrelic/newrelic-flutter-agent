@@ -5,7 +5,6 @@
 
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -639,7 +638,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '0.0.1-dev.9',
+      'value': '0.0.1-dev.10',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -685,7 +684,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '0.0.1-dev.9',
+      'value': '0.0.1-dev.10',
     };
 
     expect(methodCalLogs, <Matcher>[

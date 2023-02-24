@@ -33,11 +33,6 @@ void main() {
   const int port = 8888;
   const String path = '/posts';
   const body = {'testKey': 'testValue'};
-  const listOfObjects = [
-    {'test1': 'test'},
-    {'test2': 'test'},
-    {'test3': 'test'}
-  ];
 
   late NewRelicHttpClient newRelicHttpClient;
   late NewRelicHttpClientRequest newRelicHttpClientRequest;
