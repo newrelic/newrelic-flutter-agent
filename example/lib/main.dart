@@ -7,8 +7,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:ui';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -217,6 +215,7 @@ class Page1Screen extends StatelessWidget {
 }
 
 /// The screen of the second page.
+//ignore: must_be_immutable
 class Page2Screen extends StatelessWidget {
   /// Creates a [Page2Screen].
 
@@ -266,7 +265,7 @@ class Page2Screen extends StatelessWidget {
               onPressed: () {
                 print("test");
                 debugPrint("test");
-                throw NullThrownError();
+                throw TypeError();
               },
               child: const Text('NullThrownError'),
             ),
@@ -380,7 +379,7 @@ class _Page4ScreenState extends State<Page4Screen> {
             children: <Widget>[
               Text(
                 person?.name ?? 'Hello World',
-                style: Theme.of(context).textTheme.headline6,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               ElevatedButton(
                 onPressed: () {
