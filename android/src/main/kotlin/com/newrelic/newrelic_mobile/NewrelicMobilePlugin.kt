@@ -81,8 +81,6 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.disableFeature(FeatureFlag.InteractionTracing)
                 }
 
-                NewRelic.enableFeature(FeatureFlag.NativeReporting);
-
                 NewRelic.withApplicationToken(
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!)
