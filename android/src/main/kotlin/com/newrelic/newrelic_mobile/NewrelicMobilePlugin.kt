@@ -81,15 +81,13 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.disableFeature(FeatureFlag.InteractionTracing)
                 }
 
-                NewRelic.enableFeature(FeatureFlag.NativeReporting);
-
                 NewRelic.withApplicationToken(
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!)
                     .withLogLevel(5)
                     .withApplicationFramework(ApplicationFramework.Flutter, "3.0.0").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.10");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/0.0.1-dev.11");
                 result.success("Agent Started")
             }
             "setUserId" -> {
