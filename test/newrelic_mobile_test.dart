@@ -638,7 +638,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '0.0.1-dev.10',
+      'value': '0.0.1-dev.11',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -684,7 +684,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '0.0.1-dev.10',
+      'value': '0.0.1-dev.11',
     };
 
     expect(methodCalLogs, <Matcher>[
