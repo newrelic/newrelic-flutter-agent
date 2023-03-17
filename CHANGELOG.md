@@ -1,4 +1,4 @@
-## 0.0.1-dev.10
+## 0.0.1-dev.11
 
 The Native iOS Agent has been updated to version 7.4.2.
 The Native Android Agent has been updated to version 6.10.0.
