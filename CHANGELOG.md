@@ -1,6 +1,8 @@
 ## 0.0.1-dev.11
 
-The Native iOS Agent has been updated to version 7.4.2.
+This is Pre GA Release.
+
+The Native iOS Agent has been updated to version 7.4.3.
 The Native Android Agent has been updated to version 6.10.0.
 
 
