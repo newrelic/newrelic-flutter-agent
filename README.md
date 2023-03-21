@@ -7,8 +7,6 @@ This agent allows you to instrument Flutter apps with help of native New Relic A
 agents. The New Relic SDKs collect crashes, network traffic, and other information for hybrid apps
 using native components.
 
-**NOTE:** This agent SDK is not yet officially supported. If you’re interested in participating in
-our Limited Preview, contact Support or your account representative.
 
 ## Features
 
@@ -41,7 +39,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 0.0.1-dev.11
+  newrelic_mobile: 0.0.1
   
 ```
 

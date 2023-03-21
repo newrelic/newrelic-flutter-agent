@@ -1,3 +1,7 @@
+## 0.0.1
+
+This is GA Release.
+
 ## 0.0.1-dev.11
 
 This is Pre GA Release.
