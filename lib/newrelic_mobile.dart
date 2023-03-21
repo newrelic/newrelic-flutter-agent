@@ -37,7 +37,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "0.0.1-dev.11");
+          .setAttribute("Flutter Agent Version", "0.0.1");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
