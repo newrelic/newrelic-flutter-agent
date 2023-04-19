@@ -10,6 +10,7 @@ import androidx.annotation.NonNull
 import com.newrelic.agent.android.ApplicationFramework
 import com.newrelic.agent.android.FeatureFlag
 import com.newrelic.agent.android.NewRelic
+import com.newrelic.agent.android.metric.MetricUnit
 import com.newrelic.agent.android.stats.StatsEngine
 import com.newrelic.agent.android.util.NetworkFailure
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -260,6 +261,45 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 }
                 result.success("maxSize set")
 
+            }
+
+            "incrementAttribute" -> {
+                val name: String = call.argument("name")!!
+                val value: Double? = call.argument("value")
+
+                val isIncreased: Boolean = if (value != null) {
+                    NewRelic.incrementAttribute(name,value)
+                } else {
+                    NewRelic.incrementAttribute(name)
+                }
+                result.success(isIncreased)
+
+            }
+
+            "recordMetric" -> {
+                val name: String = call.argument("name")!!
+                val category: String = call.argument("category")!!
+                val value: Double? = call.argument("value") as Double?
+                val countUnit: String? = call.argument("countUnit") as String?
+                val valueUnit: String? = call.argument("valueUnit") as String?
+
+
+                value?.let {
+                            NewRelic.recordMetric(name,category,
+                                0, it,0.0,
+                                countUnit?.let { it2 -> MetricUnit.valueOf(it2) },
+                                valueUnit?.let { it3 -> MetricUnit.valueOf(it3) })
+                };
+                result.success("Recorded Metric")
+
+            }
+
+            "shutDown" -> {
+                NewRelic.shutdown()
+                result.success("agent is shutDown")
+            }
+            "currentSessionId" -> {
+                result.success(NewRelic.currentSessionId())
             }
             else -> {
                 result.notImplemented()

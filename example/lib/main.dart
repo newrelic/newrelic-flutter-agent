@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:newrelic_mobile/MetricUnit.dart';
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
@@ -99,11 +100,22 @@ class Page1Screen extends StatelessWidget {
               children: <Widget>[
                 ElevatedButton(
                     onPressed: () async {
+                      print(NewrelicMobile.instance.currentSessionId());
+                      // NewrelicMobile.instance.incrementAttribute("testchamp",value:5.0);
+                      // NewrelicMobile.instance.recordMetric("testMetric", "Test Champ",value: 12.0);
+                      NewrelicMobile.instance.recordMetric("testMetric1", "TestChamp12",value: 10,valueUnit: MetricUnit.BYTES,countUnit: MetricUnit.PERCENT);
+
+                    },
+                    child: const Text('Test New Static Methods',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                ElevatedButton(
+                    onPressed: () async {
                       final client = HttpClient();
                       final request = await client.postUrl(Uri.parse(
-                          "https://jsonplaceholder.typicode.com/posts"));
+                          "https://8f1d-2600-1006-b003-7627-ca1-491c-9b0-25ff.ngrok.io/notice_error"));
                       request.headers.set(HttpHeaders.contentTypeHeader,
                           "application/json; charset=UTF-8");
+                      request.headers.set("ngrok-skip-browser-warning", 69420);
                       request.write(
                           '{"title": "Foo","body": "Bar", "userId": 99}');
 
