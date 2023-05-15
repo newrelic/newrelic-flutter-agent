@@ -6,10 +6,12 @@
 package com.newrelic.newrelic_mobile
 
 import android.content.Context
+import android.os.Build
 import androidx.annotation.NonNull
 import com.newrelic.agent.android.ApplicationFramework
 import com.newrelic.agent.android.FeatureFlag
 import com.newrelic.agent.android.NewRelic
+import com.newrelic.agent.android.metric.MetricUnit
 import com.newrelic.agent.android.stats.StatsEngine
 import com.newrelic.agent.android.util.NetworkFailure
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -37,7 +39,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) =
         when (call.method) {
             "getPlatformVersion" -> {
-                result.success("Android ${android.os.Build.VERSION.RELEASE}")
+                result.success("Android ${Build.VERSION.RELEASE}")
             }
             "startAgent" -> {
 
@@ -120,7 +122,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
             }
             "recordBreadcrumb" -> {
                 val name: String? = call.argument("name")
-                val eventAttributes: Map<String, Any>? = call.argument("eventAttributes")
+                val eventAttributes: HashMap<String, Any>? = call.argument("eventAttributes")
 
                 val eventRecorded = NewRelic.recordBreadcrumb(name, eventAttributes);
                 result.success(eventRecorded)
@@ -128,8 +130,18 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
             "recordCustomEvent" -> {
                 val eventType: String? = call.argument("eventType")
                 val eventName: String? = call.argument("eventName")
-                val eventAttributes: Map<String, Any>? = call.argument("eventAttributes")
+                val eventAttributes: HashMap<String, Any>? = call.argument("eventAttributes")
 
+                val copyOfEventAttributes = eventAttributes?.clone() as HashMap<*, *>;
+                for (key in  copyOfEventAttributes.keys)  {
+                    val value = copyOfEventAttributes[key]
+                    if(value is HashMap<*, *>) {
+                        for (k in value.keys) {
+                            value[k]?.let { eventAttributes.put(k as String, it) };
+                        }
+                        eventAttributes.remove(key)
+                    }
+                }
                 val eventRecorded =
                     NewRelic.recordCustomEvent(eventType, eventName, eventAttributes);
                 result.success(eventRecorded)
@@ -157,7 +169,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val exceptionMessage: String? = call.argument("exception")
                 val reason: String? = call.argument("reason")
                 val fatal: Boolean? = call.argument("fatal")
-                val attributes: Map<String, Any>? = call.argument("attributes")
+                val attributes: HashMap<String, Any>? = call.argument("attributes")
 
                 val exceptionAttributes: MutableMap<String, Any?> = mutableMapOf()
                 exceptionAttributes["reason"] = reason
@@ -260,6 +272,45 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 }
                 result.success("maxSize set")
 
+            }
+
+            "incrementAttribute" -> {
+                val name: String = call.argument("name")!!
+                val value: Double? = call.argument("value")
+
+                val isIncreased: Boolean = if (value != null) {
+                    NewRelic.incrementAttribute(name,value)
+                } else {
+                    NewRelic.incrementAttribute(name)
+                }
+                result.success(isIncreased)
+
+            }
+
+            "recordMetric" -> {
+                val name: String = call.argument("name")!!
+                val category: String = call.argument("category")!!
+                val value: Double? = call.argument("value") as Double?
+                val countUnit: String? = call.argument("countUnit") as String?
+                val valueUnit: String? = call.argument("valueUnit") as String?
+
+
+                value?.let {
+                            NewRelic.recordMetric(name,category,
+                                0, it,0.0,
+                                countUnit?.let { it2 -> MetricUnit.valueOf(it2) },
+                                valueUnit?.let { it3 -> MetricUnit.valueOf(it3) })
+                };
+                result.success("Recorded Metric")
+
+            }
+
+            "shutDown" -> {
+                NewRelic.shutdown()
+                result.success("agent is shutDown")
+            }
+            "currentSessionId" -> {
+                result.success(NewRelic.currentSessionId())
             }
             else -> {
                 result.notImplemented()

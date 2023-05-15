@@ -4,6 +4,7 @@ version '1.0-SNAPSHOT'
 buildscript {
     ext.kotlin_version = '1.7.10'
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
     }
@@ -16,6 +17,7 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
 
@@ -48,6 +50,6 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.newrelic.agent.android:android-agent:6.10.0'
+    implementation 'com.newrelic.agent.android:android-agent:6.11.1'
 
 }

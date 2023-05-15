@@ -4,6 +4,7 @@
  */
 
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io' show HttpOverrides, Platform;
 
 import 'package:flutter/foundation.dart';
@@ -15,6 +16,8 @@ import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'package:stack_trace/stack_trace.dart';
+
+import 'MetricUnit.dart';
 
 class NewrelicMobile {
   static final NewrelicMobile instance = NewrelicMobile._();
@@ -151,6 +154,13 @@ class NewrelicMobile {
     return attributeIsRemoved;
   }
 
+  Future<bool> incrementAttribute(String name,{double? value}) async {
+    final Map<String, dynamic> params = <String, dynamic>{'name': name,'value':value};
+    final bool attributeIsIncreased =
+    await _channel.invokeMethod('incrementAttribute', params);
+    return attributeIsIncreased;
+  }
+
   Future<bool> recordBreadcrumb(String name,
       {Map<String, dynamic>? eventAttributes}) async {
     final Map<String, dynamic> params = <String, dynamic>{
@@ -160,6 +170,26 @@ class NewrelicMobile {
     final bool eventRecorded =
         await _channel.invokeMethod('recordBreadcrumb', params);
     return eventRecorded;
+  }
+
+  Future<void> recordMetric(String name,String category,{double? value, MetricUnit? countUnit, MetricUnit? valueUnit}) async {
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': name,
+      'category': category,
+      'value': value,
+      'countUnit': countUnit!=null ? countUnit.label:countUnit,
+      'valueUnit': valueUnit != null ? valueUnit.label:valueUnit,
+    };
+
+    return await _channel.invokeMethod('recordMetric', params);
+  }
+
+
+  Future<void> shutDown() async {
+    return await _channel.invokeMethod('shutDown');
+  }
+  Future<String> currentSessionId() async {
+    return await _channel.invokeMethod('currentSessionId');
   }
 
   Future<bool> recordCustomEvent(String eventType,

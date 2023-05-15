@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:newrelic_mobile/MetricUnit.dart';
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
@@ -31,6 +32,8 @@ void main() {
   const MethodChannel channel = MethodChannel('newrelic_mobile');
   const name = 'test';
   const value = 'val';
+  const category = 'category';
+  const dValue = 20.0;
   const breadcrumb = 'button Pressed';
   const customEvent = 'custom Event';
   const eventName = 'eventName';
@@ -47,6 +50,7 @@ void main() {
   const responseBody = 'test';
   const maxSize = 10000;
   const maxBufferTime = 300;
+  const metricUnitBytes = "bytes";
   const traceData = {
     "id": "1",
     "guid": "2",
@@ -96,6 +100,8 @@ void main() {
           return '42';
         case 'startInteraction':
           return '42';
+        case 'currentSessionId':
+          return '123456';
         case 'noticeDistributedTrace':
           Map<String, dynamic> map = {'test': 'test1', 'test1': 'test3'};
           return map;
@@ -436,6 +442,208 @@ void main() {
       )
     ]);
   });
+
+
+  test('test incrementAttribute should be called with name',
+          () async {
+            final result = await NewrelicMobile.instance.incrementAttribute(name);
+            final Map<String, dynamic> params = <String, dynamic>{
+              'name': name,
+              'value': null
+            };
+            expect(methodCalLogs, <Matcher>[
+              isMethodCall(
+                'incrementAttribute',
+                arguments: params,
+              )
+            ]);
+            expect(result, true);
+      });
+
+  test('test incrementAttribute should be called with name and value',
+          () async {
+        final result = await NewrelicMobile.instance.incrementAttribute(name,value:dValue );
+        final Map<String, dynamic> params = <String, dynamic>{
+          'name': name,
+          'value': dValue
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'incrementAttribute',
+            arguments: params,
+          )
+        ]);
+        expect(result, true);
+      });
+
+  test('test recordMetric should be called with name and category',
+          () async {
+        await NewrelicMobile.instance.recordMetric(name,category);
+        final Map<String, dynamic> params = <String, dynamic>{
+          'name': name,
+          'category': category,
+          'value': null,
+          'countUnit': null,
+          'valueUnit': null,
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'recordMetric',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test recordMetric should be called with name,category,value',
+          () async {
+        await NewrelicMobile.instance.recordMetric(name,category,value: dValue);
+        final Map<String, dynamic> params = <String, dynamic>{
+          'name': name,
+          'category': category,
+          'value': dValue,
+          'countUnit': null,
+          'valueUnit': null,
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'recordMetric',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test recordMetric should be called with name,category,value and valueUnit on IOS Platform',
+          () async {
+
+         var platformManger = MockPlatformManager();
+            PlatformManager.setPlatformInstance(platformManger);
+            when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
+            when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
+        await NewrelicMobile.instance.recordMetric(name,category,value: dValue,valueUnit: MetricUnit.BYTES);
+        final Map<String, dynamic> params = <String, dynamic>{
+          'name': name,
+          'category': category,
+          'value': dValue,
+          'countUnit': null,
+          'valueUnit': metricUnitBytes,
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'recordMetric',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test recordMetric should be called with name,category,value and valueUnit on Android Platform',
+          () async {
+
+        var platformManger = MockPlatformManager();
+        PlatformManager.setPlatformInstance(platformManger);
+        when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
+        when(platformManger.isIOS()).thenAnswer((realInvocation) => false);
+        await NewrelicMobile.instance.recordMetric(name,category,value: dValue,valueUnit: MetricUnit.BYTES);
+        final Map<String, dynamic> params = <String, dynamic>{
+          'name': name,
+          'category': category,
+          'value': dValue,
+          'countUnit': null,
+          'valueUnit': MetricUnit.BYTES.label,
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'recordMetric',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test recordMetric should be called with name,category,value, valueUnit and countUnit',
+          () async {
+
+        var platformManger = MockPlatformManager();
+        PlatformManager.setPlatformInstance(platformManger);
+        when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
+        when(platformManger.isIOS()).thenAnswer((realInvocation) => false);
+        await NewrelicMobile.instance.recordMetric(name,category,value: dValue,valueUnit: MetricUnit.BYTES,countUnit: MetricUnit.SECONDS);
+        final Map<String, dynamic> params = <String, dynamic>{
+          'name': name,
+          'category': category,
+          'value': dValue,
+          'countUnit': MetricUnit.SECONDS.label,
+          'valueUnit': MetricUnit.BYTES.label,
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'recordMetric',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test MetricUnit label for Android Platform',
+          () async {
+
+        var platformManger = MockPlatformManager();
+        PlatformManager.setPlatformInstance(platformManger);
+        when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
+        when(platformManger.isIOS()).thenAnswer((realInvocation) => false);
+        expect(MetricUnit.BYTES.label, "BYTES");
+        expect(MetricUnit.PERCENT.label, "PERCENT");
+        expect(MetricUnit.BYTES_PER_SECOND.label, "BYTES_PER_SECOND");
+        expect(MetricUnit.OPERATIONS.label, "OPERATIONS");
+        expect(MetricUnit.SECONDS.label, "SECONDS");
+
+          });
+
+  test('test MetricUnit label for iOS Platform',
+          () async {
+
+        var platformManger = MockPlatformManager();
+        PlatformManager.setPlatformInstance(platformManger);
+        when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
+        when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
+        expect(MetricUnit.BYTES.label, "bytes");
+        expect(MetricUnit.PERCENT.label, "%");
+        expect(MetricUnit.BYTES_PER_SECOND.label, "bytes/second");
+        expect(MetricUnit.OPERATIONS.label, "op");
+        expect(MetricUnit.SECONDS.label, "sec");
+
+      });
+
+  test('test CurrentSession should be called',
+          () async {
+        await NewrelicMobile.instance.currentSessionId();
+        
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'currentSessionId', arguments: null
+          )
+        ]);
+
+        expect(await NewrelicMobile.instance.currentSessionId(), '123456');
+      });
+
+  test('test shutdown should be called',
+          () async {
+        await NewrelicMobile.instance.shutDown();
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+              'shutDown', arguments: null
+          )
+        ]);
+      });
+
+  test('test incrementAttribute should be called ',
+          () async {
+        await NewrelicMobile.instance.shutDown();
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+              'shutDown', arguments: null
+          )
+        ]);
+      });
+
 
   test('should return 6 elements', () {
     StackTrace stackTrace = StackTrace.fromString(dartError);

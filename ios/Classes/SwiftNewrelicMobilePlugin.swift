@@ -37,7 +37,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             if(args?["webViewInstrumentation"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_WebViewInstrumentation)
             }
-            if(args?["interactionTracingEnabled"] as! Bool == false) {
+               if(args?["interactionTracingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_InteractionTracing)
             }
 
@@ -49,7 +49,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
             NewRelic.start(withApplicationToken:applicationToken!)
                           NewRelic.setAttribute("DartVersion", value:dartVersion!)
-                          NewRelic.recordMetric(withName: "Mobile/iOS/Flutter/Agent/0.0.1-dev.7", category: "Supportability", value: 1)
+                          NewRelic.recordMetric(withName: "Mobile/iOS/Flutter/Agent/0.0.1", category: "Supportability", value: 1)
 
 
             result("Agent Started")
@@ -152,8 +152,52 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let errorCode = args!["errorCode"] as! NSNumber
 
 
+
             NewRelic.noticeNetworkFailure(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), andFailureCode: Int(truncating: errorCode))
             result(true)
+    
+        case "shutDown":
+            
+            NewRelic.shutdown();
+            result("agent is shutDown")
+        case "currentSessionId":
+            
+            result(NewRelic.currentSessionId())
+        case "incrementAttribute":
+            
+            let name = args!["name"] as! String
+            let value = args!["value"] as? NSNumber
+            
+            var isIncreased = false
+            
+            if(value == nil) {
+                isIncreased = NewRelic.incrementAttribute(name)
+            } else {
+                isIncreased = NewRelic.incrementAttribute(name,value: value!)
+            }
+        
+            result(isIncreased)
+            
+        case "recordMetric":
+            
+            let name = args!["name"] as! String
+            let category = args!["category"] as! String
+            let value = args!["value"] as! NSNumber?
+            let countUnit = args!["countUnit"] as! String?
+            let valueUnit = args!["valueUnit"] as! String?
+            
+            if(value != nil  && countUnit != nil && valueUnit != nil) {
+                NewRelic.recordMetric(withName: name, category: category, value: value!, valueUnits: valueUnit,countUnits: countUnit)
+            } else if (value != nil  && valueUnit != nil ) {
+                NewRelic.recordMetric(withName: name, category: category, value: value!,valueUnits: valueUnit)
+            }else if (value != nil  ) {
+                NewRelic.recordMetric(withName: name, category: category, value: value!)
+            } else {
+                NewRelic.recordMetric(withName: name, category: category)
+            }
+                        
+            result("Recorded Metrics")
+            
 
 
         default:
@@ -162,11 +206,6 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
 
 
         }
-
-
-
-
-
 
     }
 }
