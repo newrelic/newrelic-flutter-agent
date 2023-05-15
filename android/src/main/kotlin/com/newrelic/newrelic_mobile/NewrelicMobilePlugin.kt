@@ -6,6 +6,7 @@
 package com.newrelic.newrelic_mobile
 
 import android.content.Context
+import android.os.Build
 import androidx.annotation.NonNull
 import com.newrelic.agent.android.ApplicationFramework
 import com.newrelic.agent.android.FeatureFlag
@@ -38,7 +39,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) =
         when (call.method) {
             "getPlatformVersion" -> {
-                result.success("Android ${android.os.Build.VERSION.RELEASE}")
+                result.success("Android ${Build.VERSION.RELEASE}")
             }
             "startAgent" -> {
 
@@ -121,7 +122,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
             }
             "recordBreadcrumb" -> {
                 val name: String? = call.argument("name")
-                val eventAttributes: Map<String, Any>? = call.argument("eventAttributes")
+                val eventAttributes: HashMap<String, Any>? = call.argument("eventAttributes")
 
                 val eventRecorded = NewRelic.recordBreadcrumb(name, eventAttributes);
                 result.success(eventRecorded)
@@ -129,8 +130,18 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
             "recordCustomEvent" -> {
                 val eventType: String? = call.argument("eventType")
                 val eventName: String? = call.argument("eventName")
-                val eventAttributes: Map<String, Any>? = call.argument("eventAttributes")
+                val eventAttributes: HashMap<String, Any>? = call.argument("eventAttributes")
 
+                val copyOfEventAttributes = eventAttributes?.clone() as HashMap<*, *>;
+                for (key in  copyOfEventAttributes.keys)  {
+                    val value = copyOfEventAttributes[key]
+                    if(value is HashMap<*, *>) {
+                        for (k in value.keys) {
+                            value[k]?.let { eventAttributes.put(k as String, it) };
+                        }
+                        eventAttributes.remove(key)
+                    }
+                }
                 val eventRecorded =
                     NewRelic.recordCustomEvent(eventType, eventName, eventAttributes);
                 result.success(eventRecorded)
@@ -158,7 +169,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val exceptionMessage: String? = call.argument("exception")
                 val reason: String? = call.argument("reason")
                 val fatal: Boolean? = call.argument("fatal")
-                val attributes: Map<String, Any>? = call.argument("attributes")
+                val attributes: HashMap<String, Any>? = call.argument("attributes")
 
                 val exceptionAttributes: MutableMap<String, Any?> = mutableMapOf()
                 exceptionAttributes["reason"] = reason

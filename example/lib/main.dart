@@ -412,6 +412,11 @@ class _Page4ScreenState extends State<Page4Screen> {
                   });
                 },
                 child: const Text('Isolate Compute Error'),
+              ),       ElevatedButton(
+                onPressed: () {
+                  NewrelicMobile.instance.shutDown();
+                },
+                child: const Text('shutDown Agent'),
               )
             ],
           ),
