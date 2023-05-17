@@ -4,7 +4,6 @@
  */
 
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io' show HttpOverrides, Platform;
 
 import 'package:flutter/foundation.dart';
@@ -17,7 +16,7 @@ import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import 'MetricUnit.dart';
+import 'metricunit.dart';
 
 class NewrelicMobile {
   static final NewrelicMobile instance = NewrelicMobile._();
@@ -40,7 +39,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "0.0.1");
+          .setAttribute("Flutter Agent Version", "1.0.0");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -154,10 +153,13 @@ class NewrelicMobile {
     return attributeIsRemoved;
   }
 
-  Future<bool> incrementAttribute(String name,{double? value}) async {
-    final Map<String, dynamic> params = <String, dynamic>{'name': name,'value':value};
+  Future<bool> incrementAttribute(String name, {double? value}) async {
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': name,
+      'value': value
+    };
     final bool attributeIsIncreased =
-    await _channel.invokeMethod('incrementAttribute', params);
+        await _channel.invokeMethod('incrementAttribute', params);
     return attributeIsIncreased;
   }
 
@@ -172,22 +174,23 @@ class NewrelicMobile {
     return eventRecorded;
   }
 
-  Future<void> recordMetric(String name,String category,{double? value, MetricUnit? countUnit, MetricUnit? valueUnit}) async {
+  Future<void> recordMetric(String name, String category,
+      {double? value, MetricUnit? countUnit, MetricUnit? valueUnit}) async {
     final Map<String, dynamic> params = <String, dynamic>{
       'name': name,
       'category': category,
       'value': value,
-      'countUnit': countUnit!=null ? countUnit.label:countUnit,
-      'valueUnit': valueUnit != null ? valueUnit.label:valueUnit,
+      'countUnit': countUnit != null ? countUnit.label : countUnit,
+      'valueUnit': valueUnit != null ? valueUnit.label : valueUnit,
     };
 
     return await _channel.invokeMethod('recordMetric', params);
   }
 
-
   Future<void> shutDown() async {
     return await _channel.invokeMethod('shutDown');
   }
+
   Future<String> currentSessionId() async {
     return await _channel.invokeMethod('currentSessionId');
   }

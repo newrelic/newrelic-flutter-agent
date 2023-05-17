@@ -1,3 +1,10 @@
+## 1.0.0
+
+The native Android Agent has been upgraded to version 6.11.1.
+The native iOS agent has been upgraded to version 7.4.4.
+A new "shutdown" method has been added, allowing the agent to be shut down within the current application lifecycle during runtime.
+Two new static methods, "recordMetric" and "incrementAttribute", have been added.
+
 ## 0.0.1
 
 This is GA Release.
