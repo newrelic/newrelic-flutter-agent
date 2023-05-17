@@ -4,6 +4,7 @@
  */
 
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io' show HttpOverrides, Platform;
 
 import 'package:flutter/foundation.dart';
@@ -15,8 +16,8 @@ import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'package:stack_trace/stack_trace.dart';
-
 import 'metricunit.dart';
+
 
 class NewrelicMobile {
   static final NewrelicMobile instance = NewrelicMobile._();

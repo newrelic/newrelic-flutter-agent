@@ -110,6 +110,7 @@ class Page1Screen extends StatelessWidget {
                           value: 10,
                           valueUnit: MetricUnit.BYTES,
                           countUnit: MetricUnit.PERCENT);
+
                     },
                     child: const Text('Test New Static Methods',
                         maxLines: 1, textDirection: TextDirection.ltr)),
