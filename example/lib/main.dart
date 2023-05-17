@@ -101,10 +101,15 @@ class Page1Screen extends StatelessWidget {
                 ElevatedButton(
                     onPressed: () async {
                       print(NewrelicMobile.instance.currentSessionId());
-                      // NewrelicMobile.instance.incrementAttribute("testchamp",value:5.0);
+                      NewrelicMobile.instance.incrementAttribute(
+                          "FlutterCustomAttrNumber",
+                          value: 5.0);
                       // NewrelicMobile.instance.recordMetric("testMetric", "Test Champ",value: 12.0);
-                      NewrelicMobile.instance.recordMetric("testMetric1", "TestChamp12",value: 10,valueUnit: MetricUnit.BYTES,countUnit: MetricUnit.PERCENT);
-
+                      NewrelicMobile.instance.recordMetric(
+                          "testMetric1", "TestChamp12",
+                          value: 10,
+                          valueUnit: MetricUnit.BYTES,
+                          countUnit: MetricUnit.PERCENT);
                     },
                     child: const Text('Test New Static Methods',
                         maxLines: 1, textDirection: TextDirection.ltr)),
@@ -412,7 +417,8 @@ class _Page4ScreenState extends State<Page4Screen> {
                   });
                 },
                 child: const Text('Isolate Compute Error'),
-              ),       ElevatedButton(
+              ),
+              ElevatedButton(
                 onPressed: () {
                   NewrelicMobile.instance.shutDown();
                 },

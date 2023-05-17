@@ -39,7 +39,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 0.0.1
+  newrelic_mobile: 1.0.0
   
 ```
 
@@ -201,7 +201,7 @@ final router = GoRouter(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.10.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.11.1"
       }
     }
   ```
@@ -319,7 +319,36 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
      NewrelicMobile.instance.noticeNetworkFailure("https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage", "GET", 1000, 2000,'Test Network Failure', NetworkFailure.dnsLookupFailed);
   ```
 
+### [recordMetric](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/recordmetric-android-sdk-api)(name: string, category: string, value?: number, countUnit?: string, valueUnit?: string): void;
+> Records custom metrics (arbitrary numerical data), where countUnit is the measurement unit of the metric count and valueUnit is the measurement unit for the metric value. If using countUnit or valueUnit, then all of value, countUnit, and valueUnit must all be set.
+```dart
+       NewrelicMobile.instance.recordMetric("testMetric", "Test Champ",value: 12.0);
+       NewrelicMobile.instance.recordMetric("testMetric1", "TestChamp12",value: 10,valueUnit: MetricUnit.BYTES,countUnit: MetricUnit.PERCENT);
+```
 
+
+### [currentSessionId](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/currentsessionid-android-sdk-api)(): Promise;
+> Returns the current session ID. This method is useful for consolidating monitoring of app data (not just New Relic data) based on a single session definition and identifier.
+```dart
+    var sessionId = await NewrelicMobile.instance.currentSessionId();
+```
+### [setAttribute](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/set-attribute)(name: string, value: boolean | number | string): void;
+> Creates a session-level attribute shared by multiple mobile event types. Overwrites its previous value and type each time it is called.
+  ```dart
+     NewrelicMobile.instance.setAttribute("FlutterCustomAttrNumber",value :5.0);
+  ```
+### [removeAttribute](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/remove-attribute)(name: string, value: boolean | number | string): void;
+> This method removes the attribute specified by the name string..
+  ```dart
+     NewrelicMobile.instance.removeAttribute("FlutterCustomAttrNumber");
+  ```
+
+### [incrementAttribute](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/increment-attribute)(name: string, value?: number): void;
+> Increments the count of an attribute with a specified name. Overwrites its previous value and type each time it is called. If the attribute does not exists, it creates a new attribute. If no value is given, it increments the value by 1.
+```dart
+    NewrelicMobile.instance.incrementAttribute("FlutterCustomAttrNumber");
+    NewrelicMobile.instance.incrementAttribute("FlutterCustomAttrNumber",value :5.0);
+```
 
 ## Manual Error reporting
 
