@@ -11,7 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:newrelic_mobile/MetricUnit.dart';
+import 'package:newrelic_mobile/metricunit.dart';
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
@@ -101,9 +101,15 @@ class Page1Screen extends StatelessWidget {
                 ElevatedButton(
                     onPressed: () async {
                       print(NewrelicMobile.instance.currentSessionId());
-                      // NewrelicMobile.instance.incrementAttribute("testchamp",value:5.0);
+                      NewrelicMobile.instance.incrementAttribute(
+                          "FlutterCustomAttrNumber",
+                          value: 5.0);
                       // NewrelicMobile.instance.recordMetric("testMetric", "Test Champ",value: 12.0);
-                      NewrelicMobile.instance.recordMetric("testMetric1", "TestChamp12",value: 10,valueUnit: MetricUnit.BYTES,countUnit: MetricUnit.PERCENT);
+                      NewrelicMobile.instance.recordMetric(
+                          "testMetric1", "TestChamp12",
+                          value: 10,
+                          valueUnit: MetricUnit.BYTES,
+                          countUnit: MetricUnit.PERCENT);
 
                     },
                     child: const Text('Test New Static Methods',
@@ -412,7 +418,8 @@ class _Page4ScreenState extends State<Page4Screen> {
                   });
                 },
                 child: const Text('Isolate Compute Error'),
-              ),       ElevatedButton(
+              ),
+              ElevatedButton(
                 onPressed: () {
                   NewrelicMobile.instance.shutDown();
                 },
