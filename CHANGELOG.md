@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Upgrade native iOS agent to v7.4.5
+* Added FedRAMP configuration flag on agent start.
+
 ## 1.0.0
 
 The native Android Agent has been upgraded to version 6.11.1.

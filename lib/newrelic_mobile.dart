@@ -116,7 +116,8 @@ class NewrelicMobile {
       'networkRequestEnabled': config.networkRequestEnabled,
       'networkErrorRequestEnabled': config.networkErrorRequestEnabled,
       'httpResponseBodyCaptureEnabled': config.httpResponseBodyCaptureEnabled,
-      'loggingEnabled': config.loggingEnabled
+      'loggingEnabled': config.loggingEnabled,
+      'fedRampEnabled':config.fedRampEnabled
     };
 
     if (config.printStatementAsEventsEnabled) {

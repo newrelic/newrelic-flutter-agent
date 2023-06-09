@@ -722,6 +722,60 @@ void main() {
     ]);
   });
 
+  test('agent should start with AppToken with fedRamp disabled', () async {
+    Config config =
+    Config(accessToken: "test1234");
+    await NewrelicMobile.instance.startAgent(config);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation': true,
+      'analyticsEventEnabled': true,
+      'crashReportingEnabled': true,
+      'interactionTracingEnabled': true,
+      'networkRequestEnabled': true,
+      'networkErrorRequestEnabled': true,
+      'httpResponseBodyCaptureEnabled': true,
+      'loggingEnabled': true,
+      'fedRampEnabled':false
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('agent should start with AppToken with fedRamp Enabled', () async {
+    Config config =
+    Config(accessToken: "test1234",fedRampEnabled: true);
+    await NewrelicMobile.instance.startAgent(config);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation': true,
+      'analyticsEventEnabled': true,
+      'crashReportingEnabled': true,
+      'interactionTracingEnabled': true,
+      'networkRequestEnabled': true,
+      'networkErrorRequestEnabled': true,
+      'httpResponseBodyCaptureEnabled': true,
+      'loggingEnabled': true,
+      'fedRampEnabled':true
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+  });
+
   test('test RecordError should be called', () async {
     var error = Exception("test");
 
