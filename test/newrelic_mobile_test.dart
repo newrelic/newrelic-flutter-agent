@@ -657,7 +657,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -685,7 +686,8 @@ void main() {
       'networkRequestEnabled': false,
       'networkErrorRequestEnabled': false,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -711,7 +713,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -723,8 +726,7 @@ void main() {
   });
 
   test('agent should start with AppToken with fedRamp disabled', () async {
-    Config config =
-    Config(accessToken: "test1234");
+    Config config = Config(accessToken: "test1234");
     await NewrelicMobile.instance.startAgent(config);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -738,7 +740,7 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled':false
+      'fedRampEnabled': false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -750,8 +752,7 @@ void main() {
   });
 
   test('agent should start with AppToken with fedRamp Enabled', () async {
-    Config config =
-    Config(accessToken: "test1234",fedRampEnabled: true);
+    Config config = Config(accessToken: "test1234", fedRampEnabled: true);
     await NewrelicMobile.instance.startAgent(config);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -765,7 +766,7 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled':true
+      'fedRampEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -828,7 +829,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(
@@ -867,7 +869,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': false
+      'loggingEnabled': false,
+      'fedRampEnabled': false
     };
 
     final Map<String, String> eventParams = <String, String>{'message': 'test'};
@@ -880,7 +883,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.0',
+      'value': '1.0.1',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -921,12 +924,13 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.0',
+      'value': '1.0.1',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -963,7 +967,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(
