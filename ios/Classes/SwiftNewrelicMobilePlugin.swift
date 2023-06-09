@@ -40,6 +40,10 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                if(args?["interactionTracingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_InteractionTracing)
             }
+            
+            if(args?["fedRampEnabled"] as! Bool == true) {
+                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_FedRampEnabled)
+         }
 
             if(args?["loggingEnabled"] as! Bool == true) {
                 NRLogger.setLogLevels(NRLogLevelALL.rawValue)

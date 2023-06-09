@@ -83,6 +83,12 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.disableFeature(FeatureFlag.InteractionTracing)
                 }
 
+                if (call.argument<Boolean>("fedRampEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.FedRampEnabled)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.FedRampEnabled)
+                }
+
                 NewRelic.withApplicationToken(
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!)
