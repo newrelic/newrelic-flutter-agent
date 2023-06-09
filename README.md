@@ -94,7 +94,10 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
       printStatementAsEventsEnabled : true,
 
        // Optional:Enable/Disable automatic instrumentation of Http Request
-      httpInstrumentationEnabled:true
+      httpInstrumentationEnabled:true,
+
+      // Optional : Enable or disable reporting data using different endpoints for US government clients
+      fedRampEnabled: false  
       );
 
   NewrelicMobile.instance.start(config, () {
