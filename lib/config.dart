@@ -15,6 +15,7 @@ class Config {
   final bool webViewInstrumentation;
   final bool printStatementAsEventsEnabled;
   final bool httpInstrumentationEnabled;
+  final bool fedRampEnabled;
 
   Config(
       {required this.accessToken,
@@ -27,5 +28,6 @@ class Config {
       this.networkRequestEnabled = true,
       this.webViewInstrumentation = true,
       this.printStatementAsEventsEnabled = true,
-      this.httpInstrumentationEnabled = true});
+      this.httpInstrumentationEnabled = true,
+      this.fedRampEnabled = false});
 }

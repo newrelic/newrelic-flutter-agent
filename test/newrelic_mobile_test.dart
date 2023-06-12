@@ -10,7 +10,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:newrelic_mobile/MetricUnit.dart';
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
@@ -658,7 +657,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -686,7 +686,8 @@ void main() {
       'networkRequestEnabled': false,
       'networkErrorRequestEnabled': false,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -712,7 +713,60 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('agent should start with AppToken with fedRamp disabled', () async {
+    Config config = Config(accessToken: "test1234");
+    await NewrelicMobile.instance.startAgent(config);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation': true,
+      'analyticsEventEnabled': true,
+      'crashReportingEnabled': true,
+      'interactionTracingEnabled': true,
+      'networkRequestEnabled': true,
+      'networkErrorRequestEnabled': true,
+      'httpResponseBodyCaptureEnabled': true,
+      'loggingEnabled': true,
+      'fedRampEnabled': false
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('agent should start with AppToken with fedRamp Enabled', () async {
+    Config config = Config(accessToken: "test1234", fedRampEnabled: true);
+    await NewrelicMobile.instance.startAgent(config);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation': true,
+      'analyticsEventEnabled': true,
+      'crashReportingEnabled': true,
+      'interactionTracingEnabled': true,
+      'networkRequestEnabled': true,
+      'networkErrorRequestEnabled': true,
+      'httpResponseBodyCaptureEnabled': true,
+      'loggingEnabled': true,
+      'fedRampEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -775,7 +829,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(
@@ -814,7 +869,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': false
+      'loggingEnabled': false,
+      'fedRampEnabled': false
     };
 
     final Map<String, String> eventParams = <String, String>{'message': 'test'};
@@ -827,7 +883,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.0',
+      'value': '1.0.1',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -868,12 +924,13 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.0',
+      'value': '1.0.1',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -910,7 +967,8 @@ void main() {
       'networkRequestEnabled': true,
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true
+      'loggingEnabled': true,
+      'fedRampEnabled': false
     };
 
     expect(

@@ -40,6 +40,10 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                if(args?["interactionTracingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_InteractionTracing)
             }
+            
+            if(args?["fedRampEnabled"] as! Bool == true) {
+                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_FedRampEnabled)
+         }
 
             if(args?["loggingEnabled"] as! Bool == true) {
                 NRLogger.setLogLevels(NRLogLevelALL.rawValue)
@@ -108,7 +112,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let reason = args!["reason"] as? String
             let fatal = args!["fatal"] as? Bool
             let stackTraceElements = args!["stackTraceElements"] as? [[String : Any]] ?? [[String : Any]]()
-            let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.0"
+            let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.1"
 
             let attributes: [String:Any] = [
                 "name": exceptionMessage ?? "Exception name not found",
