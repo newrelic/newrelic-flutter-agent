@@ -196,6 +196,7 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
         NewRelicHttpClientRequest(actualRequest, timestamp, traceAttributes));
   }, onError: (dynamic err) {
     NewrelicMobile.instance.recordError(err, StackTrace.current);
+    throw err;
   });
 }
 
@@ -223,6 +224,7 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
       return response;
     }, onError: (dynamic err) {
       NewrelicMobile.instance.recordError(err, StackTrace.current);
+      throw err;
     });
   }
 
@@ -284,6 +286,7 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
             response, _httpClientRequest, this.timestamp, traceData),
         onError: (dynamic err) {
       NewrelicMobile.instance.recordError(err, StackTrace.current);
+      throw err;
     });
   }
 
@@ -300,6 +303,7 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
             _wrapResponse(response, _httpClientRequest, timestamp, traceData),
         onError: (dynamic err) {
       NewrelicMobile.instance.recordError(err, StackTrace.current);
+      throw err;
     });
   }
 
@@ -579,6 +583,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
       return _wrapResponse(response, request, timestamp, traceData);
     }, onError: (dynamic err) {
       NewrelicMobile.instance.recordError(err, StackTrace.current);
+      throw err;
     });
   }
 
