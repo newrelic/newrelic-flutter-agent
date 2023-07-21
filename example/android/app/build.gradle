@@ -58,6 +58,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    namespace 'com.newrelic.newrelic_mobile_example'
 }
 
 flutter {

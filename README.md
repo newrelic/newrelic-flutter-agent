@@ -28,7 +28,7 @@ using native components.
 ## Requirements
 
 - Flutter ">= 2.5.0"
-- Dart ">=2.16.2 <3.0.0"
+- Dart ">=2.16.2 <4.0.0"
 - [IOS native requirements](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/get-started/new-relic-ios-compatibility-requirements)
 - [Android native requirements](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/get-started/new-relic-android-compatibility-requirements)
 
@@ -39,7 +39,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 1.0.0
+  newrelic_mobile: 1.0.2
   
 ```
 
