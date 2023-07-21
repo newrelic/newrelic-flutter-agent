@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Upgrade native Android agent to v7.0.0
+
 ## 1.0.1
 
 * Upgrade native iOS agent to v7.4.5

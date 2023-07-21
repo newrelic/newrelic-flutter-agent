@@ -4,7 +4,6 @@
  */
 
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io' show HttpOverrides, Platform;
 
 import 'package:flutter/foundation.dart';
@@ -17,7 +16,6 @@ import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'metricunit.dart';
-
 
 class NewrelicMobile {
   static final NewrelicMobile instance = NewrelicMobile._();
@@ -40,7 +38,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.0.1");
+          .setAttribute("Flutter Agent Version", "1.0.2");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -117,7 +115,8 @@ class NewrelicMobile {
       'networkErrorRequestEnabled': config.networkErrorRequestEnabled,
       'httpResponseBodyCaptureEnabled': config.httpResponseBodyCaptureEnabled,
       'loggingEnabled': config.loggingEnabled,
-      'fedRampEnabled':config.fedRampEnabled
+      'fedRampEnabled': config.fedRampEnabled
+
     };
 
     if (config.printStatementAsEventsEnabled) {
