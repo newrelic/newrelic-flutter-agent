@@ -116,6 +116,7 @@ class NewrelicMobile {
       'httpResponseBodyCaptureEnabled': config.httpResponseBodyCaptureEnabled,
       'loggingEnabled': config.loggingEnabled,
       'fedRampEnabled': config.fedRampEnabled
+
     };
 
     if (config.printStatementAsEventsEnabled) {

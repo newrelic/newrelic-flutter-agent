@@ -114,6 +114,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let stackTraceElements = args!["stackTraceElements"] as? [[String : Any]] ?? [[String : Any]]()
             let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.2"
 
+
             let attributes: [String:Any] = [
                 "name": exceptionMessage ?? "Exception name not found",
                 "reason": reason ?? "Reason not found",
