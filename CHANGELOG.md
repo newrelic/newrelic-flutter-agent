@@ -1,6 +1,9 @@
 ## 1.0.2
 
-* Upgrade native Android agent to v7.0.0
+* Upgraded native Android agent to v7.0.0
+* Upgraded native iOS agent to v7.4.6
+* Resolved CustomTransitionPage issue for Go Router instrumentation
+* Fixed issue where HTTP error stack traces were not displayed in the IDE
 
 ## 1.0.1
 

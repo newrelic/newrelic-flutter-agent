@@ -117,6 +117,26 @@ class Page1Screen extends StatelessWidget {
                 ElevatedButton(
                     onPressed: () async {
                       final client = HttpClient();
+                      // Here can be any non-existing URL.
+                      final request = await client.postUrl(Uri.parse(
+                          "https://localhost:8080"));
+                      request.headers.set(HttpHeaders.contentTypeHeader,
+                          "application/json; charset=UTF-8");
+                      request.headers.set("ngrok-skip-browser-warning", 69420);
+                      request.write(
+                          '{"title": "Foo","body": "Bar", "userId": 99}');
+
+                      final response = await request.close();
+
+                      response.transform(utf8.decoder).listen((contents) {
+                        print(contents);
+                      });
+                    },
+                    child: const Text('Http call to non-existing URL',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                ElevatedButton(
+                    onPressed: () async {
+                      final client = HttpClient();
                       final request = await client.postUrl(Uri.parse(
                           "https://8f1d-2600-1006-b003-7627-ca1-491c-9b0-25ff.ngrok.io/notice_error"));
                       request.headers.set(HttpHeaders.contentTypeHeader,

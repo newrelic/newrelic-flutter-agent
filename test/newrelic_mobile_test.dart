@@ -1032,7 +1032,7 @@ void main() {
     final currentRoute = route(const RouteSettings(name: currentRouteName));
     final oldRoute = route(const RouteSettings(name: oldRouteName));
 
-    navigationObserver.didPop(currentRoute, oldRoute);
+    navigationObserver.didPop(oldRoute,currentRoute);
 
     Map<String, String?> attributes = <String, String?>{
       'methodType': 'didPop',
