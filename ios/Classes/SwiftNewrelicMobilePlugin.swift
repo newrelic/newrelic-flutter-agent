@@ -112,7 +112,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let reason = args!["reason"] as? String
             let fatal = args!["fatal"] as? Bool
             let stackTraceElements = args!["stackTraceElements"] as? [[String : Any]] ?? [[String : Any]]()
-            let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.2"
+            let version = Bundle.main.infoDictionary?["CFBundleVersion"] ?? "1.0.3"
 
 
             let attributes: [String:Any] = [

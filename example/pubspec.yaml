@@ -31,6 +31,7 @@ dependencies:
   dio: ^4.0.6
   graphql_flutter: ^5.1.2
   graphql: ^5.1.3
+  go_router: ^10.0.0
 
 
 
