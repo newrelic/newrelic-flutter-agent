@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   stack_trace: ^1.11.0
+  go_router:
 
 
 
