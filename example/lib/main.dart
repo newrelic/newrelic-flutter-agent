@@ -118,8 +118,8 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       final client = HttpClient();
                       // Here can be any non-existing URL.
-                      final request = await client.postUrl(Uri.parse(
-                          "https://localhost:8080"));
+                      final request = await client
+                          .postUrl(Uri.parse("https://localhost:8080"));
                       request.headers.set(HttpHeaders.contentTypeHeader,
                           "application/json; charset=UTF-8");
                       request.headers.set("ngrok-skip-browser-warning", 69420);
