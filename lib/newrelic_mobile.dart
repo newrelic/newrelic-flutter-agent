@@ -38,7 +38,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.0.2");
+          .setAttribute("Flutter Agent Version", "1.0.3");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -116,7 +116,6 @@ class NewrelicMobile {
       'httpResponseBodyCaptureEnabled': config.httpResponseBodyCaptureEnabled,
       'loggingEnabled': config.loggingEnabled,
       'fedRampEnabled': config.fedRampEnabled
-
     };
 
     if (config.printStatementAsEventsEnabled) {

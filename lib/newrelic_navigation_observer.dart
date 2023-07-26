@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
+import 'package:go_router/go_router.dart';
 
 const breadCrumbName = 'navigation';
 
@@ -13,14 +14,15 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
     if (route is PageRoute && previousRoute is PageRoute) {
-      if (route.settings is MaterialPage) {
-        var goRoute = route.settings as MaterialPage;
+      if (route.settings is MaterialPage ||
+          route.settings is CustomTransitionPage) {
+        var goRoute = route.settings;
 
-        var goPreviousRoute = previousRoute.settings as MaterialPage;
+        var goPreviousRoute = previousRoute.settings;
 
-        _addGoRouterBreadcrumb('didPop', goPreviousRoute, goRoute);
+        _addGoRouterBreadcrumb('didPop', goRoute, goPreviousRoute);
       } else {
-        _addBreadcrumb('didPop', previousRoute.settings, route.settings);
+        _addBreadcrumb('didPop', route.settings, previousRoute.settings);
       }
     }
   }
@@ -30,13 +32,14 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
     super.didPush(route, previousRoute);
 
     if (route is PageRoute) {
-      if (route.settings is MaterialPage) {
-        var goRoute = route.settings as MaterialPage;
+      if (route.settings is MaterialPage ||
+          route.settings is CustomTransitionPage) {
+        var goRoute = route.settings;
 
         var goPreviousRoute;
 
         if (previousRoute != null) {
-          goPreviousRoute = previousRoute.settings as MaterialPage;
+          goPreviousRoute = previousRoute.settings;
         }
 
         _addGoRouterBreadcrumb('didPush', goPreviousRoute, goRoute);
@@ -50,10 +53,11 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
     if (newRoute is PageRoute && oldRoute is PageRoute) {
-      if (newRoute.settings is MaterialPage) {
-        var goRoute = newRoute.settings as MaterialPage;
+      if (newRoute.settings is MaterialPage ||
+          newRoute.settings is CustomTransitionPage) {
+        var goRoute = newRoute.settings;
 
-        var goPreviousRoute = oldRoute.settings as MaterialPage;
+        var goPreviousRoute = oldRoute.settings;
 
         _addGoRouterBreadcrumb('didReplace', goPreviousRoute, goRoute);
       } else {
@@ -75,7 +79,7 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
   }
 
   void _addGoRouterBreadcrumb(
-      String methodType, MaterialPage? fromRoute, MaterialPage? toRoute) {
+      String methodType, dynamic fromRoute, dynamic toRoute) {
     var fromKey = fromRoute?.key.toString();
     var toKey = toRoute?.key.toString();
 

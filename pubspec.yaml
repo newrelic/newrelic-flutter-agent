@@ -1,6 +1,6 @@
 name: newrelic_mobile
 description: Flutter plugin for NewRelic Mobile. This plugin allows you to instrument Flutter apps with help of native New Relic Android and iOS agents.
-version: 1.0.2
+version: 1.0.3
 
 homepage: https://github.com/newrelic/newrelic-flutter-agent
 
@@ -11,7 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  stack_trace: ^1.10.0
+  stack_trace: ^1.11.0
+  go_router:
 
 
 
@@ -22,8 +23,9 @@ dev_dependencies:
   dio: ^4.0.6
   mockito: ^5.2.0
   build_runner: ^2.2.0
-  go_router: ^2.2.8
   http: ^0.13.4
+  go_router: ^5.0.0
+
 
 
 

@@ -883,8 +883,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.2',
-
+      'value': '1.0.3',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -931,8 +930,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.2',
-
+      'value': '1.0.3',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1034,7 +1032,7 @@ void main() {
     final currentRoute = route(const RouteSettings(name: currentRouteName));
     final oldRoute = route(const RouteSettings(name: oldRouteName));
 
-    navigationObserver.didPop(currentRoute, oldRoute);
+    navigationObserver.didPop(oldRoute, currentRoute);
 
     Map<String, String?> attributes = <String, String?>{
       'methodType': 'didPop',
