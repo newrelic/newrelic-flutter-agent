@@ -141,7 +141,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let bytesSent = args!["bytesSent"] as! NSNumber
             let bytesReceived = args!["bytesReceived"] as! NSNumber
             let responseBody = args!["responseBody"] as! NSString
-            let traceHeaders = args?["traceAttributes"] as! [String : Any]
+            let traceHeaders = args?["traceAttributes"] as? [String : Any] ?? [:]
 
             NewRelic.noticeNetworkRequest(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), responseHeaders: nil, statusCode: statusCode, bytesSent: UInt(truncating: bytesSent), bytesReceived: UInt(truncating: bytesReceived), responseData: responseBody.data(using: String.Encoding.utf8.rawValue), traceHeaders: traceHeaders, andParams: nil)
             result(true)
