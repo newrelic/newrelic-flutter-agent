@@ -68,10 +68,10 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
       // Optional:Enable or disable collection of event data.
       analyticsEventEnabled: true,
 
-      // Optional:Enable or disable reporting successful HTTP requests to the MobileRequest event type.
+      // Optional:Enable or disable reporting network and HTTP request errors to the MobileRequestError event type.
       networkErrorRequestEnabled: true,
 
-      // Optional:Enable or disable reporting network and HTTP request errors to the MobileRequestError event type.
+      // Optional:Enable or disable reporting successful HTTP requests to the MobileRequest event type.
       networkRequestEnabled: true,
 
       // Optional:Enable or disable crash reporting.
