@@ -7,7 +7,6 @@ This agent allows you to instrument Flutter apps with help of native New Relic A
 agents. The New Relic SDKs collect crashes, network traffic, and other information for hybrid apps
 using native components.
 
-
 ## Features
 
 * Capture Dart errors
@@ -446,4 +445,5 @@ If you would like to contribute to this project, review [these guidelines](./CON
 
 newrelic-flutter-agent is licensed under the [Apache 2.0](https://apache.org/licenses/LICENSE-2.0.txt)
 License.
+
 > newrelic-flutter-agent also uses source code from third-party libraries. Full details on which libraries are used and the terms under which they are licensed can be found in the third-party notices document.
