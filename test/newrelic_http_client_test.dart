@@ -42,8 +42,9 @@ void main() {
   late MockHttpHeaders mockHttpHeaders;
 
   setUpAll(() async {
-    const MethodChannel('newrelic_mobile')
-        .setMockMethodCallHandler((MethodCall methodCall) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(MethodChannel('newrelic_mobile'),
+            (MethodCall methodCall) async {
       log.add(methodCall);
       switch (methodCall.method) {
         case 'noticeDistributedTrace':
@@ -60,6 +61,25 @@ void main() {
           return true;
       }
     });
+
+    // const MethodChannel('newrelic_mobile')
+    //     .setMockMethodCallHandler((MethodCall methodCall) async {
+    //   log.add(methodCall);
+    //   switch (methodCall.method) {
+    //     case 'noticeDistributedTrace':
+    //       Map<String, dynamic> map = {
+    //         'id': 'test1',
+    //         'newrelic': 'test3',
+    //         'guid': 'test3',
+    //         'trace.id': 'test3',
+    //         'tracestate': 'test3',
+    //         'traceparent': 'test3'
+    //       };
+    //       return map;
+    //     default:
+    //       return true;
+    //   }
+    // });
   });
 
   setUp(() {
