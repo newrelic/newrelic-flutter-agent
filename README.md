@@ -38,7 +38,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 1.0.3
+  newrelic_mobile: 1.0.4
   
 ```
 
@@ -203,7 +203,7 @@ final router = GoRouter(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:7.0.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:7.1.0"
       }
     }
   ```
