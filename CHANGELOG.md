@@ -1,3 +1,9 @@
+## 1.0.4
+
+* Upgraded native Android agent to v7.1.0
+* Upgraded native iOS agent to v7.4.7
+* Added Support for AGP 8 for Android
+
 ## 1.0.3
 
 * Upgraded native Android agent to v7.0.0
