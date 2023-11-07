@@ -49,12 +49,12 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 24
     }
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.newrelic.agent.android:android-agent:7.1.0'
+    implementation 'com.newrelic.agent.android:android-agent:7.0.0'
 
 }

@@ -1,3 +1,7 @@
+## 1.0.5
+
+* Fixed issue in Flutter agent causing appbuild and appversion fields to overwrite for iOS mobile-handled exceptions.
+
 ## 1.0.4
 
 * Upgraded native Android agent to v7.1.0
