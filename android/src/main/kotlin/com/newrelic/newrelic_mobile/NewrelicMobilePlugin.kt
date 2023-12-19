@@ -10,6 +10,7 @@ import android.os.Build
 import androidx.annotation.NonNull
 import com.newrelic.agent.android.ApplicationFramework
 import com.newrelic.agent.android.FeatureFlag
+import com.newrelic.agent.android.HttpHeaders
 import com.newrelic.agent.android.NewRelic
 import com.newrelic.agent.android.metric.MetricUnit
 import com.newrelic.agent.android.stats.StatsEngine
@@ -93,9 +94,9 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!)
                     .withLogLevel(5)
-                    .withApplicationFramework(ApplicationFramework.Flutter, "1.0.5").start(context)
+                    .withApplicationFramework(ApplicationFramework.Flutter, "1.0.6").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.0.5");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.0.6");
                 result.success("Agent Started")
             }
             "setUserId" -> {
@@ -149,7 +150,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     }
                 }
                 val eventRecorded =
-                    NewRelic.recordCustomEvent(eventType, eventName, eventAttributes);
+                    NewRelic.recordCustomEvent(eventType, eventName, eventAttributes)
                 result.success(eventRecorded)
             }
             "startInteraction" -> {
@@ -213,6 +214,8 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val bytesReceived: Long = call.argument("bytesReceived")!!
                 val responseBody: String? = call.argument("responseBody")!!
                 val traceAttributes: HashMap<String, Any>? = call.argument("traceAttributes")
+                val params: HashMap<String, String>? = call.argument("params")
+
 
                 NewRelic.noticeHttpTransaction(
                     url,
@@ -223,11 +226,11 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     bytesSent,
                     bytesReceived,
                     responseBody,
-                    null,
+                    params,
                     null,
                     traceAttributes
                 )
-                result.success("Http Transcation Recorded")
+                result.success("Http Transaction Recorded")
 
             }
             "noticeNetworkFailure" -> {
@@ -317,6 +320,13 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
             }
             "currentSessionId" -> {
                 result.success(NewRelic.currentSessionId())
+            }
+            "addHTTPHeadersTrackingFor" -> {
+                val headers: ArrayList<String>? = call.argument("headers") as ArrayList<String>?
+                result.success(NewRelic.addHTTPHeadersTrackingFor(headers))
+            }
+            "getHTTPHeadersTrackingFor" -> {
+                result.success(HttpHeaders.getInstance().httpHeaders.toList())
             }
             else -> {
                 result.notImplemented()

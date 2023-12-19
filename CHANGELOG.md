@@ -1,3 +1,10 @@
+## 1.0.6
+
+* Adds configurable request header instrumentation to network events
+  The agent will now produce network event attributes for select header values if the headers are detected on the request. The header names to instrument are passed into the agent when started.
+* Updated the native Android agent to version 7.2.0.
+* Updated the native iOS agent to version 7.4.8.
+
 ## 1.0.5
 
 * Fixed issue in Flutter agent causing appbuild and appversion fields to overwrite for iOS mobile-handled exceptions.

@@ -127,6 +127,16 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
         case "noticeDistributedTrace":
 
             result(NewRelic.generateDistributedTracingHeaders())
+        
+        case "addHTTPHeadersTrackingFor":
+
+            let headers = args!["headers"] as! [String]
+            NewRelic.addHTTPHeaderTracking(for: headers)
+            result("headers added")
+        
+        case "getHTTPHeadersTrackingFor":
+
+            result([])
 
         case "noticeHttpTransaction":
 

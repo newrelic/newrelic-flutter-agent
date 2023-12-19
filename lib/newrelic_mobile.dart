@@ -38,7 +38,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.0.5");
+          .setAttribute("Flutter Agent Version", "1.0.6");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -216,6 +216,18 @@ class NewrelicMobile {
     return interactionId;
   }
 
+  void addHTTPHeadersTrackingFor(List<String> headers) async {
+    final Map<String, List<String>> params = <String, List<String>>{
+      'headers': headers
+    };
+
+    await _channel.invokeMethod('addHTTPHeadersTrackingFor', params);
+  }
+
+  Future<dynamic> getHTTPHeadersTrackingFor() async {
+    return await _channel.invokeMethod('getHTTPHeadersTrackingFor');
+  }
+
   Future<Map<String, dynamic>> noticeDistributedTrace(
       Map<String, dynamic> requestAttributes) async {
     final dynamic traceAttributes =
@@ -267,7 +279,8 @@ class NewrelicMobile {
       int bytesSent,
       int bytesReceived,
       Map<String, dynamic>? traceData,
-      {String responseBody = ""}) async {
+      {Map<String, dynamic>? httpParams,
+      String responseBody = ""}) async {
     Map<String, dynamic>? traceAttributes;
     if (traceData != null) {
       if (PlatformManager.instance.isAndroid()) {
@@ -294,7 +307,8 @@ class NewrelicMobile {
       'bytesSent': bytesSent != -1 ? bytesSent : 0,
       'bytesReceived': bytesReceived != -1 ? bytesReceived : 0,
       'responseBody': responseBody,
-      'traceAttributes': traceAttributes
+      'traceAttributes': traceAttributes,
+      'params': httpParams
     };
     return await _channel.invokeMethod('noticeHttpTransaction', params);
   }
