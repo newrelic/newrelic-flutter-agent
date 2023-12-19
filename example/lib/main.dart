@@ -59,6 +59,7 @@ void main() {
   });
   NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
+  NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car","Music"]);
 }
 
 /// The main app.
@@ -141,6 +142,7 @@ class Page1Screen extends StatelessWidget {
                           "https://8f1d-2600-1006-b003-7627-ca1-491c-9b0-25ff.ngrok.io/notice_error"));
                       request.headers.set(HttpHeaders.contentTypeHeader,
                           "application/json; charset=UTF-8");
+                      request.headers.set("Car", "Honda");
                       request.headers.set("ngrok-skip-browser-warning", 69420);
                       request.write(
                           '{"title": "Foo","body": "Bar", "userId": 99}');
@@ -158,7 +160,8 @@ class Page1Screen extends StatelessWidget {
                       final client = HttpClient();
                       var uri = Uri.parse("http://graph.facebook.com/");
                       var request = await client.getUrl(uri);
-                      request.followRedirects = false;
+                      request.headers.set("Car", "BMW");
+                      // request.followRedirects = false;
                       var response = await request.close();
 
                       // var url = Uri.parse(
@@ -173,6 +176,7 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       try {
                         var dio = Dio();
+                        dio.options.headers['Car'] = 'Toyota';
                         dio.options.followRedirects = false;
                         var response =
                             await dio.get('http://graph.facebook.com/');
