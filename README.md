@@ -38,7 +38,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 1.0.5
+  newrelic_mobile: 1.0.6
   
 ```
 
@@ -203,7 +203,7 @@ final router = GoRouter(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:7.1.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:7.2.0"
       }
     }
   ```
@@ -353,6 +353,18 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
     NewrelicMobile.instance.incrementAttribute("FlutterCustomAttrNumber",value :5.0);
 ```
 
+### [shutdown](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/shut-down/)() : void;
+> Shut down the agent within the current application lifecycle during runtime.
+```dart
+    NewrelicMobile.instance.shutdown();
+```
+### [shutdown](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/mobile-sdk/add-tracked-headers/)() : void;
+> This API allows you to add any header field strings to a list that gets recorded as attributes with networking request events. After header fields have been added using this function, if the headers are in a network call they will be included in networking events in NR1.
+```dart
+     NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car","Music"]);
+```
+
+
 ## Manual Error reporting
 
 You can register non fatal exceptions using the following method with Custom Attributes:
@@ -387,6 +399,11 @@ To invoke this script during an XCode build:
 4. Click the + icon above Target Dependencies and choose New Run Script Build Phase. Ensure the new build script is the very last build script.
 5. Add the following lines of code to the new phase and replace `APP_TOKEN` with your iOS application token.
     1. If there is a checkbox below Run script that says "Run script: Based on Dependency analysis" please make sure it is not checked.
+
+
+### Flutter agent 1.0.2 or higher
+
+With the ios agent 7.4.6 release, the XCFramework no longer includes the dsym-upload-tools. You can find the dsym-upload-tools in the dsym-upload-tools folder of the https://github.com/newrelic/newrelic-ios-agent-spm Swift Package Manager repository. Please copy the dsym-upload-tools directory into your application source code directory by copying the XCFramework into your project or using Cocoapods if you're integrating the New Relic iOS Agent. Use the run script below in your Xcode build phases to perform symbol upload steps during app builds in Xcode.
 
 ```
 ARTIFACT_DIR="${BUILD_DIR%Build/*}"
