@@ -308,7 +308,7 @@ class NewrelicMobile {
       'bytesReceived': bytesReceived != -1 ? bytesReceived : 0,
       'responseBody': responseBody,
       'traceAttributes': traceAttributes,
-      'params': httpParams
+      'params':httpParams
     };
     return await _channel.invokeMethod('noticeHttpTransaction', params);
   }
