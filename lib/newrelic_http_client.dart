@@ -196,6 +196,7 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
         NewRelicHttpClientRequest(actualRequest, timestamp, traceAttributes));
   }, onError: (dynamic err) {
     NewrelicMobile.instance.recordError(err, StackTrace.current);
+    Error.throwWithStackTrace(err, StackTrace.current);
   });
 }
 
