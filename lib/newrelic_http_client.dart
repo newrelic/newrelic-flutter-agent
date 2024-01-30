@@ -183,8 +183,6 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
 
   Map<String, dynamic> params = Map();
 
-
-
   return request.then((actualRequest) {
     actualRequest.headers
         .add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
@@ -196,33 +194,35 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
       return request as Future<NewRelicHttpClientRequest>;
     }
 
-
-
-
-    return Future.value(
-        NewRelicHttpClientRequest(actualRequest, timestamp, traceAttributes,params));
+    return Future.value(NewRelicHttpClientRequest(
+        actualRequest, timestamp, traceAttributes, params));
   }, onError: (dynamic err) {
     NewrelicMobile.instance.recordError(err, StackTrace.current);
     throw err;
   });
 }
 
-Future<NewRelicHttpClientResponse> _wrapResponse(HttpClientResponse response,
-    HttpClientRequest request, int timestamp, Map<String, dynamic> traceData) async {
+Future<NewRelicHttpClientResponse> _wrapResponse(
+    HttpClientResponse response,
+    HttpClientRequest request,
+    int timestamp,
+    Map<String, dynamic> traceData) async {
   if (response is NewRelicHttpClientResponse) {
     return response;
   }
 
-  dynamic headersList = await NewrelicMobile.instance.getHTTPHeadersTrackingFor();
-  Map<String,String> params = Map();
+  dynamic headersList =
+      await NewrelicMobile.instance.getHTTPHeadersTrackingFor();
+  Map<String, String> params = Map();
 
-  for(String header in headersList) {
-    if(request.headers.value(header) != null) {
+  for (String header in headersList) {
+    if (request.headers.value(header) != null) {
       params.putIfAbsent(header, () => request.headers.value(header)!);
     }
   }
 
-  return NewRelicHttpClientResponse(response, request, timestamp, traceData,params: params);
+  return NewRelicHttpClientResponse(response, request, timestamp, traceData,
+      params: params);
 }
 
 class NewRelicHttpClientRequest extends HttpClientRequest {
@@ -232,13 +232,17 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
   Map<String, dynamic> traceData;
   Map<String, dynamic>? params;
 
-
   NewRelicHttpClientRequest(
-      this._httpClientRequest, this.timestamp, this.traceData,[this.params]) {
+      this._httpClientRequest, this.timestamp, this.traceData,
+      [this.params]) {
     var request = this;
     request.done.then((value) {
-      var response =
-          _wrapResponse(value, request, this.timestamp, this.traceData,);
+      var response = _wrapResponse(
+        value,
+        request,
+        this.timestamp,
+        this.traceData,
+      );
       return response;
     }, onError: (dynamic err) {
       NewrelicMobile.instance.recordError(err, StackTrace.current);
@@ -397,7 +401,8 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
   dynamic params;
 
   NewRelicHttpClientResponse(
-      this._httpClientResponse, this.request, this.timestamp, this.traceData,{this.params}) {
+      this._httpClientResponse, this.request, this.timestamp, this.traceData,
+      {this.params}) {
     _wrapperStream = _readAndRecreateStream(_httpClientResponse);
   }
 

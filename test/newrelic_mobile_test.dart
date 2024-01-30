@@ -59,6 +59,7 @@ void main() {
     "tracestate": "testtststst",
     "traceparent": "rereteutueyuyeuyeuye"
   };
+
   const httpParams = {
     "Car":"Honda",
     "Music":"Jazz"
@@ -323,7 +324,6 @@ void main() {
           )
         ]);
       });
-
   test('test endInteraction should be called with interActionId ', () async {
     NewrelicMobile.instance.endInteraction(interActionId);
     final Map<String, dynamic> params = <String, dynamic>{
@@ -407,7 +407,6 @@ void main() {
     await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
         statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
         responseBody: responseBody,httpParams: httpParams);
-
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
       'httpMethod': httpMethod,
@@ -473,7 +472,6 @@ void main() {
     await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
         statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
         responseBody: responseBody,httpParams: httpParams);
-
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
       'httpMethod': httpMethod,
