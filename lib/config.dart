@@ -16,6 +16,7 @@ class Config {
   final bool printStatementAsEventsEnabled;
   final bool httpInstrumentationEnabled;
   final bool fedRampEnabled;
+  final bool offlineStorageEnabled;
 
   Config(
       {required this.accessToken,
@@ -29,5 +30,6 @@ class Config {
       this.webViewInstrumentation = true,
       this.printStatementAsEventsEnabled = true,
       this.httpInstrumentationEnabled = true,
-      this.fedRampEnabled = false});
+      this.fedRampEnabled = false,
+      this.offlineStorageEnabled = true});
 }

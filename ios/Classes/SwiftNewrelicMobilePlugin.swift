@@ -43,7 +43,14 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             
             if(args?["fedRampEnabled"] as! Bool == true) {
                 NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_FedRampEnabled)
-         }
+             }
+
+            if(args?["offlineStorageEnabled"] as! Bool == true) {
+                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_OfflineStorage)
+            } else {
+                NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_OfflineStorage)
+            }
+
 
             if(args?["loggingEnabled"] as! Bool == true) {
                 NRLogger.setLogLevels(NRLogLevelALL.rawValue)
@@ -103,8 +110,13 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
         case "setMaxEventPoolSize":
             let maxSize = args!["maxSize"] as? UInt32
 
-            NewRelic.setMaxEventPoolSize(maxSize ?? 4000)
+            NewRelic.setMaxEventPoolSize(maxSize ?? 1000)
             result("maxSize set")
+          case "setMaxOfflineStorageSize":
+             let megaBytes = args!["megaBytes"] as? UInt32
+
+             NewRelic.setMaxOfflineStorageSize(megaBytes ?? 100)
+             result("megaBytes set")
         case "recordError":
             let exceptionMessage = args!["exception"] as? String
             let reason = args!["reason"] as? String

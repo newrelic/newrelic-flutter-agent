@@ -17,6 +17,7 @@ using native components.
 * Pass user information to New Relic to track user sessions
 * Screen tracking via NavigationObserver
 * Capture print and debug print statement as CustomEvents
+* Capture Offline Events and Exception
 
 ## Current Support:
 
@@ -96,7 +97,10 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
       httpInstrumentationEnabled:true,
 
       // Optional : Enable or disable reporting data using different endpoints for US government clients
-      fedRampEnabled: false  
+      fedRampEnabled: false ,
+
+      // Optional: Enable or disable offline data storage when no internet connection is available.
+      offlineStorageEnabled:true
       );
 
   NewrelicMobile.instance.start(config, () {

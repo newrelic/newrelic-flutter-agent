@@ -90,13 +90,19 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.disableFeature(FeatureFlag.FedRampEnabled)
                 }
 
+                if (call.argument<Boolean>("offlineStorageEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.OfflineStorage)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.OfflineStorage)
+                }
+
                 NewRelic.withApplicationToken(
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!)
                     .withLogLevel(5)
-                    .withApplicationFramework(ApplicationFramework.Flutter, "1.0.6").start(context)
+                    .withApplicationFramework(ApplicationFramework.Flutter, "1.0.7").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.0.6");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.0.7");
                 result.success("Agent Started")
             }
             "setUserId" -> {
@@ -280,6 +286,15 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.setMaxEventPoolSize(maxSize)
                 }
                 result.success("maxSize set")
+
+            }
+            "setMaxOfflineStorageSize" -> {
+                val megaBytes: Int? = call.argument("megaBytes")
+
+                if (megaBytes != null) {
+                    NewRelic.setMaxOfflineStorageSize(megaBytes)
+                }
+                result.success("megaBytes set")
 
             }
 

@@ -66,8 +66,8 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
     }
   }
 
-  void _addBreadcrumb(
-      String methodType, RouteSettings? fromRoute, RouteSettings? toRoute) {
+  void _addBreadcrumb(String methodType, RouteSettings? fromRoute,
+      RouteSettings? toRoute) {
     Map<String, String?> attributes = <String, String?>{
       'methodType': methodType,
       // ignore: prefer_if_null_operators
@@ -78,20 +78,22 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
         .recordBreadcrumb(breadCrumbName, eventAttributes: attributes);
   }
 
-  void _addGoRouterBreadcrumb(
-      String methodType, dynamic fromRoute, dynamic toRoute) {
-    var fromKey = fromRoute?.key.toString();
-    var toKey = toRoute?.key.toString();
+  void _addGoRouterBreadcrumb(String methodType, dynamic fromRoute,
+      dynamic toRoute) {
+    if (fromRoute is RouteSettings || toRoute is RouteSettings) {
+      var fromKey = fromRoute?.key.toString();
+      var toKey = toRoute?.key.toString();
 
-    Map<String, String?> attributes = <String, String?>{
-      'methodType': methodType,
-      // ignore: prefer_if_null_operators
-      'from': fromRoute?.child != null
-          ? ((fromRoute?.child.toString())! + '(' + fromKey! + ')')
-          : '/',
-      'to': (toRoute?.child.toString())! + '(' + toKey! + ')'
-    };
-    NewrelicMobile.instance
-        .recordBreadcrumb(breadCrumbName, eventAttributes: attributes);
+      Map<String, String?> attributes = <String, String?>{
+        'methodType': methodType,
+        // ignore: prefer_if_null_operators
+        'from': fromRoute?.child != null
+            ? ((fromRoute?.child.toString())! + '(' + fromKey! + ')')
+            : '/',
+        'to': (toRoute?.child.toString())! + '(' + toKey! + ')'
+      };
+      NewrelicMobile.instance
+          .recordBreadcrumb(breadCrumbName, eventAttributes: attributes);
+    }
   }
 }

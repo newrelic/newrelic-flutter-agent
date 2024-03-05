@@ -49,6 +49,7 @@ void main() {
   const bytesReceived = 200;
   const responseBody = 'test';
   const maxSize = 10000;
+  const megaBytes = 100;
   const maxBufferTime = 300;
   const metricUnitBytes = "bytes";
   const traceData = {
@@ -346,6 +347,20 @@ void main() {
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'setMaxEventPoolSize',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test setMaxOfflineStorageSize should be called with megaBytes', () async {
+    NewrelicMobile.instance.setMaxOfflineStorageSize(megaBytes);
+    final Map<String, dynamic> params = <String, dynamic>{
+      'megaBytes': megaBytes,
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'setMaxOfflineStorageSize',
         arguments: params,
       )
     ]);
@@ -760,7 +775,8 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled': false
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -789,7 +805,8 @@ void main() {
       'networkErrorRequestEnabled': false,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled': false
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -816,7 +833,8 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled': false
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -842,7 +860,8 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled': false
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -868,7 +887,35 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled': true
+      'fedRampEnabled': true,
+      'offlineStorageEnabled':true
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('agent should start with AppToken with offlineStorage disabled', () async {
+    Config config = Config(accessToken: "test1234",offlineStorageEnabled: false);
+    await NewrelicMobile.instance.startAgent(config,);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation': true,
+      'analyticsEventEnabled': true,
+      'crashReportingEnabled': true,
+      'interactionTracingEnabled': true,
+      'networkRequestEnabled': true,
+      'networkErrorRequestEnabled': true,
+      'httpResponseBodyCaptureEnabled': true,
+      'loggingEnabled': true,
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -932,7 +979,9 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled': false
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':true
+
     };
 
     expect(
@@ -972,7 +1021,8 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': false,
-      'fedRampEnabled': false
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':true
     };
 
     final Map<String, String> eventParams = <String, String>{'message': 'test'};
@@ -985,7 +1035,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.6',
+      'value': '1.0.7',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1027,12 +1077,14 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled': false
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':true
+
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.6',
+      'value': '1.0.7',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1070,7 +1122,8 @@ void main() {
       'networkErrorRequestEnabled': true,
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
-      'fedRampEnabled': false
+      'fedRampEnabled': false,
+      'offlineStorageEnabled':true
     };
 
     expect(
