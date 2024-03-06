@@ -38,7 +38,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.0.6");
+          .setAttribute("Flutter Agent Version", "1.0.7");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -115,7 +115,8 @@ class NewrelicMobile {
       'networkErrorRequestEnabled': config.networkErrorRequestEnabled,
       'httpResponseBodyCaptureEnabled': config.httpResponseBodyCaptureEnabled,
       'loggingEnabled': config.loggingEnabled,
-      'fedRampEnabled': config.fedRampEnabled
+      'fedRampEnabled': config.fedRampEnabled,
+      'offlineStorageEnabled':config.offlineStorageEnabled,
     };
 
     if (config.printStatementAsEventsEnabled) {
@@ -250,6 +251,12 @@ class NewrelicMobile {
   Future<void> setMaxEventPoolSize(int maxSize) async {
     final Map<String, int> params = <String, int>{'maxSize': maxSize};
     await _channel.invokeMethod('setMaxEventPoolSize', params);
+    return;
+  }
+
+  Future<void> setMaxOfflineStorageSize(int megaBytes) async {
+    final Map<String, int> params = <String, int>{'megaBytes': megaBytes};
+    await _channel.invokeMethod('setMaxOfflineStorageSize', params);
     return;
   }
 

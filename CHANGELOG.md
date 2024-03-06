@@ -1,3 +1,11 @@
+## 1.0.7
+
+* Added the ability to store harvest data that previously would be lost if the application doesn't have internet connection. 
+ These harvest are then sent after an internet connection is established and the next harvest successfully uploads. This feature is enabled by default.
+* Updated the native Android agent to version 7.3.0.
+* Updated the native iOS agent to version 7.4.9.
+
+
 ## 1.0.6
 
 * Adds configurable request header instrumentation to network events
