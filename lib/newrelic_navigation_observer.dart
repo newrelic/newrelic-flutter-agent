@@ -66,8 +66,8 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
     }
   }
 
-  void _addBreadcrumb(String methodType, RouteSettings? fromRoute,
-      RouteSettings? toRoute) {
+  void _addBreadcrumb(
+      String methodType, RouteSettings? fromRoute, RouteSettings? toRoute) {
     Map<String, String?> attributes = <String, String?>{
       'methodType': methodType,
       // ignore: prefer_if_null_operators
@@ -78,8 +78,8 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
         .recordBreadcrumb(breadCrumbName, eventAttributes: attributes);
   }
 
-  void _addGoRouterBreadcrumb(String methodType, dynamic fromRoute,
-      dynamic toRoute) {
+  void _addGoRouterBreadcrumb(
+      String methodType, dynamic fromRoute, dynamic toRoute) {
     if (fromRoute is RouteSettings || toRoute is RouteSettings) {
       var fromKey = fromRoute?.key.toString();
       var toKey = toRoute?.key.toString();

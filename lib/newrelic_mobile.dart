@@ -38,7 +38,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.0.7");
+          .setAttribute("Flutter Agent Version", "1.0.8");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -116,7 +116,7 @@ class NewrelicMobile {
       'httpResponseBodyCaptureEnabled': config.httpResponseBodyCaptureEnabled,
       'loggingEnabled': config.loggingEnabled,
       'fedRampEnabled': config.fedRampEnabled,
-      'offlineStorageEnabled':config.offlineStorageEnabled,
+      'offlineStorageEnabled': config.offlineStorageEnabled,
     };
 
     if (config.printStatementAsEventsEnabled) {
@@ -315,7 +315,7 @@ class NewrelicMobile {
       'bytesReceived': bytesReceived != -1 ? bytesReceived : 0,
       'responseBody': responseBody,
       'traceAttributes': traceAttributes,
-      'params':httpParams
+      'params': httpParams
     };
     return await _channel.invokeMethod('noticeHttpTransaction', params);
   }

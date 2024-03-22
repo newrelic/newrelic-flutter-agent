@@ -1,3 +1,7 @@
+## 1.0.8
+* Updated the native iOS agent to version 7.4.10.
+
+
 ## 1.0.7
 
 * Added the ability to store harvest data that previously would be lost if the application doesn't have internet connection. 
