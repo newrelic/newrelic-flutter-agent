@@ -61,10 +61,7 @@ void main() {
     "traceparent": "rereteutueyuyeuyeuye"
   };
 
-  const httpParams = {
-    "Car":"Honda",
-    "Music":"Jazz"
-  };
+  const httpParams = {"Car": "Honda", "Music": "Jazz"};
   const dartError =
       '#0      Page2Screen.bar.<anonymous closure> (package:newrelic_mobile_example/main.dart:185:17)\n'
       '#1      new Future.<anonymous closure> (dart:async/future.dart:252:37)\n#2      _rootRun (dart:async/zone.dart:1418:47)\n#3      _CustomZone.run (dart:async/zone.dart:1328:19)\n#4      _CustomZone.runGuarded (dart:async/zone.dart:1236:7)\n#5      _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:1276:23)';
@@ -297,34 +294,33 @@ void main() {
 
   test(
       'test getHTTPHeadersTrackingFor should be called and Return List with Headers ',
-          () async {
-        final List<Object?> result =  await NewrelicMobile.instance.getHTTPHeadersTrackingFor() ;
-        expect(methodCalLogs, <Matcher>[
-          isMethodCall(
-            'getHTTPHeadersTrackingFor',
-            arguments: null,
-          )
-        ]);
-        expect(result.length, 2);
-      });
+      () async {
+    final List<Object?> result =
+        await NewrelicMobile.instance.getHTTPHeadersTrackingFor();
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'getHTTPHeadersTrackingFor',
+        arguments: null,
+      )
+    ]);
+    expect(result.length, 2);
+  });
 
-  test(
-      'test addHTTPHeadersTrackingFor should be called with parameters ',
-          () async {
+  test('test addHTTPHeadersTrackingFor should be called with parameters ',
+      () async {
+    List<String> list = ["Car", "Music"];
+    final Map<String, dynamic> params = <String, dynamic>{
+      'headers': list,
+    };
 
-            List<String> list = ["Car","Music"];
-            final Map<String, dynamic> params = <String, dynamic>{
-              'headers': list,
-            };
-
-        NewrelicMobile.instance.addHTTPHeadersTrackingFor(list) ;
-        expect(methodCalLogs, <Matcher>[
-          isMethodCall(
-            'addHTTPHeadersTrackingFor',
-            arguments: params,
-          )
-        ]);
-      });
+    NewrelicMobile.instance.addHTTPHeadersTrackingFor(list);
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'addHTTPHeadersTrackingFor',
+        arguments: params,
+      )
+    ]);
+  });
   test('test endInteraction should be called with interActionId ', () async {
     NewrelicMobile.instance.endInteraction(interActionId);
     final Map<String, dynamic> params = <String, dynamic>{
@@ -352,7 +348,8 @@ void main() {
     ]);
   });
 
-  test('test setMaxOfflineStorageSize should be called with megaBytes', () async {
+  test('test setMaxOfflineStorageSize should be called with megaBytes',
+      () async {
     NewrelicMobile.instance.setMaxOfflineStorageSize(megaBytes);
     final Map<String, dynamic> params = <String, dynamic>{
       'megaBytes': megaBytes,
@@ -421,7 +418,7 @@ void main() {
     };
     await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
         statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
-        responseBody: responseBody,httpParams: httpParams);
+        responseBody: responseBody, httpParams: httpParams);
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
       'httpMethod': httpMethod,
@@ -486,7 +483,7 @@ void main() {
     };
     await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
         statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
-        responseBody: responseBody,httpParams: httpParams);
+        responseBody: responseBody, httpParams: httpParams);
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
       'httpMethod': httpMethod,
@@ -776,7 +773,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':true
+      'offlineStorageEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -806,7 +803,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':true
+      'offlineStorageEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -834,7 +831,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':true
+      'offlineStorageEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -861,7 +858,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':true
+      'offlineStorageEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -888,7 +885,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': true,
-      'offlineStorageEnabled':true
+      'offlineStorageEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -899,9 +896,13 @@ void main() {
     ]);
   });
 
-  test('agent should start with AppToken with offlineStorage disabled', () async {
-    Config config = Config(accessToken: "test1234",offlineStorageEnabled: false);
-    await NewrelicMobile.instance.startAgent(config,);
+  test('agent should start with AppToken with offlineStorage disabled',
+      () async {
+    Config config =
+        Config(accessToken: "test1234", offlineStorageEnabled: false);
+    await NewrelicMobile.instance.startAgent(
+      config,
+    );
 
     final Map<String, dynamic> params = <String, dynamic>{
       'applicationToken': config.accessToken,
@@ -915,7 +916,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':false
+      'offlineStorageEnabled': false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -980,8 +981,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':true
-
+      'offlineStorageEnabled': true
     };
 
     expect(
@@ -1022,7 +1022,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': false,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':true
+      'offlineStorageEnabled': true
     };
 
     final Map<String, String> eventParams = <String, String>{'message': 'test'};
@@ -1035,7 +1035,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.7',
+      'value': '1.0.8',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1078,13 +1078,12 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':true
-
+      'offlineStorageEnabled': true
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.7',
+      'value': '1.0.8',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1123,7 +1122,7 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled':true
+      'offlineStorageEnabled': true
     };
 
     expect(

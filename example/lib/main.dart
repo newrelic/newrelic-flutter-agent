@@ -60,10 +60,8 @@ void main() {
   NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
   NewrelicMobile.instance.setMaxOfflineStorageSize(200);
-  NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car","Music"]);
+  NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car", "Music"]);
 }
-
-
 
 /// The main app.
 class MyApp extends StatelessWidget {
