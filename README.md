@@ -39,7 +39,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 1.0.8
+  newrelic_mobile: 1.0.9
   
 ```
 
