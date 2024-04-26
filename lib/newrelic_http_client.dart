@@ -183,6 +183,8 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
 
   Map<String, dynamic> params = Map();
 
+  NewrelicMobile.instance.logInfo("In http Instrumentation");
+
   return request.then((actualRequest) {
     actualRequest.headers
         .add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
@@ -237,6 +239,8 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
       [this.params]) {
     var request = this;
     request.done.then((value) {
+
+      NewrelicMobile.instance.logInfo("wrapping request");
       var response = _wrapResponse(
         value,
         request,
@@ -431,6 +435,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
       responseData = _receiveBuffer.toString();
     }
 
+    NewrelicMobile.instance.logInfo("sending data to newrelic");
     NewrelicMobile.instance.noticeHttpTransaction(
         request.uri.toString(),
         request.method,

@@ -1,12 +1,11 @@
 # Uncomment this line to define a global platform for your project
 platform :ios, '13.0'
-# source 'https://github.com/newrelic/newrelic-ios-agent/blob/staging/NewRelicAgent.podspec'
+source 'https://github.com/newrelic/newrelic-ios-agent.git'
 source 'https://github.com/cocoapods/specs'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-
-
+#   pod 'NewRelicAgent', :git => 'https://github.com/newrelic/newrelic-ios-agent.git', :tag => '7.4.11-rc.909'
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
@@ -33,7 +32,6 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
-
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end

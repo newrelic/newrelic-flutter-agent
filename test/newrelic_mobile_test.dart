@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/loglevel.dart';
 import 'package:newrelic_mobile/metricunit.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
@@ -60,6 +61,7 @@ void main() {
     "tracestate": "testtststst",
     "traceparent": "rereteutueyuyeuyeuye"
   };
+  const message = 'test';
 
   const httpParams = {"Car": "Honda", "Music": "Jazz"};
   const dartError =
@@ -773,7 +775,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+       'logReportingEnabled': true,
+      'logLevel': 'INFO'
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -803,7 +807,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'logReportingEnabled': true,
+      'logLevel': 'INFO'
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -831,7 +837,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'logReportingEnabled': true,
+      'logLevel': 'INFO'
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -858,7 +866,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'logReportingEnabled': true,
+      'logLevel': 'INFO'
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -885,7 +895,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': true,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'logReportingEnabled': true,
+      'logLevel': 'INFO'
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -916,7 +928,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': false
+      'offlineStorageEnabled': false,
+      'logReportingEnabled': true,
+      'logLevel': 'INFO'
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -981,7 +995,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'logReportingEnabled': true,
+      'logLevel': 'INFO'
     };
 
     expect(
@@ -998,11 +1014,11 @@ void main() {
         Config(accessToken: appToken, printStatementAsEventsEnabled: true);
     NewrelicMobile.instance.startAgent(config);
     debugPrint(name);
-    expect(methodCalLogs[1].method, 'recordCustomEvent');
+    expect(methodCalLogs[1].method, 'logAttributes');
   });
   test('test Start of Agent should also start method with logging disabled ',
       () async {
-    Config config = Config(accessToken: appToken, loggingEnabled: false);
+    Config config = Config(accessToken: appToken, loggingEnabled: false,logLevel: LogLevel.VERBOSE);
 
     Function fun = () {
       print('test');
@@ -1022,16 +1038,21 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': false,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'logReportingEnabled': true,
+      'logLevel': LogLevel.VERBOSE.name
     };
 
-    final Map<String, String> eventParams = <String, String>{'message': 'test'};
 
-    final Map<String, dynamic> customParams = <String, dynamic>{
-      'eventType': 'Mobile Dart Console Events',
-      'eventName': '',
-      'eventAttributes': eventParams
+
+    final Map<String, dynamic> logParams = <String, dynamic>
+    {"attributes": <String, dynamic>{
+        'level': LogLevel.INFO.name,
+        'message': message,
+      }
     };
+
+
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
@@ -1044,8 +1065,8 @@ void main() {
         arguments: params,
       ),
       isMethodCall(
-        'recordCustomEvent',
-        arguments: customParams,
+        'logAttributes',
+        arguments: logParams,
       ),
       isMethodCall(
         'setAttribute',
@@ -1058,7 +1079,7 @@ void main() {
       'test Start of Agent should also start method with print statement as custom Events disabled ',
       () async {
     Config config =
-        Config(accessToken: appToken, printStatementAsEventsEnabled: false);
+        Config(accessToken: appToken, printStatementAsEventsEnabled: false,logReportingEnabled: false);
 
     Function fun = () {
       print('test');
@@ -1078,7 +1099,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'logReportingEnabled': false,
+      'logLevel': 'INFO'
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
@@ -1122,7 +1145,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'logReportingEnabled': true,
+      'logLevel': 'INFO'
     };
 
     expect(
@@ -1132,7 +1157,7 @@ void main() {
           arguments: params,
         ));
 
-    expect(methodCalLogs[1].method, 'recordCustomEvent');
+    expect(methodCalLogs[1].method, 'logAttributes');
 
     expect(methodCalLogs[2].method, 'recordCustomEvent');
 
@@ -1286,4 +1311,199 @@ void main() {
     expect(methodCalLogs,
         <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
   });
+
+  test('test logDebug should be called with message',
+          () async {
+        NewrelicMobile.instance.logDebug(message);
+
+        final Map<String, dynamic> params = <String, dynamic>
+        {"attributes": <String, dynamic>{
+          'level': LogLevel.DEBUG.name,
+          'message': message,
+        }
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'logAttributes',
+            arguments: params,
+          )
+        ]);
+      });
+  test('test logInfo should be called with message',
+          () async {
+        NewrelicMobile.instance.logInfo(message);
+
+        final Map<String, dynamic> params = <String, dynamic>
+        {"attributes": <String, dynamic>{
+          'level': LogLevel.INFO.name,
+          'message': message,
+        }
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'logAttributes',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test logVerbose should be called with message and log level Verbose',
+          () async {
+        NewrelicMobile.instance.logVerbose(message);
+
+        final Map<String, dynamic> params = <String, dynamic>
+        {"attributes": <String, dynamic>{
+            'level': LogLevel.VERBOSE.name,
+            'message': message,
+          }
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'logAttributes',
+            arguments: params,
+          )
+        ]);
+      });
+  test('test logWarning should be called with message and log level Warning',
+          () async {
+        NewrelicMobile.instance.logWarning(message);
+
+        final Map<String, dynamic> params = <String, dynamic>
+        {"attributes": <String, dynamic>{
+            'level': LogLevel.WARN.name,
+            'message': message,
+          }
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'logAttributes',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test logError should be called with message and log level Error',
+          () async {
+        NewrelicMobile.instance.logError(message);
+
+        final Map<String, dynamic> params = <String, dynamic>
+        {"attributes": <String, dynamic>{
+            'level': LogLevel.ERROR.name,
+            'message': message,
+          }
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'logAttributes',
+            arguments: params,
+          )
+        ]);
+      });
+  test('test logError should not be called without message ',
+          () async {
+        NewrelicMobile.instance.logError("");
+
+        final Map<String, dynamic> params = <String, dynamic>
+        {"attributes": <String, dynamic>{
+            'level': LogLevel.ERROR.name,
+            'message': message,
+          }
+        };
+
+        expect(methodCalLogs, <Matcher>[
+        ]);
+      });
+
+  test('test log should be called with message and log level Error',
+          () async {
+        NewrelicMobile.instance.log(LogLevel.ERROR, message);
+
+        final Map<String, dynamic> params = <String, dynamic>
+        {"attributes": <String, dynamic>{
+            'level': LogLevel.ERROR.name,
+            'message': message,
+          }
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'logAttributes',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test logAll should be called with error and attributes',
+          () async {
+        final Map<String, dynamic> attributes = <String, dynamic>{
+          'level': LogLevel.ERROR.name,
+          'action': 'Button Pressed',
+        };
+
+        try {
+          throw Exception("Error");
+        } on Exception catch (e) {
+          NewrelicMobile.instance.logAll(e, attributes);
+        }
+
+
+        final Map<String, dynamic> params = <String, dynamic>
+        { "attributes": <String, dynamic>{
+            'message': "Exception: Error",
+            'level': LogLevel.ERROR.name,
+            'action': 'Button Pressed',
+          }
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'logAttributes',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test logAttributes should be called with attributes',
+          () async {
+        final Map<String, dynamic> attributes = <String, dynamic>{
+          'level': LogLevel.ERROR.name,
+          'action': 'Button Pressed',
+          'message':message
+        };
+
+        NewrelicMobile.instance.logAttributes(attributes);
+
+        final Map<String, dynamic> params = <String, dynamic>
+        { "attributes": <String, dynamic>{
+            'level': LogLevel.ERROR.name,
+            'action': 'Button Pressed',
+            'message':message
+          }
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'logAttributes',
+            arguments: params,
+          )
+        ]);
+      });
+
+  test('test logAttributes should not be called without attributes',
+          () async {
+        final Map<String, dynamic> attributes = <String, dynamic>{};
+
+        NewrelicMobile.instance.logAttributes(attributes);
+
+        expect(methodCalLogs, <Matcher>[
+        ]);
+      });
 }
+
+
+
+
+

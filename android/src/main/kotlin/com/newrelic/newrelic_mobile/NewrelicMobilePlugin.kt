@@ -12,6 +12,8 @@ import com.newrelic.agent.android.ApplicationFramework
 import com.newrelic.agent.android.FeatureFlag
 import com.newrelic.agent.android.HttpHeaders
 import com.newrelic.agent.android.NewRelic
+import com.newrelic.agent.android.logging.LogLevel
+import com.newrelic.agent.android.logging.LogReporting
 import com.newrelic.agent.android.metric.MetricUnit
 import com.newrelic.agent.android.stats.StatsEngine
 import com.newrelic.agent.android.util.NetworkFailure
@@ -47,6 +49,8 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val applicationToken: String? = call.argument("applicationToken")
                 val dartVersion: String? = call.argument("dartVersion")
                 val loggingEnabled: Boolean? = call.argument("loggingEnabled")
+                val logLevel: String? = call.argument("logLevel")
+
 
 
                 if (call.argument<Boolean>("analyticsEventEnabled") as Boolean) {
@@ -96,10 +100,20 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.disableFeature(FeatureFlag.OfflineStorage)
                 }
 
+                if (call.argument<Boolean>("logReportingEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.LogReporting)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.LogReporting)
+                }
+
+                LogReporting.setLogLevel(LogLevel.valueOf(logLevel!!))
+
+//                NewRelic.setEntityGuid("MXxNT0JJTEV8QVBQTElDQVRJT058NjAxMzQ0MTMy")
                 NewRelic.withApplicationToken(
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!)
-                    .withLogLevel(5)
+                    .usingCollectorAddress("staging-mobile-collector.newrelic.com")
+                    .usingCrashCollectorAddress("staging-mobile-crash.newrelic.com")
                     .withApplicationFramework(ApplicationFramework.Flutter, "1.0.8").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
                 StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.0.8");
@@ -343,6 +357,11 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
             "getHTTPHeadersTrackingFor" -> {
                 result.success(HttpHeaders.getInstance().httpHeaders.toList())
             }
+            "logAttributes" -> {
+                val attributes: HashMap<String, Any>? = call.argument("attributes")
+                NewRelic.logAttributes(attributes)
+                result.success("Recorded Log")
+            }
             else -> {
                 result.notImplemented()
             }
@@ -370,6 +389,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+
     }
 }
 

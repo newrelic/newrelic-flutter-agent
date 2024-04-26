@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:newrelic_mobile/loglevel.dart';
 import 'package:newrelic_mobile/metricunit.dart';
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
@@ -52,7 +53,9 @@ void main() {
       webViewInstrumentation: true,
       printStatementAsEventsEnabled: true,
       httpInstrumentationEnabled: true,
-      fedRampEnabled: false);
+      fedRampEnabled: false,
+      logLevel: LogLevel.DEBUG
+  );
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
@@ -103,6 +106,14 @@ class Page1Screen extends StatelessWidget {
               children: <Widget>[
                 ElevatedButton(
                     onPressed: () async {
+                      NewrelicMobile.instance.logInfo("testing logs");
+                      NewrelicMobile.instance.logDebug("testing logs debug");
+                      NewrelicMobile.instance.logWarning("testing logs warning");
+                      NewrelicMobile.instance.logVerbose("testing logs verbose");
+                      NewrelicMobile.instance.log(LogLevel.ERROR,"testing logs");
+                      NewrelicMobile.instance.logInfo("testing logs");
+                      NewrelicMobile.instance.logInfo("testing logs");
+
                       print(NewrelicMobile.instance.currentSessionId());
                       NewrelicMobile.instance.incrementAttribute(
                           "FlutterCustomAttrNumber",
