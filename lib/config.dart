@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import 'loglevel.dart';
+
 class Config {
   final String accessToken;
   final bool analyticsEventEnabled;
@@ -17,6 +19,8 @@ class Config {
   final bool httpInstrumentationEnabled;
   final bool fedRampEnabled;
   final bool offlineStorageEnabled;
+  final bool logReportingEnabled;
+  final LogLevel logLevel;
   final bool backgroundReportingEnabled;
   final bool newEventSystemEnabled;
 
@@ -34,6 +38,8 @@ class Config {
       this.httpInstrumentationEnabled = true,
       this.fedRampEnabled = false,
       this.offlineStorageEnabled = true,
+      this.logReportingEnabled = true,
+      this.logLevel = LogLevel.INFO,
       this.backgroundReportingEnabled = false,
       this.newEventSystemEnabled = true});
 }

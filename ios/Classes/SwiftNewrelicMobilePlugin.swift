@@ -21,6 +21,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
         case "startAgent":
             let applicationToken = args?["applicationToken"] as? String
             let dartVersion = args?["dartVersion"] as? String
+            var logLevel = NRLogLevelWarning.rawValue
 
             if(args?["crashReportingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_CrashReporting)
@@ -50,20 +51,40 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             } else {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_OfflineStorage)
             }
-            
+
+//            if(args?["logReportingEnabled"] as! Bool == true) {
+//                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_LogReporting)
+//            } else {
+//                NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_LogReporting)
+//            }
+//
+            if (args?["logLevel"] != nil) {
+
+                let strToLogLevel = [
+                    "ERROR": NRLogLevelError.rawValue,
+                    "WARNING": NRLogLevelWarning.rawValue,
+                    "INFO": NRLogLevelInfo.rawValue,
+                    "VERBOSE": NRLogLevelVerbose.rawValue,
+                    "AUDIT": NRLogLevelAudit.rawValue
+                ]
+
+                if let configLogLevel = args?["logLevel"] as? String, strToLogLevel[configLogLevel] != nil {
+                    logLevel = strToLogLevel[configLogLevel] ?? logLevel
+                }
+
             if(args?["backgroundReportingEnabled"] as! Bool == true) {
                 NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_BackgroundReporting)
             } else {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_BackgroundReporting)
             }
-            
-            
+
+
             if(args?["newEventSystemEnabled"] as! Bool == true) {
                 NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_NewEventSystem)
             } else {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_NewEventSystem)
             }
-            
+
 
 
             if(args?["loggingEnabled"] as! Bool == true) {
@@ -71,6 +92,12 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             }
 
 
+
+
+
+            NRLogger.setLogTargets(logLevel)
+            NRLogger.setLogLevels(logLevel)
+//            NRLogger.setLogEntityGuid("Mjg5ODczMHxNT0JJTEV8QVBQTElDQVRJT058NjAxNDQ4MDY3")
             NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
             NewRelic.start(withApplicationToken:applicationToken!)
             NewRelic.setAttribute("DartVersion", value:dartVersion!)
@@ -234,8 +261,11 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                         
             result("Recorded Metrics")
             
-
-
+//        case "logAttributes":
+//            let attributes = args?["attributes"] as? [String : Any] ?? [:]
+//
+//            NewRelic.logAll(attributes)
+            result("log recorded")
         default:
             result(FlutterMethodNotImplemented)
 
