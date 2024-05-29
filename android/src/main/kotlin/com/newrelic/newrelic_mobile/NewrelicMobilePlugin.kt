@@ -145,19 +145,24 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val eventName: String? = call.argument("eventName")
                 val eventAttributes: HashMap<String, Any>? = call.argument("eventAttributes")
 
-                val copyOfEventAttributes = eventAttributes?.clone() as HashMap<*, *>;
-                for (key in  copyOfEventAttributes.keys)  {
-                    val value = copyOfEventAttributes[key]
-                    if(value is HashMap<*, *>) {
-                        for (k in value.keys) {
-                            value[k]?.let { eventAttributes.put(k as String, it) };
+                if (eventAttributes == null) {
+                    val eventRecorded = NewRelic.recordCustomEvent(eventType, eventName, null)
+                    result.success(eventRecorded)
+                } else {
+                    val copyOfEventAttributes = eventAttributes.clone() as HashMap<*, *>
+                    for (key in  copyOfEventAttributes.keys)  {
+                        val value = copyOfEventAttributes[key]
+                        if(value is HashMap<*, *>) {
+                            for (k in value.keys) {
+                                value[k]?.let { eventAttributes.put(k as String, it) };
+                            }
+                            eventAttributes.remove(key)
                         }
-                        eventAttributes.remove(key)
                     }
+                    val eventRecorded =
+                        NewRelic.recordCustomEvent(eventType, eventName, eventAttributes)
+                    result.success(eventRecorded)
                 }
-                val eventRecorded =
-                    NewRelic.recordCustomEvent(eventType, eventName, eventAttributes)
-                result.success(eventRecorded)
             }
             "startInteraction" -> {
                 val actionName: String? = call.argument("actionName")
