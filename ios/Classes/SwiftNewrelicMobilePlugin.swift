@@ -45,10 +45,16 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                 NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_FedRampEnabled)
              }
 
-            if(args?["offlineStorageEnabled"] as! Bool == true) {
-                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_OfflineStorage)
+            if(args?["backgroundReportingEnabled"] as! Bool == true) {
+                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_BackgroundReporting)
             } else {
-                NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_OfflineStorage)
+                NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_BackgroundReporting)
+            }
+            
+            if(args?["newEventSystemEnabled"] as! Bool == true) {
+                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_NewEventSystem)
+            } else {
+                NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_NewEventSystem)
             }
 
 

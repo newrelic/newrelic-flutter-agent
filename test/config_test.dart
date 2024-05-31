@@ -16,5 +16,8 @@ void main() {
     expect(accessToken, config.accessToken);
     expect(printStatementAsEvents, config.printStatementAsEventsEnabled);
     expect(true, config.offlineStorageEnabled);
+    expect(false, config.backgroundReportingEnabled);
+    expect(true, config.newEventSystemEnabled);
+
   });
 }
