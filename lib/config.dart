@@ -17,6 +17,8 @@ class Config {
   final bool httpInstrumentationEnabled;
   final bool fedRampEnabled;
   final bool offlineStorageEnabled;
+  final bool backgroundReportingEnabled;
+  final bool newEventSystemEnabled;
 
   Config(
       {required this.accessToken,
@@ -31,5 +33,7 @@ class Config {
       this.printStatementAsEventsEnabled = true,
       this.httpInstrumentationEnabled = true,
       this.fedRampEnabled = false,
-      this.offlineStorageEnabled = true});
+      this.offlineStorageEnabled = true,
+      this.backgroundReportingEnabled = false,
+      this.newEventSystemEnabled = true});
 }
