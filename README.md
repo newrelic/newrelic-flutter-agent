@@ -18,6 +18,7 @@ using native components.
 * Screen tracking via NavigationObserver
 * Capture print and debug print statement as CustomEvents
 * Capture Offline Events and Exception
+* Capture Background Reporting Events
 
 ## Current Support:
 
@@ -39,7 +40,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 1.0.8
+  newrelic_mobile: 1.0.9
   
 ```
 
@@ -100,7 +101,15 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
       fedRampEnabled: false ,
 
       // Optional: Enable or disable offline data storage when no internet connection is available.
-      offlineStorageEnabled:true
+      offlineStorageEnabled:true,
+
+         // iOS Specific
+        // Optional: Enable or disable background reporting functionality.
+         backgroundReportingEnabled: true,
+
+         // iOS Specific 
+        // Optional: Enable or disable to use our new, more stable, event system for iOS agent.
+         newEventSystemEnabled: true,
       );
 
   NewrelicMobile.instance.start(config, () {
