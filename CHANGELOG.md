@@ -1,3 +1,6 @@
+## 1.0.9
+* Resolved NewRelicNavigationObserver issue for Go Router.
+
 ## 1.0.8
 * Updated the native iOS agent to version 7.4.10.
 
