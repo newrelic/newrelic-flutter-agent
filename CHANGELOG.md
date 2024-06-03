@@ -3,6 +3,7 @@
 
 The native iOS Agent has been updated to version 7.4.12, bringing performance enhancements and bug fixes.
 
+
 * New Features
 
 A new backgroundReportingEnabled feature flag has been introduced to enable background reporting functionality.
