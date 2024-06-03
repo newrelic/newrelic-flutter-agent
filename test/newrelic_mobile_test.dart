@@ -773,7 +773,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -803,7 +805,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -831,7 +835,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -858,7 +864,38 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('agent should start with AppToken with  backgroundReporting Enabled and newEventSystem Disabled', () async {
+    Config config = Config(accessToken: "test1234", backgroundReportingEnabled: true, newEventSystemEnabled: false);
+    await NewrelicMobile.instance.startAgent(config,);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'applicationToken': config.accessToken,
+      'dartVersion': Platform.version,
+      'webViewInstrumentation': true,
+      'analyticsEventEnabled': true,
+      'crashReportingEnabled': true,
+      'interactionTracingEnabled': true,
+      'networkRequestEnabled': true,
+      'networkErrorRequestEnabled': true,
+      'httpResponseBodyCaptureEnabled': true,
+      'loggingEnabled': true,
+      'fedRampEnabled': false,
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': true,
+      'newEventSystemEnabled': false
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -885,7 +922,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': true,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -916,7 +955,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': false
+      'offlineStorageEnabled': false,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -981,7 +1022,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     expect(
@@ -1022,7 +1065,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': false,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     final Map<String, String> eventParams = <String, String>{'message': 'test'};
@@ -1035,7 +1080,7 @@ void main() {
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.8',
+      'value': '1.0.9',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1078,12 +1123,14 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.8',
+      'value': '1.0.9',
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1122,7 +1169,9 @@ void main() {
       'httpResponseBodyCaptureEnabled': true,
       'loggingEnabled': true,
       'fedRampEnabled': false,
-      'offlineStorageEnabled': true
+      'offlineStorageEnabled': true,
+      'backgroundReportingEnabled': false,
+      'newEventSystemEnabled': true
     };
 
     expect(
