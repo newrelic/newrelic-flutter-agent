@@ -20,7 +20,6 @@ class Config {
   final bool backgroundReportingEnabled;
   final bool newEventSystemEnabled;
 
-
   Config(
       {required this.accessToken,
       this.analyticsEventEnabled = true,

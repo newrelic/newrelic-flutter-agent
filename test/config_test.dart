@@ -18,6 +18,5 @@ void main() {
     expect(true, config.offlineStorageEnabled);
     expect(false, config.backgroundReportingEnabled);
     expect(true, config.newEventSystemEnabled);
-
   });
 }

@@ -877,9 +877,16 @@ void main() {
     ]);
   });
 
-  test('agent should start with AppToken with  backgroundReporting Enabled and newEventSystem Disabled', () async {
-    Config config = Config(accessToken: "test1234", backgroundReportingEnabled: true, newEventSystemEnabled: false);
-    await NewrelicMobile.instance.startAgent(config,);
+  test(
+      'agent should start with AppToken with  backgroundReporting Enabled and newEventSystem Disabled',
+      () async {
+    Config config = Config(
+        accessToken: "test1234",
+        backgroundReportingEnabled: true,
+        newEventSystemEnabled: false);
+    await NewrelicMobile.instance.startAgent(
+      config,
+    );
 
     final Map<String, dynamic> params = <String, dynamic>{
       'applicationToken': config.accessToken,
