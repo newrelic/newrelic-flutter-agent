@@ -87,6 +87,7 @@ void main() {
 
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  NewrelicMobile.instance.setAgentConfiguration(Config(accessToken: ''));
   setUpAll(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
@@ -775,7 +776,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -807,7 +809,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -837,7 +840,9 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
+
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -866,7 +871,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -902,7 +908,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': true,
-      'newEventSystemEnabled': false
+      'newEventSystemEnabled': false,
+      'distributedTracingEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -931,7 +938,8 @@ void main() {
       'fedRampEnabled': true,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -964,7 +972,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': false,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1031,7 +1040,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     expect(
@@ -1074,7 +1084,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     final Map<String, String> eventParams = <String, String>{'message': 'test'};
@@ -1132,7 +1143,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
@@ -1178,7 +1190,8 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
-      'newEventSystemEnabled': true
+      'newEventSystemEnabled': true,
+      'distributedTracingEnabled': true
     };
 
     expect(
@@ -1342,4 +1355,93 @@ void main() {
     expect(methodCalLogs,
         <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
   });
+
+  test(
+      'test Start of Agent should also start method with distributedTracing disabled ',
+          () async {
+        Config config =
+        Config(accessToken: appToken, distributedTracingEnabled: false);
+
+        Function fun = () {
+          print('test');
+        };
+
+        await NewrelicMobile.instance.start(config, fun);
+
+        final Map<String, dynamic> params = <String, dynamic>{
+          'applicationToken': appToken,
+          'dartVersion': Platform.version,
+          'webViewInstrumentation': true,
+          'analyticsEventEnabled': true,
+          'crashReportingEnabled': true,
+          'interactionTracingEnabled': true,
+          'networkRequestEnabled': true,
+          'networkErrorRequestEnabled': true,
+          'httpResponseBodyCaptureEnabled': true,
+          'loggingEnabled': true,
+          'fedRampEnabled': false,
+          'offlineStorageEnabled': true,
+          'backgroundReportingEnabled': false,
+          'newEventSystemEnabled': true,
+          'distributedTracingEnabled': false
+        };
+        final Map<String, String> eventParams = <String, String>{'message': 'test'};
+
+        final Map<String, dynamic> customParams = <String, dynamic>{
+          'eventType': 'Mobile Dart Console Events',
+          'eventName': '',
+          'eventAttributes': eventParams
+        };
+
+        final Map<String, dynamic> attributeParams = <String, dynamic>{
+          'name': 'Flutter Agent Version',
+          'value': '1.0.9',
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'startAgent',
+            arguments: params,
+          ),
+          isMethodCall(
+            'recordCustomEvent',
+            arguments: customParams,
+          ),
+          isMethodCall(
+            'setAttribute',
+            arguments: attributeParams,
+          )
+        ]);
+      });
+
+  test('test noticeHttpTransaction should be called with Empty TraceAttributes if distributedTracing is disabled',
+          () async {
+        var platformManger = MockPlatformManager();
+        PlatformManager.setPlatformInstance(platformManger);
+        Config config = Config(accessToken: appToken, distributedTracingEnabled: false);
+        NewrelicMobile.instance.setAgentConfiguration(config);
+        when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
+
+        await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+            statusCode, startTime, endTime, bytesSent, bytesReceived, {},
+            responseBody: responseBody, httpParams: httpParams);
+        final Map<String, dynamic> params = <String, dynamic>{
+          'url': url,
+          'httpMethod': httpMethod,
+          'statusCode': statusCode,
+          'startTime': startTime,
+          'endTime': endTime,
+          'bytesSent': bytesSent,
+          'bytesReceived': bytesReceived,
+          'responseBody': responseBody,
+          'traceAttributes': null,
+          'params': httpParams
+        };
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'noticeHttpTransaction',
+            arguments: params,
+          )
+        ]);
+      });
 }

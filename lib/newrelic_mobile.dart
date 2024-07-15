@@ -20,6 +20,8 @@ import 'metricunit.dart';
 class NewrelicMobile {
   static final NewrelicMobile instance = NewrelicMobile._();
 
+  Config? config;
+
   NewrelicMobile._();
 
   static const MethodChannel _channel = MethodChannel('newrelic_mobile');
@@ -35,6 +37,7 @@ class NewrelicMobile {
     runZonedGuarded(() async {
       WidgetsFlutterBinding.ensureInitialized();
       FlutterError.onError = NewrelicMobile.onError;
+      this.config = config;
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
@@ -50,6 +53,14 @@ class NewrelicMobile {
       }
       parent.print(zone, line);
     }));
+  }
+
+  @visibleForTesting
+  void setAgentConfiguration(Config config) {
+     this.config = config;
+  }
+   Config getAgentConfiguration() {
+    return instance.config!;
   }
 
   static void onError(FlutterErrorDetails errorDetails) async {
@@ -119,6 +130,7 @@ class NewrelicMobile {
       'offlineStorageEnabled': config.offlineStorageEnabled,
       'backgroundReportingEnabled': config.backgroundReportingEnabled,
       'newEventSystemEnabled': config.newEventSystemEnabled,
+      'distributedTracingEnabled': config.distributedTracingEnabled,
     };
 
     if (config.printStatementAsEventsEnabled) {
@@ -291,22 +303,23 @@ class NewrelicMobile {
       {Map<String, dynamic>? httpParams,
       String responseBody = ""}) async {
     Map<String, dynamic>? traceAttributes;
-    if (traceData != null) {
-      if (PlatformManager.instance.isAndroid()) {
-        traceAttributes = {
-          DTTraceTags.id: traceData[DTTraceTags.id],
-          DTTraceTags.guid: traceData[DTTraceTags.guid],
-          DTTraceTags.traceId: traceData[DTTraceTags.traceId]
-        };
-      } else if (PlatformManager.instance.isIOS()) {
-        traceAttributes = {
-          DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
-          DTTraceTags.traceState: traceData[DTTraceTags.traceState],
-          DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
-        };
+    if(config!.distributedTracingEnabled) {
+      if (traceData != null) {
+        if (PlatformManager.instance.isAndroid()) {
+          traceAttributes = {
+            DTTraceTags.id: traceData[DTTraceTags.id],
+            DTTraceTags.guid: traceData[DTTraceTags.guid],
+            DTTraceTags.traceId: traceData[DTTraceTags.traceId]
+          };
+        } else if (PlatformManager.instance.isIOS()) {
+          traceAttributes = {
+            DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
+            DTTraceTags.traceState: traceData[DTTraceTags.traceState],
+            DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
+          };
+        }
       }
     }
-
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
       'httpMethod': httpMethod,

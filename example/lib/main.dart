@@ -37,7 +37,7 @@ void main() {
   if (Platform.isAndroid) {
     appToken = AppConfig.androidToken;
   } else if (Platform.isIOS) {
-    appToken = AppConfig.iOSToken;
+    appToken = AppConfig.androidToken;
   }
 
   Config config = Config(
@@ -52,10 +52,11 @@ void main() {
       webViewInstrumentation: true,
       printStatementAsEventsEnabled: true,
       httpInstrumentationEnabled: true,
+      distributedTracingEnabled: true,
       fedRampEnabled: false);
 
   NewrelicMobile.instance.start(config, () {
-    runApp(MyApp());
+    runApp(const MyApp());
   });
   NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
@@ -66,17 +67,17 @@ void main() {
 /// The main app.
 class MyApp extends StatelessWidget {
   /// Creates an [App].
-  MyApp({Key? key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorObservers: [NewRelicNavigationObserver()],
       routes: {
-        'pageone': (context) => Page1Screen(),
+        'pageone': (context) => const Page1Screen(),
         'pagetwo': (context) => Page2Screen(),
-        'pagethree': (context) => Page3Screen(),
-        'pagefour': (context) => Page4Screen()
+        'pagethree': (context) => const Page3Screen(),
+        'pagefour': (context) => const Page4Screen()
       },
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -103,6 +104,11 @@ class Page1Screen extends StatelessWidget {
               children: <Widget>[
                 ElevatedButton(
                     onPressed: () async {
+                      showDialog<String>(
+                        barrierDismissible: false,
+                        context: context,
+                        builder: (BuildContext context) => const PopPopPop(),
+                      );
                       print(NewrelicMobile.instance.currentSessionId());
                       NewrelicMobile.instance.incrementAttribute(
                           "FlutterCustomAttrNumber",
@@ -296,7 +302,7 @@ class Page2Screen extends StatelessWidget {
               },
               child: const Text('State Error'),
             ),
-            Row(
+            const Row(
               children: [
                 Text(
                   "ErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorError",
@@ -356,7 +362,7 @@ class Page3Screen extends StatelessWidget {
             children: <Widget>[
               ElevatedButton(
                 onPressed: () {
-                  for (var i = 0; i < 100; i++)
+                  for (var i = 0; i < 100; i++) {
                     NewrelicMobile.instance.recordCustomEvent(
                         "Test Custom Event",
                         eventName: "User Purchase",
@@ -365,6 +371,7 @@ class Page3Screen extends StatelessWidget {
                           "price": 34.00,
                           "loop test": i
                         });
+                  }
                 },
                 child: const Text('Record Custom Event'),
               ),
@@ -425,12 +432,24 @@ class _Page4ScreenState extends State<Page4Screen> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               ElevatedButton(
-                onPressed: () {
-                  computeService.fetchUser().then((value) {
-                    setState(() {
-                      person = value;
-                    });
-                  });
+
+
+                onPressed: () async {
+
+
+                     ReceivePort port = ReceivePort();
+                     var errorPort = ReceivePort();
+                      errorPort.listen((message) {
+                        print('Error: $message');
+                        NewrelicMobile.instance.recordError(message, StackTrace.current);
+                      });
+                     Isolate i = await Isolate.spawn(_isolateFunction, port.sendPort,onError: errorPort.sendPort);
+
+                  // computeService.fetchUser().then((value) {
+                  //   setState(() {
+                  //     person = value;
+                  //   });
+                  // });
                 },
                 child: const Text('Isolate Compute Error'),
               ),
@@ -456,6 +475,9 @@ class _Page4ScreenState extends State<Page4Screen> {
       );
 }
 
+ void _isolateFunction(_) {
+  throw Exception('Uncaught error in isolate');
+}
 class ComputeService {
   Future<Person> fetchUser() async {
     String userData = await Api.getUser("Compute");
@@ -463,7 +485,7 @@ class ComputeService {
   }
 
   Person deserializeJson(String data) {
-    throw new Error();
+    throw Error();
   }
 }
 
@@ -492,7 +514,7 @@ class SpawnService {
     var dio = Dio();
     var response = await dio.get('https://reqres.in/api/users?delay=15');
     print(response);
-    throw new Exception("this is isplation error");
+    throw Exception("this is isplation error");
   }
 }
 
@@ -519,3 +541,40 @@ const rickCharacters = '''
     }
   }
  ''';
+class PopPopPop extends StatelessWidget {
+  const PopPopPop({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+        title: const Text('Here we go...'),
+        icon: const Icon(
+          Icons.error_outline,
+          color: Colors.red,
+          size: 18.0,
+        ),
+        content: const SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  'Something went wrong but we\'re on it.'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, 'pagetwo',
+                      arguments: {'id': ""});
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          )
+        ]);
+  }
+}

@@ -10,8 +10,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/newrelic_http_client.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
+import 'package:newrelic_mobile/newrelic_mobile.dart';
 
 import 'newrelic_http_client_test.mocks.dart';
 
@@ -42,6 +44,11 @@ void main() {
   late MockHttpHeaders mockHttpHeaders;
 
   setUpAll(() async {
+
+    Config config = Config(accessToken: '');
+
+    NewrelicMobile.instance.setAgentConfiguration(config);
+
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(MethodChannel('newrelic_mobile'),
             (MethodCall methodCall) async {
