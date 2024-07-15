@@ -777,7 +777,7 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
        'logReportingEnabled': true,
-      'logLevel': 'INFO'
+      'logLevel': 'INFO',
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true
     };
@@ -874,7 +874,7 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'logReportingEnabled': true,
-      'logLevel': 'INFO'
+      'logLevel': 'INFO',
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true
     };
@@ -941,7 +941,7 @@ void main() {
       'fedRampEnabled': true,
       'offlineStorageEnabled': true,
       'logReportingEnabled': true,
-      'logLevel': 'INFO'
+      'logLevel': 'INFO',
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true
     };
@@ -976,7 +976,7 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': false,
       'logReportingEnabled': true,
-      'logLevel': 'INFO'
+      'logLevel': 'INFO',
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true
     };
@@ -1045,7 +1045,7 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'logReportingEnabled': true,
-      'logLevel': 'INFO'
+      'logLevel': 'INFO',
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true
     };
@@ -1201,7 +1201,7 @@ void main() {
       'fedRampEnabled': false,
       'offlineStorageEnabled': true,
       'logReportingEnabled': true,
-      'logLevel': 'INFO'
+      'logLevel': 'INFO',
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true
     };
