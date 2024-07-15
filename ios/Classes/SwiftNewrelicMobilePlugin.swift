@@ -77,6 +77,14 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             } else {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_BackgroundReporting)
             }
+            
+            if(args?["distributedTracingEnabled"] as! Bool == true) {
+                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_DistributedTracing)
+            } else {
+                NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_DistributedTracing)
+            }
+
+
 
 
             if(args?["newEventSystemEnabled"] as! Bool == true) {

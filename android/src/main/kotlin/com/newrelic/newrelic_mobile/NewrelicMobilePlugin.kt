@@ -44,6 +44,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
             "getPlatformVersion" -> {
                 result.success("Android ${Build.VERSION.RELEASE}")
             }
+
             "startAgent" -> {
 
                 val applicationToken: String? = call.argument("applicationToken")
@@ -109,21 +110,38 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 LogReporting.setLogLevel(LogLevel.valueOf(logLevel!!))
 
 //                NewRelic.setEntityGuid("MXxNT0JJTEV8QVBQTElDQVRJT058NjAxMzQ0MTMy")
+                if (call.argument<Boolean>("distributedTracingEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.DistributedTracing)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.DistributedTracing)
+                }
+
+                if (call.argument<Boolean>("backgroundReportingEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.BackgroundReporting)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.BackgroundReporting)
+                }
+
+
                 NewRelic.withApplicationToken(
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!)
                     .usingCollectorAddress("staging-mobile-collector.newrelic.com")
                     .usingCrashCollectorAddress("staging-mobile-crash.newrelic.com")
                     .withApplicationFramework(ApplicationFramework.Flutter, "1.0.8").start(context)
+                    .withLogLevel(5)
+                    .withApplicationFramework(ApplicationFramework.Flutter, "1.1.0").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.0.9");
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.1.0")
                 result.success("Agent Started")
             }
+
             "setUserId" -> {
                 val userId: String? = call.argument("userId")
                 val userIsSet = NewRelic.setUserId(userId)
                 result.success(userIsSet)
             }
+
             "setAttribute" -> {
                 val name: String? = call.argument("name")
                 val value: Any? = call.argument("value")
@@ -133,27 +151,32 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     is String -> {
                         attributeIsSet = NewRelic.setAttribute(name, value)
                     }
+
                     is Double -> {
                         attributeIsSet = NewRelic.setAttribute(name, value)
                     }
+
                     is Boolean -> {
                         attributeIsSet = NewRelic.setAttribute(name, value)
                     }
                 }
                 result.success(attributeIsSet)
             }
+
             "removeAttribute" -> {
                 val name: String? = call.argument("name")
                 val attributeIsRemoved = NewRelic.removeAttribute(name)
                 result.success(attributeIsRemoved)
             }
+
             "recordBreadcrumb" -> {
                 val name: String? = call.argument("name")
                 val eventAttributes: HashMap<String, Any>? = call.argument("eventAttributes")
 
-                val eventRecorded = NewRelic.recordBreadcrumb(name, eventAttributes);
+                val eventRecorded = NewRelic.recordBreadcrumb(name, eventAttributes)
                 result.success(eventRecorded)
             }
+
             "recordCustomEvent" -> {
                 val eventType: String? = call.argument("eventType")
                 val eventName: String? = call.argument("eventName")
@@ -164,11 +187,11 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     result.success(eventRecorded)
                 } else {
                     val copyOfEventAttributes = eventAttributes.clone() as HashMap<*, *>
-                    for (key in  copyOfEventAttributes.keys)  {
+                    for (key in copyOfEventAttributes.keys) {
                         val value = copyOfEventAttributes[key]
-                        if(value is HashMap<*, *>) {
+                        if (value is HashMap<*, *>) {
                             for (k in value.keys) {
-                                value[k]?.let { eventAttributes.put(k as String, it) };
+                                value[k]?.let { eventAttributes.put(k as String, it) }
                             }
                             eventAttributes.remove(key)
                         }
@@ -178,24 +201,28 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     result.success(eventRecorded)
                 }
             }
+
             "startInteraction" -> {
                 val actionName: String? = call.argument("actionName")
 
-                val interactionId = NewRelic.startInteraction(actionName);
+                val interactionId = NewRelic.startInteraction(actionName)
                 result.success(interactionId)
             }
+
             "endInteraction" -> {
                 val interactionId: String? = call.argument("interactionId")
 
                 NewRelic.endInteraction(interactionId)
                 result.success("interaction Ended")
             }
+
             "setInteractionName" -> {
                 val interactionName: String? = call.argument("interactionName")
 
                 NewRelic.setInteractionName(interactionName)
                 result.success("interaction Recorded")
             }
+
             "recordError" -> {
 
                 val exceptionMessage: String? = call.argument("exception")
@@ -228,6 +255,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val bool = NewRelic.recordHandledException(exception, exceptionAttributes)
                 result.success(bool)
             }
+
             "noticeHttpTransaction" -> {
 
                 val url: String = call.argument("url")!!
@@ -258,38 +286,42 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 result.success("Http Transaction Recorded")
 
             }
+
             "noticeNetworkFailure" -> {
 
                 val url: String = call.argument("url")!!
                 val httpMethod: String = call.argument("httpMethod")!!
                 val startTime: Long = call.argument("startTime")!!
                 val endTime: Long = call.argument("endTime")!!
-                val errorCode:Int = call.argument("errorCode")!!
+                val errorCode: Int = call.argument("errorCode")!!
 
-                val nf = NetworkFailure.fromErrorCode(errorCode);
+                val nf = NetworkFailure.fromErrorCode(errorCode)
 
                 NewRelic.noticeNetworkFailure(
                     url,
                     httpMethod,
                     startTime,
                     endTime,
-                    nf)
+                    nf
+                )
                 result.success("Network Failure Recorded")
 
             }
+
             "noticeDistributedTrace" -> {
 
-                val traceContext = NewRelic.noticeDistributedTrace(null);
+                val traceContext = NewRelic.noticeDistributedTrace(null)
 
-                val traceAttributes = HashMap<String, Any>();
+                val traceAttributes = HashMap<String, Any>()
 
-                traceAttributes.putAll(traceContext.asTraceAttributes());
+                traceAttributes.putAll(traceContext.asTraceAttributes())
 
                 for (header in traceContext.headers) {
-                    traceAttributes[header.headerName] = header.headerValue;
+                    traceAttributes[header.headerName] = header.headerValue
                 }
-                result.success(traceAttributes);
+                result.success(traceAttributes)
             }
+
             "setMaxEventBufferTime" -> {
                 val maxBufferTimeInSec: Int? = call.argument("maxBufferTimeInSec")
 
@@ -298,6 +330,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 }
                 result.success("MaxEvent BufferTime set")
             }
+
             "setMaxEventPoolSize" -> {
                 val maxSize: Int? = call.argument("maxSize")
 
@@ -307,6 +340,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 result.success("maxSize set")
 
             }
+
             "setMaxOfflineStorageSize" -> {
                 val megaBytes: Int? = call.argument("megaBytes")
 
@@ -322,7 +356,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val value: Double? = call.argument("value")
 
                 val isIncreased: Boolean = if (value != null) {
-                    NewRelic.incrementAttribute(name,value)
+                    NewRelic.incrementAttribute(name, value)
                 } else {
                     NewRelic.incrementAttribute(name)
                 }
@@ -339,11 +373,11 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
 
                 value?.let {
-                            NewRelic.recordMetric(name,category,
-                                0, it,0.0,
-                                countUnit?.let { it2 -> MetricUnit.valueOf(it2) },
-                                valueUnit?.let { it3 -> MetricUnit.valueOf(it3) })
-                };
+                    NewRelic.recordMetric(name, category,
+                        0, it, 0.0,
+                        countUnit?.let { it2 -> MetricUnit.valueOf(it2) },
+                        valueUnit?.let { it3 -> MetricUnit.valueOf(it3) })
+                }
                 result.success("Recorded Metric")
 
             }
@@ -352,13 +386,16 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 NewRelic.shutdown()
                 result.success("agent is shutDown")
             }
+
             "currentSessionId" -> {
                 result.success(NewRelic.currentSessionId())
             }
+
             "addHTTPHeadersTrackingFor" -> {
                 val headers: ArrayList<String>? = call.argument("headers") as ArrayList<String>?
                 result.success(NewRelic.addHTTPHeadersTrackingFor(headers))
             }
+
             "getHTTPHeadersTrackingFor" -> {
                 result.success(HttpHeaders.getInstance().httpHeaders.toList())
             }
@@ -367,6 +404,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 NewRelic.logAttributes(attributes)
                 result.success("Recorded Log")
             }
+
             else -> {
                 result.notImplemented()
             }

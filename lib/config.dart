@@ -23,6 +23,7 @@ class Config {
   final LogLevel logLevel;
   final bool backgroundReportingEnabled;
   final bool newEventSystemEnabled;
+  final bool distributedTracingEnabled;
 
   Config(
       {required this.accessToken,
@@ -41,5 +42,6 @@ class Config {
       this.logReportingEnabled = true,
       this.logLevel = LogLevel.INFO,
       this.backgroundReportingEnabled = false,
+      this.distributedTracingEnabled = true,
       this.newEventSystemEnabled = true});
 }
