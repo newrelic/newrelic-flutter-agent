@@ -109,7 +109,9 @@ class Page1Screen extends StatelessWidget {
                         context: context,
                         builder: (BuildContext context) => const PopPopPop(),
                       );
-                      print(NewrelicMobile.instance.currentSessionId());
+                      if (kDebugMode) {
+                        print(NewrelicMobile.instance.currentSessionId());
+                      }
                       NewrelicMobile.instance.incrementAttribute(
                           "FlutterCustomAttrNumber",
                           value: 5.0);
@@ -137,7 +139,9 @@ class Page1Screen extends StatelessWidget {
                       final response = await request.close();
 
                       response.transform(utf8.decoder).listen((contents) {
-                        print(contents);
+                        if (kDebugMode) {
+                          print(contents);
+                        }
                       });
                     },
                     child: const Text('Http call to non-existing URL',
@@ -157,7 +161,9 @@ class Page1Screen extends StatelessWidget {
                       final response = await request.close();
 
                       response.transform(utf8.decoder).listen((contents) {
-                        print(contents);
+                        if (kDebugMode) {
+                          print(contents);
+                        }
                       });
                     },
                     child: const Text('Http Default Client',
@@ -175,7 +181,9 @@ class Page1Screen extends StatelessWidget {
                       //     'http://graph.facebook.com/');
                       // var response = await http.get(url);
                       // print('Response status: ${await response.stream.bytesToString()}');
-                      print('Response body: ${response.statusCode}');
+                      if (kDebugMode) {
+                        print('Response body: ${response.statusCode}');
+                      }
                     },
                     child: const Text('Http Library ',
                         maxLines: 1, textDirection: TextDirection.ltr)),
@@ -187,9 +195,13 @@ class Page1Screen extends StatelessWidget {
                         dio.options.followRedirects = false;
                         var response =
                             await dio.get('http://graph.facebook.com/');
-                        print(response);
+                        if (kDebugMode) {
+                          print(response);
+                        }
                       } catch (e) {
-                        print(e);
+                        if (kDebugMode) {
+                          print(e);
+                        }
                       }
                     },
                     child: const Text('Http Dio Library ',
@@ -200,9 +212,13 @@ class Page1Screen extends StatelessWidget {
                         var dio = Dio();
                         var response = await dio.get(
                             'https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage');
-                        print(response);
+                        if (kDebugMode) {
+                          print(response);
+                        }
                       } catch (e) {
-                        print(e);
+                        if (kDebugMode) {
+                          print(e);
+                        }
                       }
                     },
                     child: const Text('OOM Issue Library ',
@@ -225,9 +241,13 @@ class Page1Screen extends StatelessWidget {
                         var response = await dio.post(
                             'https://reqres.in/api/register',
                             data: "{ 'email': 'sydney@fife'}");
-                        print(response.data);
+                        if (kDebugMode) {
+                          print(response.data);
+                        }
                       } catch (e) {
-                        print(e);
+                        if (kDebugMode) {
+                          print(e);
+                        }
                       }
                     },
                     child: const Text('Http Dio Post Library ',
@@ -235,7 +255,9 @@ class Page1Screen extends StatelessWidget {
                 Query(
                     options: QueryOptions(document: gql(readCounters)),
                     builder: (result, {fetchMore, refetch}) {
-                      print(result.data.toString());
+                      if (kDebugMode) {
+                        print(result.data.toString());
+                      }
                       // If stements here to check handle different states;
                       if (result.isLoading) {
                         return const Center(
@@ -268,7 +290,7 @@ class Page1Screen extends StatelessWidget {
 class Page2Screen extends StatelessWidget {
   /// Creates a [Page2Screen].
 
-  var interActionId;
+  dynamic interActionId;
 
   Page2Screen({Key? key, this.interActionId}) : super(key: key);
 
@@ -312,7 +334,9 @@ class Page2Screen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                print("test");
+                if (kDebugMode) {
+                  print("test");
+                }
                 debugPrint("test");
                 throw TypeError();
               },
@@ -388,10 +412,14 @@ class Page3Screen extends StatelessWidget {
                     var dio = Dio();
                     var response =
                         await dio.get('https://reqres.in/api/users?delay=15');
-                    print(response);
+                    if (kDebugMode) {
+                      print(response);
+                    }
                     NewrelicMobile.instance.endInteraction(id);
                   } catch (e) {
-                    print(e);
+                    if (kDebugMode) {
+                      print(e);
+                    }
                   }
                 },
                 child: const Text('Interaction Example'),
@@ -432,18 +460,16 @@ class _Page4ScreenState extends State<Page4Screen> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               ElevatedButton(
-
-
                 onPressed: () async {
-
-
                      ReceivePort port = ReceivePort();
                      var errorPort = ReceivePort();
                       errorPort.listen((message) {
-                        print('Error: $message');
+                        if (kDebugMode) {
+                          print('Error: $message');
+                        }
                         NewrelicMobile.instance.recordError(message, StackTrace.current);
                       });
-                     Isolate i = await Isolate.spawn(_isolateFunction, port.sendPort,onError: errorPort.sendPort);
+                     await Isolate.spawn(_isolateFunction, port.sendPort,onError: errorPort.sendPort);
 
                   // computeService.fetchUser().then((value) {
                   //   setState(() {
@@ -513,7 +539,9 @@ class SpawnService {
   void deserializePerson(List<dynamic> values) async {
     var dio = Dio();
     var response = await dio.get('https://reqres.in/api/users?delay=15');
-    print(response);
+    if (kDebugMode) {
+      print(response);
+    }
     throw Exception("this is isplation error");
   }
 }
