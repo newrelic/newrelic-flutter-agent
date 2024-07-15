@@ -1570,12 +1570,6 @@ void main() {
         expect(methodCalLogs, <Matcher>[
         ]);
       });
-}
-
-
-
-
-
 
   test(
       'test Start of Agent should also start method with distributedTracing disabled ',
@@ -1634,6 +1628,7 @@ void main() {
           )
         ]);
       });
+
 
   test('test noticeHttpTransaction should be called with Empty TraceAttributes if distributedTracing is disabled',
           () async {
