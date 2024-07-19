@@ -44,7 +44,6 @@ void main() {
   late MockHttpHeaders mockHttpHeaders;
 
   setUpAll(() async {
-
     Config config = Config(accessToken: '');
 
     NewrelicMobile.instance.setAgentConfiguration(config);

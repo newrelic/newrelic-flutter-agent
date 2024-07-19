@@ -42,13 +42,13 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.0.9");
+          .setAttribute("Flutter Agent Version", "1.1.0");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
           FlutterErrorDetails(exception: error, stack: stackTrace));
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
-      if (config.logReportingEnabled && config.printStatementAsEventsEnabled) {
+      if (config.printStatementAsEventsEnabled) {
         logInfo(line);
       }
       parent.print(zone, line);
@@ -57,9 +57,10 @@ class NewrelicMobile {
 
   @visibleForTesting
   void setAgentConfiguration(Config config) {
-     this.config = config;
+    this.config = config;
   }
-   Config getAgentConfiguration() {
+
+  Config getAgentConfiguration() {
     return instance.config!;
   }
 
@@ -129,16 +130,12 @@ class NewrelicMobile {
       'loggingEnabled': config.loggingEnabled,
       'fedRampEnabled': config.fedRampEnabled,
       'offlineStorageEnabled': config.offlineStorageEnabled,
-      'logReportingEnabled':config.logReportingEnabled,
-      'logLevel':config.logLevel.name,
       'backgroundReportingEnabled': config.backgroundReportingEnabled,
       'newEventSystemEnabled': config.newEventSystemEnabled,
       'distributedTracingEnabled': config.distributedTracingEnabled,
     };
 
-    if (config.logReportingEnabled) {
-      redirectDebugPrint();
-    }
+    redirectDebugPrint();
 
     if (config.httpInstrumentationEnabled) {
       HttpOverrides.global =
@@ -254,7 +251,6 @@ class NewrelicMobile {
     return Map<String, dynamic>.from(traceAttributes);
   }
 
-
   Future<void> setInteractionName(String interactionName) async {
     final Map<String, String> params = <String, String>{
       'interactionName': interactionName
@@ -308,7 +304,7 @@ class NewrelicMobile {
       {Map<String, dynamic>? httpParams,
       String responseBody = ""}) async {
     Map<String, dynamic>? traceAttributes;
-    if(config!.distributedTracingEnabled) {
+    if (config!.distributedTracingEnabled) {
       if (traceData != null) {
         if (PlatformManager.instance.isAndroid()) {
           traceAttributes = {
@@ -352,32 +348,30 @@ class NewrelicMobile {
     return await _channel.invokeMethod('noticeNetworkFailure', params);
   }
 
-  void log(LogLevel logLevel,String message) async {
-
-    if(message.isEmpty){
+  void log(LogLevel logLevel, String message) async {
+    if (message.isEmpty) {
       print("Log message is empty.");
       return;
     }
-    Map<String,dynamic> attributes = <String,dynamic> {
-      "level":logLevel.name,
-      "message":message
+    Map<String, dynamic> attributes = <String, dynamic>{
+      Platform.isAndroid ? "level" : "logLevel": logLevel.name,
+      "message": message
     };
 
     logAttributes(attributes);
     return;
   }
 
-  void logAll(Exception exception,Map<String, dynamic>? attributes) async {
-
-    Map<String,dynamic> allAttributes = <String,dynamic> {
-      "message":exception.toString(),
+  void logAll(Exception exception, Map<String, dynamic>? attributes) async {
+    Map<String, dynamic> allAttributes = <String, dynamic>{
+      "message": exception.toString(),
     };
     allAttributes.addAll(attributes!);
     logAttributes(allAttributes);
   }
 
   void logError(String message) async {
-     log(LogLevel.ERROR, message);
+    log(LogLevel.ERROR, message);
   }
 
   void logDebug(String message) async {
@@ -396,19 +390,20 @@ class NewrelicMobile {
     log(LogLevel.WARN, message);
   }
 
-
   void logAttributes(Map<String, dynamic>? attributes) async {
-
-    if(attributes!.isEmpty) {
+    if (attributes!.isEmpty) {
       print("Attributes are empty.");
       return;
     }
+
+    // attributes["sessionId"] = await currentSessionId();
+
     final Map<String, dynamic> params = <String, dynamic>{
       'attributes': attributes,
     };
-    return await _channel.invokeMethod('logAttributes', params);
+    await _channel.invokeMethod('logAttributes', params);
+    return;
   }
-
 
   static List<Map<String, String>> getStackTraceElements(
       StackTrace stackTrace) {

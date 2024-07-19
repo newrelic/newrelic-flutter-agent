@@ -53,7 +53,6 @@ void main() {
       webViewInstrumentation: true,
       printStatementAsEventsEnabled: true,
       httpInstrumentationEnabled: true,
-      logLevel: LogLevel.DEBUG,
       distributedTracingEnabled: true,
       fedRampEnabled: false);
 
@@ -108,18 +107,47 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       NewrelicMobile.instance.logInfo("testing logs");
                       NewrelicMobile.instance.logDebug("testing logs debug");
-                      NewrelicMobile.instance.logWarning("testing logs warning");
-                      NewrelicMobile.instance.logVerbose("testing logs verbose");
-                      NewrelicMobile.instance.log(LogLevel.ERROR,"testing logs");
+                      NewrelicMobile.instance
+                          .logWarning("testing logs warning");
+                      NewrelicMobile.instance
+                          .logVerbose("testing logs verbose");
+                      NewrelicMobile.instance
+                          .log(LogLevel.ERROR, "testing logs");
                       NewrelicMobile.instance.logInfo("testing logs");
                       NewrelicMobile.instance.logInfo("testing logs");
 
-                      print(NewrelicMobile.instance.currentSessionId());
-                      showDialog<String>(
-                        barrierDismissible: false,
-                        context: context,
-                        builder: (BuildContext context) => const PopPopPop(),
-                      );
+                      var map = {};
+                      map["test12"] = "value";
+                      map["test23"] = "value1";
+                      map["logLevel"] = "INFO";
+                      map["message"] = "testing logs with attributes";
+
+                      NewrelicMobile.instance
+                          .logAttributes(map.cast<String, dynamic>());
+
+                      NewrelicMobile.instance
+                          .logAll(Exception("This is an exception"), {
+                        "BreadNumValue": 12.3,
+                        "BreadStrValue": "FlutterBread",
+                        "BreadBoolValue": true,
+                        "message": "This is a message with attributes"
+                      });
+
+                      NewrelicMobile.instance.logAttributes({
+                        "BreadNumValue": 12.3,
+                        "BreadStrValue": "FlutterBread",
+                        "BreadBoolValue": true,
+                        "message": "This is a message with attributes"
+                      });
+
+                      if (kDebugMode) {
+                        print(await NewrelicMobile.instance.currentSessionId());
+                      }
+                      // showDialog<String>(
+                      //   barrierDismissible: false,
+                      //   context: context,
+                      //   builder: (BuildContext context) => const PopPopPop(),
+                      // );
                       if (kDebugMode) {
                         print(NewrelicMobile.instance.currentSessionId());
                       }
@@ -472,15 +500,17 @@ class _Page4ScreenState extends State<Page4Screen> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                     ReceivePort port = ReceivePort();
-                     var errorPort = ReceivePort();
-                      errorPort.listen((message) {
-                        if (kDebugMode) {
-                          print('Error: $message');
-                        }
-                        NewrelicMobile.instance.recordError(message, StackTrace.current);
-                      });
-                     await Isolate.spawn(_isolateFunction, port.sendPort,onError: errorPort.sendPort);
+                  ReceivePort port = ReceivePort();
+                  var errorPort = ReceivePort();
+                  errorPort.listen((message) {
+                    if (kDebugMode) {
+                      print('Error: $message');
+                    }
+                    NewrelicMobile.instance
+                        .recordError(message, StackTrace.current);
+                  });
+                  await Isolate.spawn(_isolateFunction, port.sendPort,
+                      onError: errorPort.sendPort);
 
                   // computeService.fetchUser().then((value) {
                   //   setState(() {
@@ -512,9 +542,10 @@ class _Page4ScreenState extends State<Page4Screen> {
       );
 }
 
- void _isolateFunction(_) {
+void _isolateFunction(_) {
   throw Exception('Uncaught error in isolate');
 }
+
 class ComputeService {
   Future<Person> fetchUser() async {
     String userData = await Api.getUser("Compute");
@@ -580,6 +611,7 @@ const rickCharacters = '''
     }
   }
  ''';
+
 class PopPopPop extends StatelessWidget {
   const PopPopPop({super.key});
 
@@ -596,8 +628,7 @@ class PopPopPop extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                  'Something went wrong but we\'re on it.'),
+              Text('Something went wrong but we\'re on it.'),
             ],
           ),
         ),

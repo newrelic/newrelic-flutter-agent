@@ -1,5 +1,4 @@
 enum LogLevel {
-  NONE,
   ERROR,
   WARN,
   INFO,

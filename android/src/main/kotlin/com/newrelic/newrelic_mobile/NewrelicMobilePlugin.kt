@@ -7,11 +7,13 @@ package com.newrelic.newrelic_mobile
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.NonNull
 import com.newrelic.agent.android.ApplicationFramework
 import com.newrelic.agent.android.FeatureFlag
 import com.newrelic.agent.android.HttpHeaders
 import com.newrelic.agent.android.NewRelic
+import com.newrelic.agent.android.logging.AgentLog
 import com.newrelic.agent.android.logging.LogLevel
 import com.newrelic.agent.android.logging.LogReporting
 import com.newrelic.agent.android.metric.MetricUnit
@@ -100,16 +102,6 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 } else {
                     NewRelic.disableFeature(FeatureFlag.OfflineStorage)
                 }
-
-                if (call.argument<Boolean>("logReportingEnabled") as Boolean) {
-                    NewRelic.enableFeature(FeatureFlag.LogReporting)
-                } else {
-                    NewRelic.disableFeature(FeatureFlag.LogReporting)
-                }
-
-                LogReporting.setLogLevel(LogLevel.valueOf(logLevel!!))
-
-//                NewRelic.setEntityGuid("MXxNT0JJTEV8QVBQTElDQVRJT058NjAxMzQ0MTMy")
                 if (call.argument<Boolean>("distributedTracingEnabled") as Boolean) {
                     NewRelic.enableFeature(FeatureFlag.DistributedTracing)
                 } else {
@@ -125,11 +117,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
                 NewRelic.withApplicationToken(
                     applicationToken
-                ).withLoggingEnabled(loggingEnabled!!)
-                    .usingCollectorAddress("staging-mobile-collector.newrelic.com")
-                    .usingCrashCollectorAddress("staging-mobile-crash.newrelic.com")
-                    .withApplicationFramework(ApplicationFramework.Flutter, "1.0.8").start(context)
-                    .withLogLevel(5)
+                ).withLoggingEnabled(loggingEnabled!!).withLogLevel(AgentLog.AUDIT)
                     .withApplicationFramework(ApplicationFramework.Flutter, "1.1.0").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
                 StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.1.0")

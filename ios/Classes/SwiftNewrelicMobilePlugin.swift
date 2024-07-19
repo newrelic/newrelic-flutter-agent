@@ -13,16 +13,16 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
         let instance = SwiftNewrelicMobilePlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
-
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult)  {
         let args = call.arguments as? [String : Any?]
-
+        
         switch call.method {
         case "startAgent":
             let applicationToken = args?["applicationToken"] as? String
             let dartVersion = args?["dartVersion"] as? String
             var logLevel = NRLogLevelWarning.rawValue
-
+            
             if(args?["crashReportingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_CrashReporting)
             }
@@ -38,28 +38,22 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             if(args?["webViewInstrumentation"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_WebViewInstrumentation)
             }
-               if(args?["interactionTracingEnabled"] as! Bool == false) {
+            if(args?["interactionTracingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_InteractionTracing)
             }
             
             if(args?["fedRampEnabled"] as! Bool == true) {
                 NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_FedRampEnabled)
-             }
-
+            }
+            
             if(args?["offlineStorageEnabled"] as! Bool == true) {
                 NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_OfflineStorage)
             } else {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_OfflineStorage)
             }
 
-//            if(args?["logReportingEnabled"] as! Bool == true) {
-//                NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_LogReporting)
-//            } else {
-//                NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_LogReporting)
-//            }
-//
             if (args?["logLevel"] != nil) {
-
+                
                 let strToLogLevel = [
                     "ERROR": NRLogLevelError.rawValue,
                     "WARNING": NRLogLevelWarning.rawValue,
@@ -67,11 +61,12 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                     "VERBOSE": NRLogLevelVerbose.rawValue,
                     "AUDIT": NRLogLevelAudit.rawValue
                 ]
-
+                
                 if let configLogLevel = args?["logLevel"] as? String, strToLogLevel[configLogLevel] != nil {
                     logLevel = strToLogLevel[configLogLevel] ?? logLevel
                 }
-
+            }
+            
             if(args?["backgroundReportingEnabled"] as! Bool == true) {
                 NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_BackgroundReporting)
             } else {
@@ -83,33 +78,20 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             } else {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_DistributedTracing)
             }
-
-
-
-
+            
             if(args?["newEventSystemEnabled"] as! Bool == true) {
                 NewRelic.enableFeatures(NRMAFeatureFlags.NRFeatureFlag_NewEventSystem)
             } else {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_NewEventSystem)
             }
-
-
-
+            
             if(args?["loggingEnabled"] as! Bool == true) {
-                NRLogger.setLogLevels(NRLogLevelALL.rawValue)
+                NRLogger.setLogLevels(logLevel)
             }
-
-
-
-
-
-            NRLogger.setLogTargets(logLevel)
-            NRLogger.setLogLevels(logLevel)
-//            NRLogger.setLogEntityGuid("Mjg5ODczMHxNT0JJTEV8QVBQTElDQVRJT058NjAxNDQ4MDY3")
             NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
             NewRelic.start(withApplicationToken:applicationToken!)
             NewRelic.setAttribute("DartVersion", value:dartVersion!)
-
+            
             result("Agent Started")
         case "getPlatformVersion":
             result("iOS " + UIDevice.current.systemVersion)
@@ -142,37 +124,37 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             result(eventRecorded)
         case "startInteraction":
             let actionName = args!["actionName"] as? String
-
+            
             let interactionId = NewRelic.startInteraction(withName: actionName)
             print("interactionId" + (interactionId ?? ""))
             result(interactionId)
         case "endInteraction":
             let interactionId = args!["interactionId"] as? String
-
+            
             NewRelic.stopCurrentInteraction(interactionId)
             result("interaction Ended")
         case "setMaxEventBufferTime":
             let maxBufferTimeInSec = args!["maxBufferTimeInSec"] as? UInt32
-
+            
             NewRelic.setMaxEventBufferTime(maxBufferTimeInSec ?? 60)
             result("maxBufferTimeInSec set")
         case "setMaxEventPoolSize":
             let maxSize = args!["maxSize"] as? UInt32
-
+            
             NewRelic.setMaxEventPoolSize(maxSize ?? 1000)
             result("maxSize set")
-          case "setMaxOfflineStorageSize":
-             let megaBytes = args!["megaBytes"] as? UInt32
-
-             NewRelic.setMaxOfflineStorageSize(megaBytes ?? 100)
-             result("megaBytes set")
+        case "setMaxOfflineStorageSize":
+            let megaBytes = args!["megaBytes"] as? UInt32
+            
+            NewRelic.setMaxOfflineStorageSize(megaBytes ?? 100)
+            result("megaBytes set")
         case "recordError":
             let exceptionMessage = args!["exception"] as? String
             let reason = args!["reason"] as? String
             let fatal = args!["fatal"] as? Bool
             let stackTraceElements = args!["stackTraceElements"] as? [[String : Any]] ?? [[String : Any]]()
-
-
+            
+            
             let attributes: [String:Any] = [
                 "name": exceptionMessage ?? "Exception name not found",
                 "reason": reason ?? "Reason not found",
@@ -180,27 +162,27 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                 "fatal": fatal ?? false,
                 "stackTraceElements": stackTraceElements
             ]
-
+            
             NewRelic.recordHandledException(withStackTrace: attributes)
-
+            
             result("return")
-
+            
         case "noticeDistributedTrace":
-
+            
             result(NewRelic.generateDistributedTracingHeaders())
-        
+            
         case "addHTTPHeadersTrackingFor":
-
+            
             let headers = args!["headers"] as! [String]
             NewRelic.addHTTPHeaderTracking(for: headers)
             result("headers added")
-        
+            
         case "getHTTPHeadersTrackingFor":
-
+            
             result([])
-
+            
         case "noticeHttpTransaction":
-
+            
             let url = args!["url"] as! String
             let httpMethod = args!["httpMethod"] as! String
             let statusCode = args!["statusCode"] as! Int
@@ -210,23 +192,23 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let bytesReceived = args!["bytesReceived"] as! NSNumber
             let responseBody = args!["responseBody"] as! NSString
             let traceHeaders = args?["traceAttributes"] as? [String : Any] ?? [:]
-
+            
             NewRelic.noticeNetworkRequest(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), responseHeaders: nil, statusCode: statusCode, bytesSent: UInt(truncating: bytesSent), bytesReceived: UInt(truncating: bytesReceived), responseData: responseBody.data(using: String.Encoding.utf8.rawValue), traceHeaders: traceHeaders, andParams: nil)
             result(true)
-
+            
         case "noticeNetworkFailure":
-
+            
             let url = args!["url"] as! String
             let httpMethod = args!["httpMethod"] as! String
             let startTime = args!["startTime"] as! NSNumber
             let endTime = args!["endTime"] as! NSNumber
             let errorCode = args!["errorCode"] as! NSNumber
-
-
-
+            
+            
+            
             NewRelic.noticeNetworkFailure(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), andFailureCode: Int(truncating: errorCode))
             result(true)
-    
+            
         case "shutDown":
             
             NewRelic.shutdown();
@@ -246,7 +228,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             } else {
                 isIncreased = NewRelic.incrementAttribute(name,value: value!)
             }
-        
+            
             result(isIncreased)
             
         case "recordMetric":
@@ -266,20 +248,20 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             } else {
                 NewRelic.recordMetric(withName: name, category: category)
             }
-                        
+            
             result("Recorded Metrics")
             
-//        case "logAttributes":
-//            let attributes = args?["attributes"] as? [String : Any] ?? [:]
-//
-//            NewRelic.logAll(attributes)
+        case "logAttributes":
+            let attributes = args?["attributes"] as? [String : Any] ?? [:]
+            
+            NewRelic.logAttributes(attributes)
             result("log recorded")
         default:
             result(FlutterMethodNotImplemented)
-
-
-
+            
+            
+            
         }
-
+        
     }
 }

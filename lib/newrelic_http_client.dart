@@ -181,9 +181,9 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
 
   Config config = NewrelicMobile.instance.getAgentConfiguration();
 
-  if(config.distributedTracingEnabled) {
+  if (config.distributedTracingEnabled) {
     Map<String, dynamic> traceAttributes =
-    await NewrelicMobile.instance.noticeDistributedTrace({});
+        await NewrelicMobile.instance.noticeDistributedTrace({});
 
     Map<String, dynamic> params = Map();
 
@@ -192,8 +192,7 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
           .add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
       actualRequest.headers
           .add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
-      actualRequest.headers
-          .add(
+      actualRequest.headers.add(
           DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
       if (actualRequest is NewRelicHttpClientRequest) {
         return request as Future<NewRelicHttpClientRequest>;
@@ -211,13 +210,12 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
         return request as Future<NewRelicHttpClientRequest>;
       }
 
-      return Future.value(NewRelicHttpClientRequest(
-          actualRequest, timestamp, {}, {}));
+      return Future.value(
+          NewRelicHttpClientRequest(actualRequest, timestamp, {}, {}));
     }, onError: (dynamic err) {
       NewrelicMobile.instance.recordError(err, StackTrace.current);
       throw err;
     });
-
   }
 }
 
