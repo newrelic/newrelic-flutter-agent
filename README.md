@@ -40,7 +40,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 1.0.9
+  newrelic_mobile: 1.1.0
   
 ```
 
@@ -110,6 +110,9 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
          // iOS Specific 
         // Optional: Enable or disable to use our new, more stable, event system for iOS agent.
          newEventSystemEnabled: true,
+
+        // Optional: Enable or disable distributed tracing.
+        distributedTracingEnabled: true,
       );
 
   NewrelicMobile.instance.start(config, () {
@@ -141,7 +144,7 @@ Config config = Config(
     loggingEnabled: true,
     webViewInstrumentation: true,
     printStatementAsEventsEnabled: true,
-    httpInstrumentationEnabled:true);
+    httpInstrumentationEnabled:true,distributedTracingEnabled: true);
 
 // NewrelicMobile.instance.start(config, () {
 //   runApp(MyApp());
@@ -216,7 +219,7 @@ final router = GoRouter(
       }
       dependencies {
         ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:7.2.0"
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:7.5.0"
       }
     }
   ```
@@ -371,11 +374,71 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 ```dart
     NewrelicMobile.instance.shutdown();
 ```
-### [shutdown](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/mobile-sdk/add-tracked-headers/)() : void;
+### [addHTTPHeadersTrackingFor](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/mobile-sdk/add-tracked-headers/)() : void;
 > This API allows you to add any header field strings to a list that gets recorded as attributes with networking request events. After header fields have been added using this function, if the headers are in a network call they will be included in networking events in NR1.
 ```dart
      NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car","Music"]);
 ```
+
+### logInfo(String message) : void
+
+> Logs an informational message to the New Relic log.
+``` dart
+    NewrelicMobile.instance.logInfo("This is an informational message");
+```
+
+### logError(String message) : void
+> Logs an error message to the New Relic log.
+``` dart
+     NewrelicMobile.instance.logError("This is an error message");
+```
+### logVerbose(String message) : void
+> Logs a verbose message to the New Relic log.
+``` dart
+     NewrelicMobile.instance.logVerbose("This is a verbose message");
+```
+
+### logWarning(String message) : void
+> Logs a warning message to the New Relic log.
+``` dart
+     NewrelicMobile.instance.logWarning("This is a warning message");
+```
+
+### logDebug(String message) : void
+> Logs a debug message to the New Relic log.
+``` dart
+     NewrelicMobile.instance.logDebug("This is a debug message");
+```
+
+### log(LogLevel level, String message) : void
+> Logs a message to the New Relic log with a specified log level.
+``` dart
+     NewrelicMobile.instance.log(LogLevel.Info, "This is an informational message");
+``` 
+
+### logAll(Exception exception,Map<String, dynamic>? attributes) : void
+> Logs an exception with attributes to the New Relic log.
+``` dart
+       NewrelicMobile.instance.logAll(Exception("This is an exception"),
+                          {"BreadNumValue": 12.3 ,
+                            "BreadStrValue": "FlutterBread",
+                            "BreadBoolValue": true ,
+                            "message": "This is a message with attributes" }
+       );
+```
+
+### logAttributes(Dictionary<string, object> attributes) : void
+> Logs a message with attributes to the New Relic log.
+``` dart
+           NewrelicMobile.instance.logAttributes(
+                            {"BreadNumValue": 12.3 ,
+                            "BreadStrValue": "FlutterBread",
+                            "BreadBoolValue": true ,
+                            "message": "This is a message with attributes" }
+                      );
+```
+
+
 
 
 ## Manual Error reporting

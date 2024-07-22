@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/loglevel.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
@@ -19,6 +20,8 @@ import 'metricunit.dart';
 
 class NewrelicMobile {
   static final NewrelicMobile instance = NewrelicMobile._();
+
+  Config? config;
 
   NewrelicMobile._();
 
@@ -35,21 +38,30 @@ class NewrelicMobile {
     runZonedGuarded(() async {
       WidgetsFlutterBinding.ensureInitialized();
       FlutterError.onError = NewrelicMobile.onError;
+      this.config = config;
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.0.9");
+          .setAttribute("Flutter Agent Version", "1.1.0");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
           FlutterErrorDetails(exception: error, stack: stackTrace));
     }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {
       if (config.printStatementAsEventsEnabled) {
-        recordCustomEvent("Mobile Dart Console Events",
-            eventAttributes: {"message": line});
+        logInfo(line);
       }
       parent.print(zone, line);
     }));
+  }
+
+  @visibleForTesting
+  void setAgentConfiguration(Config config) {
+    this.config = config;
+  }
+
+  Config getAgentConfiguration() {
+    return instance.config!;
   }
 
   static void onError(FlutterErrorDetails errorDetails) async {
@@ -96,8 +108,9 @@ class NewrelicMobile {
     _originalDebugPrint = debugPrint;
     debugPrint = (String? message, {int? wrapWidth}) {
       if (_originalDebugPrint != null) {
-        recordCustomEvent("Mobile Dart Console Events",
-            eventAttributes: {"message": message});
+        logDebug(message!);
+        // recordCustomEvent("Mobile Dart Console Events",
+        //     eventAttributes: {"message": message});
         _originalDebugPrint!(message, wrapWidth: wrapWidth);
       }
     };
@@ -119,11 +132,10 @@ class NewrelicMobile {
       'offlineStorageEnabled': config.offlineStorageEnabled,
       'backgroundReportingEnabled': config.backgroundReportingEnabled,
       'newEventSystemEnabled': config.newEventSystemEnabled,
+      'distributedTracingEnabled': config.distributedTracingEnabled,
     };
 
-    if (config.printStatementAsEventsEnabled) {
-      redirectDebugPrint();
-    }
+    redirectDebugPrint();
 
     if (config.httpInstrumentationEnabled) {
       HttpOverrides.global =
@@ -235,6 +247,7 @@ class NewrelicMobile {
       Map<String, dynamic> requestAttributes) async {
     final dynamic traceAttributes =
         await _channel.invokeMethod('noticeDistributedTrace');
+
     return Map<String, dynamic>.from(traceAttributes);
   }
 
@@ -291,22 +304,23 @@ class NewrelicMobile {
       {Map<String, dynamic>? httpParams,
       String responseBody = ""}) async {
     Map<String, dynamic>? traceAttributes;
-    if (traceData != null) {
-      if (PlatformManager.instance.isAndroid()) {
-        traceAttributes = {
-          DTTraceTags.id: traceData[DTTraceTags.id],
-          DTTraceTags.guid: traceData[DTTraceTags.guid],
-          DTTraceTags.traceId: traceData[DTTraceTags.traceId]
-        };
-      } else if (PlatformManager.instance.isIOS()) {
-        traceAttributes = {
-          DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
-          DTTraceTags.traceState: traceData[DTTraceTags.traceState],
-          DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
-        };
+    if (config!.distributedTracingEnabled) {
+      if (traceData != null) {
+        if (PlatformManager.instance.isAndroid()) {
+          traceAttributes = {
+            DTTraceTags.id: traceData[DTTraceTags.id],
+            DTTraceTags.guid: traceData[DTTraceTags.guid],
+            DTTraceTags.traceId: traceData[DTTraceTags.traceId]
+          };
+        } else if (PlatformManager.instance.isIOS()) {
+          traceAttributes = {
+            DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
+            DTTraceTags.traceState: traceData[DTTraceTags.traceState],
+            DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
+          };
+        }
       }
     }
-
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
       'httpMethod': httpMethod,
@@ -332,6 +346,63 @@ class NewrelicMobile {
       'errorCode': errorCode.code
     };
     return await _channel.invokeMethod('noticeNetworkFailure', params);
+  }
+
+  void log(LogLevel logLevel, String message) async {
+    if (message.isEmpty) {
+      print("Log message is empty.");
+      return;
+    }
+    Map<String, dynamic> attributes = <String, dynamic>{
+      Platform.isAndroid ? "level" : "logLevel": logLevel.name,
+      "message": message
+    };
+
+    logAttributes(attributes);
+    return;
+  }
+
+  void logAll(Exception exception, Map<String, dynamic>? attributes) async {
+    Map<String, dynamic> allAttributes = <String, dynamic>{
+      "message": exception.toString(),
+    };
+    allAttributes.addAll(attributes!);
+    logAttributes(allAttributes);
+  }
+
+  void logError(String message) async {
+    log(LogLevel.ERROR, message);
+  }
+
+  void logDebug(String message) async {
+    log(LogLevel.DEBUG, message);
+  }
+
+  void logInfo(String message) async {
+    log(LogLevel.INFO, message);
+  }
+
+  void logVerbose(String message) async {
+    log(LogLevel.VERBOSE, message);
+  }
+
+  void logWarning(String message) async {
+    log(LogLevel.WARN, message);
+  }
+
+  void logAttributes(Map<String, dynamic>? attributes) async {
+    if (attributes!.isEmpty) {
+      print("Attributes are empty.");
+      return;
+    }
+
+    // attributes["sessionId"] = await currentSessionId();
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'attributes': attributes,
+    };
+    await _channel.invokeMethod('logAttributes', params);
+    return;
   }
 
   static List<Map<String, String>> getStackTraceElements(

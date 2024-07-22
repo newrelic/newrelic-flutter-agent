@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 
 import 'newrelic_mobile.dart';
@@ -178,28 +179,44 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
     Future<HttpClientRequest> request) async {
   var timestamp = DateTime.now().millisecondsSinceEpoch;
 
-  Map<String, dynamic> traceAttributes =
-      await NewrelicMobile.instance.noticeDistributedTrace({});
+  Config config = NewrelicMobile.instance.getAgentConfiguration();
 
-  Map<String, dynamic> params = Map();
+  if (config.distributedTracingEnabled) {
+    Map<String, dynamic> traceAttributes =
+        await NewrelicMobile.instance.noticeDistributedTrace({});
 
-  return request.then((actualRequest) {
-    actualRequest.headers
-        .add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
-    actualRequest.headers
-        .add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
-    actualRequest.headers
-        .add(DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
-    if (actualRequest is NewRelicHttpClientRequest) {
-      return request as Future<NewRelicHttpClientRequest>;
-    }
+    Map<String, dynamic> params = Map();
 
-    return Future.value(NewRelicHttpClientRequest(
-        actualRequest, timestamp, traceAttributes, params));
-  }, onError: (dynamic err) {
-    NewrelicMobile.instance.recordError(err, StackTrace.current);
-    throw err;
-  });
+    return request.then((actualRequest) {
+      actualRequest.headers
+          .add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
+      actualRequest.headers
+          .add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
+      actualRequest.headers.add(
+          DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
+      if (actualRequest is NewRelicHttpClientRequest) {
+        return request as Future<NewRelicHttpClientRequest>;
+      }
+
+      return Future.value(NewRelicHttpClientRequest(
+          actualRequest, timestamp, traceAttributes, params));
+    }, onError: (dynamic err) {
+      NewrelicMobile.instance.recordError(err, StackTrace.current);
+      throw err;
+    });
+  } else {
+    return request.then((actualRequest) {
+      if (actualRequest is NewRelicHttpClientRequest) {
+        return request as Future<NewRelicHttpClientRequest>;
+      }
+
+      return Future.value(
+          NewRelicHttpClientRequest(actualRequest, timestamp, {}, {}));
+    }, onError: (dynamic err) {
+      NewrelicMobile.instance.recordError(err, StackTrace.current);
+      throw err;
+    });
+  }
 }
 
 Future<NewRelicHttpClientResponse> _wrapResponse(

@@ -19,6 +19,7 @@ class Config {
   final bool offlineStorageEnabled;
   final bool backgroundReportingEnabled;
   final bool newEventSystemEnabled;
+  final bool distributedTracingEnabled;
 
   Config(
       {required this.accessToken,
@@ -35,5 +36,6 @@ class Config {
       this.fedRampEnabled = false,
       this.offlineStorageEnabled = true,
       this.backgroundReportingEnabled = false,
+      this.distributedTracingEnabled = true,
       this.newEventSystemEnabled = true});
 }

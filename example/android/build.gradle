@@ -1,6 +1,6 @@
 
 buildscript {
-    ext.kotlin_version = '1.6.10'
+    ext.kotlin_version = '1.7.10'
     repositories {
         mavenLocal()
         mavenCentral()
@@ -10,7 +10,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.newrelic.agent.android:agent-gradle-plugin:7.3.0'
+        classpath 'com.newrelic.agent.android:agent-gradle-plugin:7.5.0'
     }
 }
 
