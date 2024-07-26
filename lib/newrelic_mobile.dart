@@ -38,11 +38,10 @@ class NewrelicMobile {
     runZonedGuarded(() async {
       WidgetsFlutterBinding.ensureInitialized();
       FlutterError.onError = NewrelicMobile.onError;
-      this.config = config;
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.1.0");
+          .setAttribute("Flutter Agent Version", "1.1.1");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -136,7 +135,7 @@ class NewrelicMobile {
     };
 
     redirectDebugPrint();
-
+    this.config = config;
     if (config.httpInstrumentationEnabled) {
       HttpOverrides.global =
           NewRelicHttpOverrides(current: HttpOverrides.current);

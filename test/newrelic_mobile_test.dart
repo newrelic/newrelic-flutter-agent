@@ -53,7 +53,7 @@ void main() {
   const megaBytes = 100;
   const maxBufferTime = 300;
   const metricUnitBytes = "bytes";
-  const agentVersion = "1.1.0";
+  const agentVersion = "1.1.1";
   const traceData = {
     "id": "1",
     "guid": "2",

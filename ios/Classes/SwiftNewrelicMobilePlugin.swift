@@ -89,6 +89,8 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                 NRLogger.setLogLevels(logLevel)
             }
             NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
+            let selector = NSSelectorFromString("setPlatformVersion:")
+            NewRelic.perform(selector, with:"1.1.1")            
             NewRelic.start(withApplicationToken:applicationToken!)
             NewRelic.setAttribute("DartVersion", value:dartVersion!)
             
