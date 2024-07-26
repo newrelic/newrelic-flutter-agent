@@ -40,7 +40,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 1.1.0
+  newrelic_mobile: 1.1.1
   
 ```
 
@@ -146,17 +146,15 @@ Config config = Config(
     printStatementAsEventsEnabled: true,
     httpInstrumentationEnabled:true,distributedTracingEnabled: true);
 
-// NewrelicMobile.instance.start(config, () {
-//   runApp(MyApp());
-// });
+
 
 runZonedGuarded(() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  FlutterError.onError = NewrelicMobile.onError;
-  await NewrelicMobile.instance.startAgent(config);
-  runApp(MyApp());
+WidgetsFlutterBinding.ensureInitialized();
+FlutterError.onError = NewrelicMobile.onError;
+await NewrelicMobile.instance.startAgent(config);
+runApp(MyApp());
 }, (Object error, StackTrace stackTrace) {
-  NewrelicMobile.instance.recordError(error, stackTrace);
+NewrelicMobile.instance.recordError(error, stackTrace);
 });
 ```
 

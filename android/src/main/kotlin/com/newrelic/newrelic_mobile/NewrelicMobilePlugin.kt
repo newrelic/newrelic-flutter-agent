@@ -118,9 +118,9 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 NewRelic.withApplicationToken(
                     applicationToken
                 ).withLoggingEnabled(loggingEnabled!!).withLogLevel(AgentLog.AUDIT)
-                    .withApplicationFramework(ApplicationFramework.Flutter, "1.1.0").start(context)
+                    .withApplicationFramework(ApplicationFramework.Flutter, "1.1.1").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.1.0")
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.1.1")
                 result.success("Agent Started")
             }
 

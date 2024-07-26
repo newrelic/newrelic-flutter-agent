@@ -1,21 +1,32 @@
+## 1.1.1
+
+## Bug Fixes
+
+1. iOS Platform Version Reporting
+    - Resolved an issue where the platform version was not being set correctly for iOS applications.
+
+2. HTTP Instrumentation in RunZoneGuarded Context
+    - Fixed a problem where HTTP instrumentation was not functioning when the app and agent were started from within RunZoneGuarded.
+
 ## 1.1.0
 ## New Features
 
-1. Application Exit Information
-    - Added ApplicationExitInfo to data reporting
-    - Enabled by default
+1. Application Exit Reporting
+    - Introduced ApplicationExitInfo in data reports
+    - Feature is enabled by default
 
-2. Log Forwarding to New Relic
-    - Implement static API for sending logs to New Relic
-    - Can be enabled/disabled in your mobile application's entity settings page
-   
-3. A new distributedTracingEnabled feature flag has been introduced to enable disable distributed Tracing functionality.
+2. Log Forwarding
+    - Added static API for sending logs to New Relic
+    - Toggle feature in mobile application's entity settings
 
+3. Distributed Tracing Control
+    - Introduced new feature flag: distributedTracingEnabled
+    - Allows enabling/disabling of distributed tracing functionality
 
-## Improvements
+## Enhancements
 
-- Native Android agent updated to version 7.5.0
-- Native iOS agent updated to version 7.5.0
+- Upgraded native Android agent to version 7.5.0
+- Upgraded native iOS agent to version 7.5.0
 
 ## 1.0.9
 * Improvements
