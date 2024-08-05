@@ -20,6 +20,8 @@ class Config {
   final bool backgroundReportingEnabled;
   final bool newEventSystemEnabled;
   final bool distributedTracingEnabled;
+  final String collectorAddress;
+  final String crashCollectorAddress;
 
   Config(
       {required this.accessToken,
@@ -37,5 +39,7 @@ class Config {
       this.offlineStorageEnabled = true,
       this.backgroundReportingEnabled = false,
       this.distributedTracingEnabled = true,
-      this.newEventSystemEnabled = true});
+      this.newEventSystemEnabled = true,
+      this.collectorAddress= "",
+      this.crashCollectorAddress= ""});
 }

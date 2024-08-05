@@ -780,7 +780,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -813,7 +815,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -844,7 +848,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -874,7 +880,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -911,7 +919,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': true,
       'newEventSystemEnabled': false,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -941,7 +951,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -975,7 +987,9 @@ void main() {
       'offlineStorageEnabled': false,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -1043,7 +1057,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(
@@ -1087,7 +1103,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     final Map<String, dynamic> logParams = <String, dynamic>{
@@ -1145,7 +1163,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
@@ -1192,7 +1212,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': true
+      'distributedTracingEnabled': true,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     expect(
@@ -1556,7 +1578,9 @@ void main() {
       'offlineStorageEnabled': true,
       'backgroundReportingEnabled': false,
       'newEventSystemEnabled': true,
-      'distributedTracingEnabled': false
+      'distributedTracingEnabled': false,
+      'collectorAddress': '',
+      'crashCollectorAddress': ''
     };
 
     final Map<String, dynamic> customParams = <String, dynamic>{
@@ -1616,4 +1640,62 @@ void main() {
       )
     ]);
   });
+
+  test('test Start of Agent should also start method with collectorAddress and crashCollectorAddress',
+          () async {
+        Config config = Config(accessToken: appToken, loggingEnabled: false,collectorAddress: "www.google.com", crashCollectorAddress: "www.facebook.com");
+
+        Function fun = () {
+          print('test');
+        };
+
+        await NewrelicMobile.instance.start(config, fun);
+
+        final Map<String, dynamic> params = <String, dynamic>{
+          'applicationToken': appToken,
+          'dartVersion': Platform.version,
+          'webViewInstrumentation': true,
+          'analyticsEventEnabled': true,
+          'crashReportingEnabled': true,
+          'interactionTracingEnabled': true,
+          'networkRequestEnabled': true,
+          'networkErrorRequestEnabled': true,
+          'httpResponseBodyCaptureEnabled': true,
+          'loggingEnabled': false,
+          'fedRampEnabled': false,
+          'offlineStorageEnabled': true,
+          'backgroundReportingEnabled': false,
+          'newEventSystemEnabled': true,
+          'distributedTracingEnabled': true,
+          'collectorAddress': 'www.google.com',
+          'crashCollectorAddress': 'www.facebook.com'
+        };
+
+        final Map<String, dynamic> logParams = <String, dynamic>{
+          "attributes": <String, dynamic>{
+            'logLevel': LogLevel.INFO.name,
+            'message': message,
+          }
+        };
+
+        final Map<String, dynamic> attributeParams = <String, dynamic>{
+          'name': 'Flutter Agent Version',
+          'value': agentVersion,
+        };
+
+        expect(methodCalLogs, <Matcher>[
+          isMethodCall(
+            'startAgent',
+            arguments: params,
+          ),
+          isMethodCall(
+            'logAttributes',
+            arguments: logParams,
+          ),
+          isMethodCall(
+            'setAttribute',
+            arguments: attributeParams,
+          ),
+        ]);
+      });
 }

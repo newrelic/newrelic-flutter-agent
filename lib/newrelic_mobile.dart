@@ -132,6 +132,8 @@ class NewrelicMobile {
       'backgroundReportingEnabled': config.backgroundReportingEnabled,
       'newEventSystemEnabled': config.newEventSystemEnabled,
       'distributedTracingEnabled': config.distributedTracingEnabled,
+      'collectorAddress': config.collectorAddress,
+      'crashCollectorAddress': config.crashCollectorAddress,
     };
 
     redirectDebugPrint();

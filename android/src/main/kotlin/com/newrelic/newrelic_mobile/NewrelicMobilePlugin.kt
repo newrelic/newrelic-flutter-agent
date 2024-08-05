@@ -102,23 +102,40 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 } else {
                     NewRelic.disableFeature(FeatureFlag.OfflineStorage)
                 }
-                if (call.argument<Boolean>("distributedTracingEnabled") as Boolean) {
-                    NewRelic.enableFeature(FeatureFlag.DistributedTracing)
+
+                val useDefaultCollectorAddress =
+                    call.argument<String>("collectorAddress") == null ||
+                            (call.argument<String>("collectorAddress") as String).isEmpty()
+                val useDefaultCrashCollectorAddress =
+                    call.argument<String>("crashCollectorAddress") == null ||
+                            (call.argument<String>("crashCollectorAddress") as String).isEmpty()
+
+                if (useDefaultCollectorAddress && useDefaultCrashCollectorAddress) {
+                    NewRelic.withApplicationToken(
+                        applicationToken
+                    ).withLoggingEnabled(loggingEnabled!!)
+                        .withLogLevel(5)
+                        .withApplicationFramework(ApplicationFramework.Flutter, "1.1.1")
+                        .start(context)
                 } else {
-                    NewRelic.disableFeature(FeatureFlag.DistributedTracing)
+
+                    val collectorAddress =
+                        if (useDefaultCollectorAddress) "mobile-collector.newrelic.com" else (call.argument<String>(
+                            "collectorAddress"
+                        ) as String);
+                    val crashCollectorAddress =
+                        if (useDefaultCrashCollectorAddress) "mobile-crash.newrelic.com" else (call.argument<String>(
+                            "crashCollectorAddress"
+                        ) as String);
+                    NewRelic.withApplicationToken(applicationToken)
+                        .withApplicationFramework(ApplicationFramework.Flutter, "1.1.1")
+                        .withLoggingEnabled(loggingEnabled!!)
+                        .withLogLevel(5)
+                        .usingCollectorAddress(collectorAddress)
+                        .usingCrashCollectorAddress(crashCollectorAddress)
+                        .start(context)
+
                 }
-
-                if (call.argument<Boolean>("backgroundReportingEnabled") as Boolean) {
-                    NewRelic.enableFeature(FeatureFlag.BackgroundReporting)
-                } else {
-                    NewRelic.disableFeature(FeatureFlag.BackgroundReporting)
-                }
-
-
-                NewRelic.withApplicationToken(
-                    applicationToken
-                ).withLoggingEnabled(loggingEnabled!!).withLogLevel(AgentLog.AUDIT)
-                    .withApplicationFramework(ApplicationFramework.Flutter, "1.1.1").start(context)
                 NewRelic.setAttribute("DartVersion", dartVersion)
                 StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.1.1")
                 result.success("Agent Started")
@@ -420,7 +437,6 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
-
     }
 }
 
