@@ -134,6 +134,7 @@ class NewrelicMobile {
       'distributedTracingEnabled': config.distributedTracingEnabled,
       'collectorAddress': config.collectorAddress,
       'crashCollectorAddress': config.crashCollectorAddress,
+      'logLevel': config.logLevel.name,
     };
 
     redirectDebugPrint();

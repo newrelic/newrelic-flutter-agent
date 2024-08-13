@@ -5,6 +5,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/loglevel.dart';
 
 void main() {
   const accessToken = "12345678";
@@ -17,5 +18,7 @@ void main() {
     expect(true, config.offlineStorageEnabled);
     expect(false, config.backgroundReportingEnabled);
     expect(true, config.newEventSystemEnabled);
+    expect(true, config.collectorAddress.isEmpty);
+    expect(LogLevel.DEBUG, config.logLevel);
   });
 }

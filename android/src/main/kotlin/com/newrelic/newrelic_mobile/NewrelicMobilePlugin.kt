@@ -114,7 +114,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.withApplicationToken(
                         applicationToken
                     ).withLoggingEnabled(loggingEnabled!!)
-                        .withLogLevel(5)
+                        .withLogLevel(LogLevel.valueOf(logLevel!!).ordinal)
                         .withApplicationFramework(ApplicationFramework.Flutter, "1.1.1")
                         .start(context)
                 } else {
@@ -130,7 +130,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.withApplicationToken(applicationToken)
                         .withApplicationFramework(ApplicationFramework.Flutter, "1.1.1")
                         .withLoggingEnabled(loggingEnabled!!)
-                        .withLogLevel(5)
+                        .withLogLevel(LogLevel.valueOf(logLevel!!).ordinal)
                         .usingCollectorAddress(collectorAddress)
                         .usingCrashCollectorAddress(crashCollectorAddress)
                         .start(context)

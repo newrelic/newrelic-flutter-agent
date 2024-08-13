@@ -21,7 +21,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
         case "startAgent":
             let applicationToken = args?["applicationToken"] as? String
             let dartVersion = args?["dartVersion"] as? String
-            var logLevel = NRLogLevelWarning.rawValue
+            var logLevel = NRLogLevelDebug.rawValue
             var collectorAddress: String? = nil
             var crashCollectorAddress: String? = nil
             
@@ -61,7 +61,8 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                     "WARNING": NRLogLevelWarning.rawValue,
                     "INFO": NRLogLevelInfo.rawValue,
                     "VERBOSE": NRLogLevelVerbose.rawValue,
-                    "AUDIT": NRLogLevelAudit.rawValue
+                    "AUDIT": NRLogLevelAudit.rawValue,
+                    "DEBUG":NRLogLevelDebug.rawValue
                 ]
                 
                 if let configLogLevel = args?["logLevel"] as? String, strToLogLevel[configLogLevel] != nil {
@@ -239,7 +240,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             NewRelic.shutdown();
             result("agent is shutDown")
         case "currentSessionId":
-            
+            NewRelic.crashNow()
             result(NewRelic.currentSessionId())
         case "incrementAttribute":
             
