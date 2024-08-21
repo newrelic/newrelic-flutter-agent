@@ -42,8 +42,8 @@ class Config {
       this.offlineStorageEnabled = true,
       this.backgroundReportingEnabled = false,
       this.distributedTracingEnabled = true,
-      this.newEventSystemEnabled = true,
-      this.collectorAddress= "",
-      this.crashCollectorAddress= "",
+      this.newEventSystemEnabled = false,
+      this.collectorAddress = "",
+      this.crashCollectorAddress = "",
       this.logLevel = LogLevel.DEBUG});
 }

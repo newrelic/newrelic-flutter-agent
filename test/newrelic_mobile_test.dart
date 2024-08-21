@@ -102,7 +102,7 @@ void main() {
     'distributedTracingEnabled': true,
     'collectorAddress': '',
     'crashCollectorAddress': '',
-    'logLevel':'DEBUG'
+    'logLevel': 'DEBUG'
   };
 
   const boolValue = false;
@@ -785,8 +785,6 @@ void main() {
     Config config = Config(accessToken: appToken);
     await NewrelicMobile.instance.startAgent(config);
 
-
-
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'startAgent',
@@ -817,10 +815,8 @@ void main() {
   });
 
   test('agent should start with AppToken with analytics disabled', () async {
-    Config config =
-        Config(accessToken: appToken, analyticsEventEnabled: false);
+    Config config = Config(accessToken: appToken, analyticsEventEnabled: false);
     await NewrelicMobile.instance.startAgent(config);
-
 
     params['analyticsEventEnabled'] = false;
 
@@ -832,13 +828,11 @@ void main() {
     ]);
 
     params['analyticsEventEnabled'] = true;
-
   });
 
   test('agent should start with AppToken with fedRamp disabled', () async {
     Config config = Config(accessToken: appToken);
     await NewrelicMobile.instance.startAgent(config);
-
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -861,7 +855,6 @@ void main() {
 
     params['backgroundReportingEnabled'] = true;
     params['newEventSystemEnabled'] = false;
-
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -888,13 +881,11 @@ void main() {
     ]);
 
     params['fedRampEnabled'] = false;
-
   });
 
   test('agent should start with AppToken with offlineStorage disabled',
       () async {
-    Config config =
-        Config(accessToken: appToken, offlineStorageEnabled: false);
+    Config config = Config(accessToken: appToken, offlineStorageEnabled: false);
     await NewrelicMobile.instance.startAgent(
       config,
     );
@@ -909,7 +900,6 @@ void main() {
     ]);
 
     params['offlineStorageEnabled'] = true;
-
   });
 
   test('test RecordError should be called', () async {
@@ -953,7 +943,6 @@ void main() {
         Config(accessToken: appToken, printStatementAsEventsEnabled: false);
     NewrelicMobile.instance.startAgent(config);
     debugPrint(name);
-
 
     expect(
       methodCalLogs[0],
@@ -1010,8 +999,7 @@ void main() {
       ),
     ]);
     params['loggingEnabled'] = true;
-
-      });
+  });
 
   test(
       'test Start of Agent should also start method with print statement as custom Events disabled ',
@@ -1024,8 +1012,6 @@ void main() {
     };
 
     await NewrelicMobile.instance.start(config, fun);
-
-
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
@@ -1055,8 +1041,6 @@ void main() {
     };
 
     await NewrelicMobile.instance.start(config, fun);
-
-
 
     expect(
         methodCalLogs[0],
@@ -1466,95 +1450,96 @@ void main() {
     ]);
   });
 
-  test('test Start of Agent should also start method with collectorAddress and crashCollectorAddress',
-          () async {
-        Config config = Config(accessToken: appToken, loggingEnabled: false,collectorAddress: "www.google.com", crashCollectorAddress: "www.facebook.com");
+  test(
+      'test Start of Agent should also start method with collectorAddress and crashCollectorAddress',
+      () async {
+    Config config = Config(
+        accessToken: appToken,
+        loggingEnabled: false,
+        collectorAddress: "www.google.com",
+        crashCollectorAddress: "www.facebook.com");
 
-        Function fun = () {
-          print('test');
-        };
+    Function fun = () {
+      print('test');
+    };
 
-        await NewrelicMobile.instance.start(config, fun);
+    await NewrelicMobile.instance.start(config, fun);
 
-        params['collectorAddress'] = "www.google.com";
-        params['crashCollectorAddress'] = "www.facebook.com";
-        params['loggingEnabled'] = false;
+    params['collectorAddress'] = "www.google.com";
+    params['crashCollectorAddress'] = "www.facebook.com";
+    params['loggingEnabled'] = false;
 
+    final Map<String, dynamic> logParams = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.INFO.name,
+        'message': message,
+      }
+    };
 
+    final Map<String, dynamic> attributeParams = <String, dynamic>{
+      'name': 'Flutter Agent Version',
+      'value': agentVersion,
+    };
 
-        final Map<String, dynamic> logParams = <String, dynamic>{
-          "attributes": <String, dynamic>{
-            'logLevel': LogLevel.INFO.name,
-            'message': message,
-          }
-        };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      ),
+      isMethodCall(
+        'logAttributes',
+        arguments: logParams,
+      ),
+      isMethodCall(
+        'setAttribute',
+        arguments: attributeParams,
+      ),
+    ]);
 
-        final Map<String, dynamic> attributeParams = <String, dynamic>{
-          'name': 'Flutter Agent Version',
-          'value': agentVersion,
-        };
-
-        expect(methodCalLogs, <Matcher>[
-          isMethodCall(
-            'startAgent',
-            arguments: params,
-          ),
-          isMethodCall(
-            'logAttributes',
-            arguments: logParams,
-          ),
-          isMethodCall(
-            'setAttribute',
-            arguments: attributeParams,
-          ),
-        ]);
-
-        params['collectorAddress'] = "";
-        params['crashCollectorAddress'] = "";
-        params['loggingEnabled'] = true;
-      });
+    params['collectorAddress'] = "";
+    params['crashCollectorAddress'] = "";
+    params['loggingEnabled'] = true;
+  });
 
   test('test Start of Agent should also start method with LogLevel Error',
-          () async {
-        Config config = Config(accessToken: appToken,logLevel: LogLevel.ERROR);
+      () async {
+    Config config = Config(accessToken: appToken, logLevel: LogLevel.ERROR);
 
-        Function fun = () {
-          print('test');
-        };
+    Function fun = () {
+      print('test');
+    };
 
-        await NewrelicMobile.instance.start(config, fun);
+    await NewrelicMobile.instance.start(config, fun);
 
-        params['logLevel'] = 'ERROR';
+    params['logLevel'] = 'ERROR';
 
+    final Map<String, dynamic> logParams = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.INFO.name,
+        'message': message,
+      }
+    };
 
-        final Map<String, dynamic> logParams = <String, dynamic>{
-          "attributes": <String, dynamic>{
-            'logLevel': LogLevel.INFO.name,
-            'message': message,
-          }
-        };
+    final Map<String, dynamic> attributeParams = <String, dynamic>{
+      'name': 'Flutter Agent Version',
+      'value': agentVersion,
+    };
 
-        final Map<String, dynamic> attributeParams = <String, dynamic>{
-          'name': 'Flutter Agent Version',
-          'value': agentVersion,
-        };
-
-        expect(methodCalLogs, <Matcher>[
-          isMethodCall(
-            'startAgent',
-            arguments: params,
-          ),
-          isMethodCall(
-            'logAttributes',
-            arguments: logParams,
-          ),
-          isMethodCall(
-            'setAttribute',
-            arguments: attributeParams,
-          ),
-        ]);
-      });
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      ),
+      isMethodCall(
+        'logAttributes',
+        arguments: logParams,
+      ),
+      isMethodCall(
+        'setAttribute',
+        arguments: attributeParams,
+      ),
+    ]);
+  });
 
   params['logLevel'] = 'DEBUG';
-
 }

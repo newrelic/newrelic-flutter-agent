@@ -47,13 +47,16 @@ void main() {
       networkErrorRequestEnabled: true,
       networkRequestEnabled: true,
       crashReportingEnabled: true,
-      interactionTracingEnabled: true,
+      interactionTracingEnabled: false,
       httpResponseBodyCaptureEnabled: true,
       loggingEnabled: true,
       webViewInstrumentation: true,
       printStatementAsEventsEnabled: true,
       httpInstrumentationEnabled: true,
       distributedTracingEnabled: true,
+      logLevel: LogLevel.DEBUG,
+      collectorAddress: "",
+      crashCollectorAddress: "",
       fedRampEnabled: false);
 
   NewrelicMobile.instance.start(config, () {

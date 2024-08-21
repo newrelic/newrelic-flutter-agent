@@ -2,7 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id "com.newrelic.agent.android" version "7.5.1"
+    id "com.newrelic.agent.android"
 }
 
 def localProperties = new Properties()

@@ -240,7 +240,6 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             NewRelic.shutdown();
             result("agent is shutDown")
         case "currentSessionId":
-            NewRelic.crashNow()
             result(NewRelic.currentSessionId())
         case "incrementAttribute":
             
