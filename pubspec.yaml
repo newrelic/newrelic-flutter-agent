@@ -1,6 +1,6 @@
 name: newrelic_mobile
 description: Flutter plugin for NewRelic Mobile. This plugin allows you to instrument Flutter apps with help of native New Relic Android and iOS agents.
-version: 1.1.1
+version: 1.1.2
 
 homepage: https://github.com/newrelic/newrelic-flutter-agent
 

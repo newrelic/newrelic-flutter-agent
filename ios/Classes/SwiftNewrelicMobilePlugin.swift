@@ -21,7 +21,9 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
         case "startAgent":
             let applicationToken = args?["applicationToken"] as? String
             let dartVersion = args?["dartVersion"] as? String
-            var logLevel = NRLogLevelWarning.rawValue
+            var logLevel = NRLogLevelDebug.rawValue
+            var collectorAddress: String? = nil
+            var crashCollectorAddress: String? = nil
             
             if(args?["crashReportingEnabled"] as! Bool == false) {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_CrashReporting)
@@ -59,7 +61,8 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                     "WARNING": NRLogLevelWarning.rawValue,
                     "INFO": NRLogLevelInfo.rawValue,
                     "VERBOSE": NRLogLevelVerbose.rawValue,
-                    "AUDIT": NRLogLevelAudit.rawValue
+                    "AUDIT": NRLogLevelAudit.rawValue,
+                    "DEBUG":NRLogLevelDebug.rawValue
                 ]
                 
                 if let configLogLevel = args?["logLevel"] as? String, strToLogLevel[configLogLevel] != nil {
@@ -88,10 +91,31 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             if(args?["loggingEnabled"] as! Bool == true) {
                 NRLogger.setLogLevels(logLevel)
             }
+            
+            
+            if args?["collectorAddress"] != nil {
+                 if let configCollectorAddress = args?["collectorAddress"] as? String, !configCollectorAddress.isEmpty {
+                             collectorAddress = configCollectorAddress
+                 }
+            }
+                     
+            if args?["crashCollectorAddress"] != nil {
+                  if let configCrashCollectorAddress = args?["crashCollectorAddress"] as? String, !configCrashCollectorAddress.isEmpty {
+                             crashCollectorAddress = configCrashCollectorAddress
+                 }
+            }
+            
             NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
             let selector = NSSelectorFromString("setPlatformVersion:")
-            NewRelic.perform(selector, with:"1.1.1")            
-            NewRelic.start(withApplicationToken:applicationToken!)
+            NewRelic.perform(selector, with:"1.1.1")     
+            
+            if collectorAddress == nil && crashCollectorAddress == nil {
+                NewRelic.start(withApplicationToken: applicationToken!)
+            } else {
+                NewRelic.start(withApplicationToken: applicationToken!,
+                               andCollectorAddress: collectorAddress ?? "mobile-collector.newrelic.com",
+                               andCrashCollectorAddress: crashCollectorAddress ?? "mobile-crash.newrelic.com")
+            }
             NewRelic.setAttribute("DartVersion", value:dartVersion!)
             
             result("Agent Started")
@@ -216,7 +240,6 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             NewRelic.shutdown();
             result("agent is shutDown")
         case "currentSessionId":
-            
             result(NewRelic.currentSessionId())
         case "incrementAttribute":
             

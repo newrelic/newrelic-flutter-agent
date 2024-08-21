@@ -1,18 +1,19 @@
 
-buildscript {
-    ext.kotlin_version = '1.7.10'
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        google()
-    }
+//buildscript {
+//    ext.kotlin_version = '1.7.10'
+//    repositories {
+//        mavenLocal()
+//        mavenCentral()
+//        google()
+//    }
+//
+//    dependencies {
+//        classpath 'com.android.tools.build:gradle:7.4.2'
+//        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+//        classpath 'com.newrelic.agent.android:agent-gradle-plugin:7.5.0'
+//    }
+//}
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.newrelic.agent.android:agent-gradle-plugin:7.5.0'
-    }
-}
 
 allprojects {
     repositories {

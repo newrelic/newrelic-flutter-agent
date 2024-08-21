@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import 'package:newrelic_mobile/loglevel.dart';
+
 class Config {
   final String accessToken;
   final bool analyticsEventEnabled;
@@ -20,6 +22,9 @@ class Config {
   final bool backgroundReportingEnabled;
   final bool newEventSystemEnabled;
   final bool distributedTracingEnabled;
+  final String collectorAddress;
+  final String crashCollectorAddress;
+  final LogLevel logLevel;
 
   Config(
       {required this.accessToken,
@@ -37,5 +42,8 @@ class Config {
       this.offlineStorageEnabled = true,
       this.backgroundReportingEnabled = false,
       this.distributedTracingEnabled = true,
-      this.newEventSystemEnabled = true});
+      this.newEventSystemEnabled = false,
+      this.collectorAddress = "",
+      this.crashCollectorAddress = "",
+      this.logLevel = LogLevel.DEBUG});
 }
