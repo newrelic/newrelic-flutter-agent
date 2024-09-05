@@ -105,6 +105,9 @@ class Page1Screen extends StatelessWidget {
               children: <Widget>[
                 ElevatedButton(
                     onPressed: () async {
+                      debugPrint(null);
+                      NewrelicMobile.instance
+                          .recordBreadcrumb("Button Got Pressed on Screen 3");
                       NewrelicMobile.instance.logInfo("testing logs");
                       NewrelicMobile.instance.logDebug("testing logs debug");
                       NewrelicMobile.instance
