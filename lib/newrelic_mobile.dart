@@ -107,9 +107,8 @@ class NewrelicMobile {
     _originalDebugPrint = debugPrint;
     debugPrint = (String? message, {int? wrapWidth}) {
       if (_originalDebugPrint != null) {
-        logDebug(message!);
-        // recordCustomEvent("Mobile Dart Console Events",
-        //     eventAttributes: {"message": message});
+        if (message != null)
+          logDebug(message);
         _originalDebugPrint!(message, wrapWidth: wrapWidth);
       }
     };
