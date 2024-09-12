@@ -383,7 +383,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
                 value?.let {
                     NewRelic.recordMetric(name, category,
-                        0, it, 0.0,
+                        1, it, 0.0,
                         countUnit?.let { it2 -> MetricUnit.valueOf(it2) },
                         valueUnit?.let { it3 -> MetricUnit.valueOf(it3) })
                 }
