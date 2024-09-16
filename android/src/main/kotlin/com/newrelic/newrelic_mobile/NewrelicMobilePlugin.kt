@@ -119,7 +119,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                         applicationToken
                     ).withLoggingEnabled(loggingEnabled!!)
                         .withLogLevel(LogLevel.valueOf(logLevel!!).ordinal)
-                        .withApplicationFramework(ApplicationFramework.Flutter, "1.1.1")
+                        .withApplicationFramework(ApplicationFramework.Flutter, "1.1.3")
                         .start(context)
                 } else {
 
@@ -132,7 +132,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                             "crashCollectorAddress"
                         ) as String);
                     NewRelic.withApplicationToken(applicationToken)
-                        .withApplicationFramework(ApplicationFramework.Flutter, "1.1.1")
+                        .withApplicationFramework(ApplicationFramework.Flutter, "1.1.3")
                         .withLoggingEnabled(loggingEnabled!!)
                         .withLogLevel(LogLevel.valueOf(logLevel!!).ordinal)
                         .usingCollectorAddress(collectorAddress)
@@ -141,7 +141,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
                 }
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.1.1")
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.1.3")
                 result.success("Agent Started")
             }
 
@@ -383,7 +383,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
                 value?.let {
                     NewRelic.recordMetric(name, category,
-                        0, it, 0.0,
+                        1, it, 0.0,
                         countUnit?.let { it2 -> MetricUnit.valueOf(it2) },
                         valueUnit?.let { it3 -> MetricUnit.valueOf(it3) })
                 }
