@@ -41,7 +41,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.1.1");
+          .setAttribute("Flutter Agent Version", "1.1.3");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -107,8 +107,7 @@ class NewrelicMobile {
     _originalDebugPrint = debugPrint;
     debugPrint = (String? message, {int? wrapWidth}) {
       if (_originalDebugPrint != null) {
-        if (message != null)
-          logDebug(message);
+        if (message != null) logDebug(message);
         _originalDebugPrint!(message, wrapWidth: wrapWidth);
       }
     };

@@ -53,7 +53,7 @@ void main() {
   const megaBytes = 100;
   const maxBufferTime = 300;
   const metricUnitBytes = "bytes";
-  const agentVersion = "1.1.1";
+  const agentVersion = "1.1.3";
   const traceData = {
     "id": "1",
     "guid": "2",
@@ -98,7 +98,7 @@ void main() {
     'fedRampEnabled': false,
     'offlineStorageEnabled': true,
     'backgroundReportingEnabled': false,
-    'newEventSystemEnabled': true,
+    'newEventSystemEnabled': false,
     'distributedTracingEnabled': true,
     'collectorAddress': '',
     'crashCollectorAddress': '',
@@ -854,7 +854,6 @@ void main() {
     );
 
     params['backgroundReportingEnabled'] = true;
-    params['newEventSystemEnabled'] = false;
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -864,7 +863,7 @@ void main() {
     ]);
 
     params['backgroundReportingEnabled'] = false;
-    params['newEventSystemEnabled'] = true;
+    params['newEventSystemEnabled'] = false;
   });
 
   test('agent should start with AppToken with fedRamp Enabled', () async {
