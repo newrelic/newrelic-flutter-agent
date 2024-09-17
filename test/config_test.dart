@@ -17,7 +17,7 @@ void main() {
     expect(false, config.printStatementAsEventsEnabled);
     expect(true, config.offlineStorageEnabled);
     expect(false, config.backgroundReportingEnabled);
-    expect(true, config.newEventSystemEnabled);
+    expect(false, config.newEventSystemEnabled);
     expect(true, config.collectorAddress.isEmpty);
     expect(LogLevel.DEBUG, config.logLevel);
   });
