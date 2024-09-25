@@ -179,9 +179,9 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             let reason = args!["reason"] as? String
             let fatal = args!["fatal"] as? Bool
             let stackTraceElements = args!["stackTraceElements"] as? [[String : Any]] ?? [[String : Any]]()
+            let eventAttributes = args?["attributes"] as? [String : Any]
             
-            
-            let attributes: [String:Any] = [
+            var attributes: [String:Any] = [
                 "name": exceptionMessage ?? "Exception name not found",
                 "reason": reason ?? "Reason not found",
                 "cause": reason ?? "Reason not found",
@@ -189,6 +189,9 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                 "stackTraceElements": stackTraceElements
             ]
             
+            if let eventAttributes = eventAttributes {
+                attributes.merge(eventAttributes) { (current, _) in current }
+            }
             NewRelic.recordHandledException(withStackTrace: attributes)
             
             result("return")
