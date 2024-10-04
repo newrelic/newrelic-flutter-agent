@@ -479,13 +479,19 @@ NewrelicMobile.instance
 
 ## Troubleshoot
 
-No Http data appears:
+**No Http data appears:**
 
-Problem
+**Problem**
 After installing the Flutter agent and waiting at least 5 minutes, no http data appears in New Relic UI.
 
-Solution
+**Solution**
 If no http data appears after you wait at least five minutes, check you are not overriding HttpOverrides.global inside your flutter app.  
+
+
+**Crash reports may not be sent when ProGuard rules are not properly configured for New Relic in hybrid Android applications.**
+
+**Solution**:
+Ensure proper ProGuard rules are added to your ProGuard configuration file. See ["Configuring ProGuard Rules"](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/configure-proguard-or-dexguard-android-apps/) in setup documentation.
 
 ## Uploading dSYM files
 
