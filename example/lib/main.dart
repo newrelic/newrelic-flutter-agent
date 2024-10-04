@@ -47,7 +47,7 @@ void main() {
       networkErrorRequestEnabled: true,
       networkRequestEnabled: true,
       crashReportingEnabled: true,
-      interactionTracingEnabled: false,
+      interactionTracingEnabled: true,
       httpResponseBodyCaptureEnabled: true,
       loggingEnabled: true,
       webViewInstrumentation: true,
