@@ -41,7 +41,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.1.3");
+          .setAttribute("Flutter Agent Version", "1.1.4");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -95,7 +95,6 @@ class NewrelicMobile {
 
     final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
     if (attributes != null) {
-
       for (final String key in attributes.keys) {
         if (key == 'attributes') {
           continue;
