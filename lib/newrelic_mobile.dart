@@ -95,7 +95,6 @@ class NewrelicMobile {
 
     final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
     if (attributes != null) {
-
       for (final String key in attributes.keys) {
         if (key == 'attributes') {
           continue;
