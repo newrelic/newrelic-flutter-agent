@@ -1,3 +1,8 @@
+### 1.1.4
+
+## Updates
+- Updated the underlying native iOS agent to version 7.5.2 for improved performance and compatibility.
+
 ### 1.1.3
 
 ## Bug Fixes
