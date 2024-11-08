@@ -207,8 +207,8 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             result("headers added")
             
         case "getHTTPHeadersTrackingFor":
-            
-            result([])
+
+            result(NewRelic.httpHeadersAddedForTracking())
             
         case "noticeHttpTransaction":
             
