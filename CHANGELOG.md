@@ -1,3 +1,11 @@
+### 1.1.6
+
+## Enhancements
+
+- Upgraded native Android agent to version 7.6.2
+- Upgraded native iOS agent to version 7.5.3
+
+
 ### 1.1.5
 
 ## Updates
