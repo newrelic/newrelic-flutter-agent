@@ -414,6 +414,14 @@ class NewrelicMobile {
     return;
   }
 
+  void crashNow({String? name}) async {
+    final Map<String, String> params = <String, String>{
+      'name': name ?? 'NewRelic Demo Crash',
+    };
+
+    await _channel.invokeMethod('crashNow', params);
+  }
+
   static List<Map<String, String>> getStackTraceElements(
       StackTrace stackTrace) {
     final Trace trace = Trace.parseVM(stackTrace.toString());

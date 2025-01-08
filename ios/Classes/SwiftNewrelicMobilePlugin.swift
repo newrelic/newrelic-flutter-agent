@@ -284,6 +284,13 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             
             NewRelic.logAttributes(attributes)
             result("log recorded")
+
+        case "crashNow":
+
+           let name = args!["name"] as? String
+
+            NewRelic.crashNow(name)
+            result("Crash triggered")
         default:
             result(FlutterMethodNotImplemented)
             

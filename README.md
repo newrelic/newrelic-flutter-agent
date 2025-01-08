@@ -461,6 +461,24 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
                       );
 ```
 
+### logAttributes(Dictionary<string, object> attributes) : void
+> Logs a message with attributes to the New Relic log.
+``` dart
+           NewrelicMobile.instance.logAttributes(
+                            {"BreadNumValue": 12.3 ,
+                            "BreadStrValue": "FlutterBread",
+                            "BreadBoolValue": true ,
+                            "message": "This is a message with attributes" }
+                      );
+```
+
+### crashNow({String name}) : void
+> Throws a demo run-time exception to test New Relic crash reporting.
+``` dart
+           NewrelicMobile.instance.crashNow(name: "This is a crash");
+            NewrelicMobile.instance.crashNow();
+```
+
 
 
 
