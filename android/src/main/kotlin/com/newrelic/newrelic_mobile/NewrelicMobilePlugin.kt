@@ -7,7 +7,8 @@ package com.newrelic.newrelic_mobile
 
 import android.content.Context
 import android.os.Build
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.NonNull
 import com.newrelic.agent.android.ApplicationFramework
 import com.newrelic.agent.android.FeatureFlag
@@ -15,7 +16,6 @@ import com.newrelic.agent.android.HttpHeaders
 import com.newrelic.agent.android.NewRelic
 import com.newrelic.agent.android.logging.AgentLog
 import com.newrelic.agent.android.logging.LogLevel
-import com.newrelic.agent.android.logging.LogReporting
 import com.newrelic.agent.android.metric.MetricUnit
 import com.newrelic.agent.android.stats.StatsEngine
 import com.newrelic.agent.android.util.NetworkFailure
@@ -412,6 +412,19 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val attributes: HashMap<String, Any>? = call.argument("attributes")
                 NewRelic.logAttributes(attributes)
                 result.success("Recorded Log")
+            }
+            "crashNow" -> {
+                val name: String? = call.argument("name")
+                Looper.myLooper()?.let {
+                    Handler(it)
+                        .postDelayed(
+                            {
+                                throw RuntimeException(name)
+                            },
+                            50
+                        )
+                }
+                result.success("Crash Recorded")
             }
 
             else -> {

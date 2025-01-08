@@ -1,3 +1,8 @@
+### 1.1.7
+
+## Updates
+- Added CrashNow Method for testing crash reporting.
+
 ### 1.1.6
 
 ## Enhancements

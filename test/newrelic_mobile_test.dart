@@ -595,6 +595,32 @@ void main() {
     expect(result, true);
   });
 
+  test('crashNow should be called', () async {
+    NewrelicMobile.instance.crashNow();
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': 'NewRelic Demo Crash',
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'crashNow',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('crashNow should be called with Name Parameter', () async {
+    NewrelicMobile.instance.crashNow(name: "This is Example Crash");
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': 'This is Example Crash',
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'crashNow',
+        arguments: params,
+      )
+    ]);
+  });
+
   test('test incrementAttribute should be called with name and value',
       () async {
     final result =

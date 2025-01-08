@@ -18,6 +18,7 @@ import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:newrelic_mobile_example/app_config.dart';
+import 'package:http/http.dart' as http;
 
 const String readCounters = """
    query (\$id: Int) { # Define which variables will be used in the query (id)
@@ -54,7 +55,7 @@ void main() {
       printStatementAsEventsEnabled: true,
       httpInstrumentationEnabled: true,
       distributedTracingEnabled: true,
-      logLevel: LogLevel.DEBUG,
+      logLevel: LogLevel.VERBOSE,
       collectorAddress: "",
       crashCollectorAddress: "",
       fedRampEnabled: false);
@@ -121,6 +122,8 @@ class Page1Screen extends StatelessWidget {
                           .log(LogLevel.ERROR, "testing logs");
                       NewrelicMobile.instance.logInfo("testing logs");
                       NewrelicMobile.instance.logInfo("testing logs");
+
+                      NewrelicMobile.instance.crashNow();
 
                       var map = {};
                       map["test12"] = "value";
@@ -215,12 +218,11 @@ class Page1Screen extends StatelessWidget {
                         maxLines: 1, textDirection: TextDirection.ltr)),
                 ElevatedButton(
                     onPressed: () async {
-                      final client = HttpClient();
-                      var uri = Uri.parse("http://graph.facebook.com/");
-                      var request = await client.getUrl(uri);
-                      request.headers.set("Car", "BMW");
+                      // final client = HttpClient();
+                      // var uri = Uri.parse("https://reactnative.dev/movies.json");
+                      var response = await http.get(
+                          Uri.parse("https://reactnative.dev/movies.json"));
                       // request.followRedirects = false;
-                      var response = await request.close();
 
                       // var url = Uri.parse(
                       //     'http://graph.facebook.com/');
@@ -255,8 +257,8 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       try {
                         var dio = Dio();
-                        var response = await dio.get(
-                            'https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage');
+                        var response = await dio
+                            .get('https://reactnative.dev/movies.json');
                         if (kDebugMode) {
                           print(response);
                         }
