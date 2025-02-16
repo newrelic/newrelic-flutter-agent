@@ -11,12 +11,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/loglevel.dart';
+import 'package:newrelic_mobile/metricunit.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
-import 'package:newrelic_mobile/metricunit.dart';
+
 import 'newrelic_mobile_test.mocks.dart';
 
 @GenerateMocks([
@@ -48,8 +50,10 @@ void main() {
   const bytesReceived = 200;
   const responseBody = 'test';
   const maxSize = 10000;
+  const megaBytes = 100;
   const maxBufferTime = 300;
   const metricUnitBytes = "bytes";
+  const agentVersion = "1.1.6";
   const traceData = {
     "id": "1",
     "guid": "2",
@@ -58,6 +62,9 @@ void main() {
     "tracestate": "testtststst",
     "traceparent": "rereteutueyuyeuyeuye"
   };
+  const message = 'test';
+
+  const httpParams = {"Car": "Honda", "Music": "Jazz"};
   const dartError =
       '#0      Page2Screen.bar.<anonymous closure> (package:newrelic_mobile_example/main.dart:185:17)\n'
       '#1      new Future.<anonymous closure> (dart:async/future.dart:252:37)\n#2      _rootRun (dart:async/zone.dart:1418:47)\n#3      _CustomZone.run (dart:async/zone.dart:1328:19)\n#4      _CustomZone.runGuarded (dart:async/zone.dart:1236:7)\n#5      _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:1276:23)';
@@ -77,14 +84,36 @@ void main() {
   const oldRouteName = 'Old Route';
   const nextRouteName = 'Next Route';
   NewRelicNavigationObserver navigationObserver = NewRelicNavigationObserver();
+  final Map<String, dynamic> params = <String, dynamic>{
+    'applicationToken': appToken,
+    'dartVersion': Platform.version,
+    'webViewInstrumentation': true,
+    'analyticsEventEnabled': true,
+    'crashReportingEnabled': true,
+    'interactionTracingEnabled': true,
+    'networkRequestEnabled': true,
+    'networkErrorRequestEnabled': true,
+    'httpResponseBodyCaptureEnabled': true,
+    'loggingEnabled': true,
+    'fedRampEnabled': false,
+    'offlineStorageEnabled': true,
+    'backgroundReportingEnabled': false,
+    'newEventSystemEnabled': false,
+    'distributedTracingEnabled': true,
+    'collectorAddress': '',
+    'crashCollectorAddress': '',
+    'logLevel': 'DEBUG'
+  };
 
   const boolValue = false;
   final List<MethodCall> methodCalLogs = <MethodCall>[];
 
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  NewrelicMobile.instance.setAgentConfiguration(Config(accessToken: ''));
   setUpAll(() async {
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       methodCalLogs.add(methodCall);
       switch (methodCall.method) {
         case 'getTags':
@@ -104,6 +133,8 @@ void main() {
         case 'noticeDistributedTrace':
           Map<String, dynamic> map = {'test': 'test1', 'test1': 'test3'};
           return map;
+        case 'getHTTPHeadersTrackingFor':
+          return <String>['Car', 'Music'];
         default:
           return true;
       }
@@ -285,6 +316,35 @@ void main() {
     expect(result.keys.length, 2);
   });
 
+  test(
+      'test getHTTPHeadersTrackingFor should be called and Return List with Headers ',
+      () async {
+    final List<Object?> result =
+        await NewrelicMobile.instance.getHTTPHeadersTrackingFor();
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'getHTTPHeadersTrackingFor',
+        arguments: null,
+      )
+    ]);
+    expect(result.length, 2);
+  });
+
+  test('test addHTTPHeadersTrackingFor should be called with parameters ',
+      () async {
+    List<String> list = ["Car", "Music"];
+    final Map<String, dynamic> params = <String, dynamic>{
+      'headers': list,
+    };
+
+    NewrelicMobile.instance.addHTTPHeadersTrackingFor(list);
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'addHTTPHeadersTrackingFor',
+        arguments: params,
+      )
+    ]);
+  });
   test('test endInteraction should be called with interActionId ', () async {
     NewrelicMobile.instance.endInteraction(interActionId);
     final Map<String, dynamic> params = <String, dynamic>{
@@ -307,6 +367,21 @@ void main() {
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'setMaxEventPoolSize',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test setMaxOfflineStorageSize should be called with megaBytes',
+      () async {
+    NewrelicMobile.instance.setMaxOfflineStorageSize(megaBytes);
+    final Map<String, dynamic> params = <String, dynamic>{
+      'megaBytes': megaBytes,
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'setMaxOfflineStorageSize',
         arguments: params,
       )
     ]);
@@ -367,6 +442,36 @@ void main() {
     };
     await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
         statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
+        responseBody: responseBody, httpParams: httpParams);
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'statusCode': statusCode,
+      'startTime': startTime,
+      'endTime': endTime,
+      'bytesSent': bytesSent,
+      'bytesReceived': bytesReceived,
+      'responseBody': responseBody,
+      'traceAttributes': traceAttributes,
+      'params': httpParams
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeHttpTransaction',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test(
+      'test noticeHttpTransaction should be called on Android Platform when traceAttributes is null and params is null',
+      () async {
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
+
+    await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+        statusCode, startTime, endTime, bytesSent, bytesReceived, null,
         responseBody: responseBody);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -378,7 +483,8 @@ void main() {
       'bytesSent': bytesSent,
       'bytesReceived': bytesReceived,
       'responseBody': responseBody,
-      'traceAttributes': traceAttributes
+      'traceAttributes': null,
+      'params': null
     };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -401,6 +507,37 @@ void main() {
     };
     await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
         statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
+        responseBody: responseBody, httpParams: httpParams);
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'statusCode': statusCode,
+      'startTime': startTime,
+      'endTime': endTime,
+      'bytesSent': bytesSent,
+      'bytesReceived': bytesReceived,
+      'responseBody': responseBody,
+      'traceAttributes': traceAttributes,
+      'params': httpParams
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeHttpTransaction',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test(
+      'test noticeHttpTransaction should be called on iOS Platform when traceAttributes is null and httpParams is null',
+      () async {
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
+    when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
+
+    await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+        statusCode, startTime, endTime, bytesSent, bytesReceived, null,
         responseBody: responseBody);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -412,7 +549,8 @@ void main() {
       'bytesSent': bytesSent,
       'bytesReceived': bytesReceived,
       'responseBody': responseBody,
-      'traceAttributes': traceAttributes
+      'traceAttributes': null,
+      'params': null
     };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -455,6 +593,32 @@ void main() {
       )
     ]);
     expect(result, true);
+  });
+
+  test('crashNow should be called', () async {
+    NewrelicMobile.instance.crashNow();
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': 'NewRelic Demo Crash',
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'crashNow',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('crashNow should be called with Name Parameter', () async {
+    NewrelicMobile.instance.crashNow(name: "This is Example Crash");
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': 'This is Example Crash',
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'crashNow',
+        arguments: params,
+      )
+    ]);
   });
 
   test('test incrementAttribute should be called with name and value',
@@ -644,22 +808,8 @@ void main() {
   });
 
   test('agent should start with AppToken', () async {
-    Config config = Config(accessToken: "test1234");
+    Config config = Config(accessToken: appToken);
     await NewrelicMobile.instance.startAgent(config);
-
-    final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken': config.accessToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': true,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': true,
-      'networkErrorRequestEnabled': true,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true,
-      'fedRampEnabled': false
-    };
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -671,24 +821,13 @@ void main() {
 
   test('agent should start with AppToken with network disabled', () async {
     Config config = Config(
-        accessToken: "test1234",
+        accessToken: appToken,
         networkRequestEnabled: false,
         networkErrorRequestEnabled: false);
     await NewrelicMobile.instance.startAgent(config);
 
-    final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken': config.accessToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': true,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': false,
-      'networkErrorRequestEnabled': false,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true,
-      'fedRampEnabled': false
-    };
+    params['networkRequestEnabled'] = false;
+    params['networkErrorRequestEnabled'] = false;
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -696,26 +835,16 @@ void main() {
         arguments: params,
       )
     ]);
+
+    params['networkRequestEnabled'] = true;
+    params['networkErrorRequestEnabled'] = true;
   });
 
   test('agent should start with AppToken with analytics disabled', () async {
-    Config config =
-        Config(accessToken: "test1234", analyticsEventEnabled: false);
+    Config config = Config(accessToken: appToken, analyticsEventEnabled: false);
     await NewrelicMobile.instance.startAgent(config);
 
-    final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken': config.accessToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': false,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': true,
-      'networkErrorRequestEnabled': true,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true,
-      'fedRampEnabled': false
-    };
+    params['analyticsEventEnabled'] = false;
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -723,25 +852,13 @@ void main() {
         arguments: params,
       )
     ]);
+
+    params['analyticsEventEnabled'] = true;
   });
 
   test('agent should start with AppToken with fedRamp disabled', () async {
-    Config config = Config(accessToken: "test1234");
+    Config config = Config(accessToken: appToken);
     await NewrelicMobile.instance.startAgent(config);
-
-    final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken': config.accessToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': true,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': true,
-      'networkErrorRequestEnabled': true,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true,
-      'fedRampEnabled': false
-    };
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -751,23 +868,18 @@ void main() {
     ]);
   });
 
-  test('agent should start with AppToken with fedRamp Enabled', () async {
-    Config config = Config(accessToken: "test1234", fedRampEnabled: true);
-    await NewrelicMobile.instance.startAgent(config);
+  test(
+      'agent should start with AppToken with  backgroundReporting Enabled and newEventSystem Disabled',
+      () async {
+    Config config = Config(
+        accessToken: appToken,
+        backgroundReportingEnabled: true,
+        newEventSystemEnabled: false);
+    await NewrelicMobile.instance.startAgent(
+      config,
+    );
 
-    final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken': config.accessToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': true,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': true,
-      'networkErrorRequestEnabled': true,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true,
-      'fedRampEnabled': true
-    };
+    params['backgroundReportingEnabled'] = true;
 
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -775,6 +887,44 @@ void main() {
         arguments: params,
       )
     ]);
+
+    params['backgroundReportingEnabled'] = false;
+    params['newEventSystemEnabled'] = false;
+  });
+
+  test('agent should start with AppToken with fedRamp Enabled', () async {
+    Config config = Config(accessToken: appToken, fedRampEnabled: true);
+    await NewrelicMobile.instance.startAgent(config);
+
+    params['fedRampEnabled'] = true;
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+
+    params['fedRampEnabled'] = false;
+  });
+
+  test('agent should start with AppToken with offlineStorage disabled',
+      () async {
+    Config config = Config(accessToken: appToken, offlineStorageEnabled: false);
+    await NewrelicMobile.instance.startAgent(
+      config,
+    );
+
+    params['offlineStorageEnabled'] = false;
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      )
+    ]);
+
+    params['offlineStorageEnabled'] = true;
   });
 
   test('test RecordError should be called', () async {
@@ -819,35 +969,21 @@ void main() {
     NewrelicMobile.instance.startAgent(config);
     debugPrint(name);
 
-    final Map<String, dynamic> params1 = <String, dynamic>{
-      'applicationToken': config.accessToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': true,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': true,
-      'networkErrorRequestEnabled': true,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true,
-      'fedRampEnabled': false
-    };
-
     expect(
       methodCalLogs[0],
       isMethodCall(
         'startAgent',
-        arguments: params1,
+        arguments: params,
       ),
     );
   });
 
-  test('test Record DebugPrint method as Custom Events', () {
+  test('test Record DebugPrint method as Log Attributes', () {
     Config config =
         Config(accessToken: appToken, printStatementAsEventsEnabled: true);
     NewrelicMobile.instance.startAgent(config);
     debugPrint(name);
-    expect(methodCalLogs[1].method, 'recordCustomEvent');
+    expect(methodCalLogs[1].method, 'logAttributes');
   });
   test('test Start of Agent should also start method with logging disabled ',
       () async {
@@ -859,31 +995,18 @@ void main() {
 
     await NewrelicMobile.instance.start(config, fun);
 
-    final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken': appToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': true,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': true,
-      'networkErrorRequestEnabled': true,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': false,
-      'fedRampEnabled': false
-    };
+    params['loggingEnabled'] = false;
 
-    final Map<String, String> eventParams = <String, String>{'message': 'test'};
-
-    final Map<String, dynamic> customParams = <String, dynamic>{
-      'eventType': 'Mobile Dart Console Events',
-      'eventName': '',
-      'eventAttributes': eventParams
+    final Map<String, dynamic> logParams = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.INFO.name,
+        'message': message,
+      }
     };
 
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.1',
+      'value': agentVersion,
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -892,14 +1015,15 @@ void main() {
         arguments: params,
       ),
       isMethodCall(
-        'recordCustomEvent',
-        arguments: customParams,
+        'logAttributes',
+        arguments: logParams,
       ),
       isMethodCall(
         'setAttribute',
         arguments: attributeParams,
-      )
+      ),
     ]);
+    params['loggingEnabled'] = true;
   });
 
   test(
@@ -914,23 +1038,9 @@ void main() {
 
     await NewrelicMobile.instance.start(config, fun);
 
-    final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken': appToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': true,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': true,
-      'networkErrorRequestEnabled': true,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true,
-      'fedRampEnabled': false
-    };
-
     final Map<String, dynamic> attributeParams = <String, dynamic>{
       'name': 'Flutter Agent Version',
-      'value': '1.0.1',
+      'value': agentVersion,
     };
 
     expect(methodCalLogs, <Matcher>[
@@ -957,20 +1067,6 @@ void main() {
 
     await NewrelicMobile.instance.start(config, fun);
 
-    final Map<String, dynamic> params = <String, dynamic>{
-      'applicationToken': appToken,
-      'dartVersion': Platform.version,
-      'webViewInstrumentation': true,
-      'analyticsEventEnabled': true,
-      'crashReportingEnabled': true,
-      'interactionTracingEnabled': true,
-      'networkRequestEnabled': true,
-      'networkErrorRequestEnabled': true,
-      'httpResponseBodyCaptureEnabled': true,
-      'loggingEnabled': true,
-      'fedRampEnabled': false
-    };
-
     expect(
         methodCalLogs[0],
         isMethodCall(
@@ -978,7 +1074,7 @@ void main() {
           arguments: params,
         ));
 
-    expect(methodCalLogs[1].method, 'recordCustomEvent');
+    expect(methodCalLogs[1].method, 'logAttributes');
 
     expect(methodCalLogs[2].method, 'recordCustomEvent');
 
@@ -1032,7 +1128,7 @@ void main() {
     final currentRoute = route(const RouteSettings(name: currentRouteName));
     final oldRoute = route(const RouteSettings(name: oldRouteName));
 
-    navigationObserver.didPop(currentRoute, oldRoute);
+    navigationObserver.didPop(oldRoute, currentRoute);
 
     Map<String, String?> attributes = <String, String?>{
       'methodType': 'didPop',
@@ -1132,4 +1228,343 @@ void main() {
     expect(methodCalLogs,
         <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
   });
+
+  test('test logDebug should be called with message', () async {
+    NewrelicMobile.instance.logDebug(message);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.DEBUG.name,
+        'message': message,
+      }
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'logAttributes',
+        arguments: params,
+      )
+    ]);
+  });
+  test('test logInfo should be called with message', () async {
+    NewrelicMobile.instance.logInfo(message);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.INFO.name,
+        'message': message,
+      }
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'logAttributes',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test logVerbose should be called with message and log level Verbose',
+      () async {
+    NewrelicMobile.instance.logVerbose(message);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.VERBOSE.name,
+        'message': message,
+      }
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'logAttributes',
+        arguments: params,
+      )
+    ]);
+  });
+  test('test logWarning should be called with message and log level Warning',
+      () async {
+    NewrelicMobile.instance.logWarning(message);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.WARN.name,
+        'message': message,
+      }
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'logAttributes',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test logError should be called with message and log level Error',
+      () async {
+    NewrelicMobile.instance.logError(message);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.ERROR.name,
+        'message': message,
+      }
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'logAttributes',
+        arguments: params,
+      )
+    ]);
+  });
+  test('test logError should not be called without message ', () async {
+    NewrelicMobile.instance.logError("");
+    expect(methodCalLogs.length, 0);
+  });
+
+  test('test log should be called with message and log level Error', () async {
+    NewrelicMobile.instance.log(LogLevel.ERROR, message);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.ERROR.name,
+        'message': message,
+      }
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'logAttributes',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test logAll should be called with error and attributes', () async {
+    final Map<String, dynamic> attributes = <String, dynamic>{
+      'logLevel': LogLevel.ERROR.name,
+      'action': 'Button Pressed',
+    };
+
+    try {
+      throw Exception("Error");
+    } on Exception catch (e) {
+      NewrelicMobile.instance.logAll(e, attributes);
+    }
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'message': "Exception: Error",
+        'logLevel': LogLevel.ERROR.name,
+        'action': 'Button Pressed',
+      }
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'logAttributes',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test logAttributes should be called with attributes', () async {
+    final Map<String, dynamic> attributes = <String, dynamic>{
+      'logLevel': LogLevel.ERROR.name,
+      'action': 'Button Pressed',
+      'message': message
+    };
+
+    NewrelicMobile.instance.logAttributes(attributes);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.ERROR.name,
+        'action': 'Button Pressed',
+        'message': message
+      }
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'logAttributes',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test logAttributes should not be called without attributes', () async {
+    final Map<String, dynamic> attributes = <String, dynamic>{};
+
+    NewrelicMobile.instance.logAttributes(attributes);
+
+    expect(methodCalLogs, <Matcher>[]);
+  });
+
+  test(
+      'test Start of Agent should also start method with distributedTracing disabled ',
+      () async {
+    Config config =
+        Config(accessToken: appToken, distributedTracingEnabled: false);
+
+    Function fun = () {
+      print('test');
+    };
+
+    await NewrelicMobile.instance.start(config, fun);
+
+    params['distributedTracingEnabled'] = false;
+
+    final Map<String, dynamic> customParams = <String, dynamic>{
+      "attributes": {"logLevel": "INFO", "message": "test"}
+    };
+
+    final Map<String, dynamic> attributeParams = <String, dynamic>{
+      'name': 'Flutter Agent Version',
+      'value': agentVersion,
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      ),
+      isMethodCall(
+        'logAttributes',
+        arguments: customParams,
+      ),
+      isMethodCall(
+        'setAttribute',
+        arguments: attributeParams,
+      )
+    ]);
+
+    params['distributedTracingEnabled'] = true;
+  });
+
+  test(
+      'test noticeHttpTransaction should be called with Empty TraceAttributes if distributedTracing is disabled',
+      () async {
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    Config config =
+        Config(accessToken: appToken, distributedTracingEnabled: false);
+    NewrelicMobile.instance.setAgentConfiguration(config);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
+
+    await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+        statusCode, startTime, endTime, bytesSent, bytesReceived, {},
+        responseBody: responseBody, httpParams: httpParams);
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'statusCode': statusCode,
+      'startTime': startTime,
+      'endTime': endTime,
+      'bytesSent': bytesSent,
+      'bytesReceived': bytesReceived,
+      'responseBody': responseBody,
+      'traceAttributes': null,
+      'params': httpParams
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeHttpTransaction',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test(
+      'test Start of Agent should also start method with collectorAddress and crashCollectorAddress',
+      () async {
+    Config config = Config(
+        accessToken: appToken,
+        loggingEnabled: false,
+        collectorAddress: "www.google.com",
+        crashCollectorAddress: "www.facebook.com");
+
+    Function fun = () {
+      print('test');
+    };
+
+    await NewrelicMobile.instance.start(config, fun);
+
+    params['collectorAddress'] = "www.google.com";
+    params['crashCollectorAddress'] = "www.facebook.com";
+    params['loggingEnabled'] = false;
+
+    final Map<String, dynamic> logParams = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.INFO.name,
+        'message': message,
+      }
+    };
+
+    final Map<String, dynamic> attributeParams = <String, dynamic>{
+      'name': 'Flutter Agent Version',
+      'value': agentVersion,
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      ),
+      isMethodCall(
+        'logAttributes',
+        arguments: logParams,
+      ),
+      isMethodCall(
+        'setAttribute',
+        arguments: attributeParams,
+      ),
+    ]);
+
+    params['collectorAddress'] = "";
+    params['crashCollectorAddress'] = "";
+    params['loggingEnabled'] = true;
+  });
+
+  test('test Start of Agent should also start method with LogLevel Error',
+      () async {
+    Config config = Config(accessToken: appToken, logLevel: LogLevel.ERROR);
+
+    Function fun = () {
+      print('test');
+    };
+
+    await NewrelicMobile.instance.start(config, fun);
+
+    params['logLevel'] = 'ERROR';
+
+    final Map<String, dynamic> logParams = <String, dynamic>{
+      "attributes": <String, dynamic>{
+        'logLevel': LogLevel.INFO.name,
+        'message': message,
+      }
+    };
+
+    final Map<String, dynamic> attributeParams = <String, dynamic>{
+      'name': 'Flutter Agent Version',
+      'value': agentVersion,
+    };
+
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'startAgent',
+        arguments: params,
+      ),
+      isMethodCall(
+        'logAttributes',
+        arguments: logParams,
+      ),
+      isMethodCall(
+        'setAttribute',
+        arguments: attributeParams,
+      ),
+    ]);
+  });
+
+  params['logLevel'] = 'DEBUG';
 }

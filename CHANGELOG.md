@@ -1,3 +1,133 @@
+### 1.1.7
+
+## Updates
+- Added CrashNow Method for testing crash reporting.
+
+### 1.1.6
+
+## Enhancements
+
+- Upgraded native Android agent to version 7.6.2
+- Upgraded native iOS agent to version 7.5.3
+
+
+### 1.1.5
+
+## Updates
+- Updated the underlying native Android agent to version 7.6.1 for improved performance and compatibility.
+
+
+### 1.1.4
+
+## Updates
+- Updated the underlying native iOS agent to version 7.5.2 for improved performance and compatibility.
+
+### 1.1.3
+
+## Bug Fixes
+- Added null check for debugPrint Message to prevent potential crashes.
+- Fixed an issue where record metrics were incorrectly sending a count of 0.
+
+## Updates
+- Updated the underlying native Android agent to version 7.6.0 for improved performance and compatibility.
+
+
+### 1.1.2
+
+## Improvements
+
+1. **Agent LogLevel Configuration**
+    - Implemented the capability to define the agent log level as `verbose`, `info`, `warn`, `debug`, or `error` through the `loglevel` configuration.
+    - The default log level is set to `debug`.
+
+2. **Added CollectorAddress and CrashCollectorAddress Configuration**
+    - Introduced functionality to specify the collector address and crash collector address by utilizing the `collectorAddress` and `crashCollectorAddress` configuration options.
+
+3. **Added Support For Applying Gradle Plugin Using Plugins DSL**
+    - Added support for applying the New Relic Gradle plugin using the plugins DSL in the `build.gradle` file.
+
+## Bug Fixes
+- Resolved an issue where the interactionTracing Feature Flag failed to prevent the collection of auto interaction metrics.
+
+## 1.1.1
+
+## Bug Fixes
+
+1. iOS Platform Version Reporting
+    - Resolved an issue where the platform version was not being set correctly for iOS applications.
+
+2. HTTP Instrumentation in RunZoneGuarded Context
+    - Fixed a problem where HTTP instrumentation was not functioning when the app and agent were started from within RunZoneGuarded.
+
+## 1.1.0
+## New Features
+
+1. Application Exit Reporting
+    - Introduced ApplicationExitInfo in data reports
+    - Feature is enabled by default
+
+2. Log Forwarding
+    - Added static API for sending logs to New Relic
+    - Toggle feature in mobile application's entity settings
+
+3. Distributed Tracing Control
+    - Introduced new feature flag: distributedTracingEnabled
+    - Allows enabling/disabling of distributed tracing functionality
+
+## Enhancements
+
+- Upgraded native Android agent to version 7.5.0
+- Upgraded native iOS agent to version 7.5.0
+
+## 1.0.9
+* Improvements
+
+The native iOS Agent has been updated to version 7.4.12, bringing performance enhancements and bug fixes.
+
+
+* New Features
+
+A new backgroundReportingEnabled feature flag has been introduced to enable background reporting functionality.
+A new newEventSystemEnabled feature flag has been added to enable the new event system.
+
+## 1.0.8
+* Updated the native iOS agent to version 7.4.10.
+
+
+## 1.0.7
+
+* Added the ability to store harvest data that previously would be lost if the application doesn't have internet connection. 
+ These harvest are then sent after an internet connection is established and the next harvest successfully uploads. This feature is enabled by default.
+* Updated the native Android agent to version 7.3.0.
+* Updated the native iOS agent to version 7.4.9.
+
+
+## 1.0.6
+
+* Adds configurable request header instrumentation to network events
+  The agent will now produce network event attributes for select header values if the headers are detected on the request. The header names to instrument are passed into the agent when started.
+* Updated the native Android agent to version 7.2.0.
+* Updated the native iOS agent to version 7.4.8.
+
+## 1.0.5
+
+* Fixed issue in Flutter agent causing appbuild and appversion fields to overwrite for iOS mobile-handled exceptions.
+
+## 1.0.4
+
+* Upgraded native Android agent to v7.1.0
+* Upgraded native iOS agent to v7.4.7
+* Added Support for AGP 8 for Android
+
+## 1.0.3
+
+* Upgraded native Android agent to v7.0.0
+* Upgraded native iOS agent to v7.4.6
+* Resolved CustomTransitionPage issue for Go Router instrumentation
+* Fixed issue where HTTP error stack traces were not displayed in the IDE
+
+## 1.0.2
+
 ## 1.0.1
 
 * Upgrade native iOS agent to v7.4.5
