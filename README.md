@@ -1,4 +1,4 @@
-<a href="https://opensource.newrelic.com/oss-category/#community-plus"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Plus.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"><img alt="New Relic Open Source community plus project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"></picture></a>
+<a href="https://opensource.newrelic.com/oss-category/#community-project"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Project.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"><img alt="New Relic Open Source community project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"></picture></a>
 
 # New Relic Flutter Agent 
 [![Pub](https://img.shields.io/pub/v/newrelic_mobile)](https://pub.dev/packages/newrelic_mobile)
@@ -6,7 +6,6 @@
 This agent allows you to instrument Flutter apps with help of native New Relic Android and iOS
 agents. The New Relic SDKs collect crashes, network traffic, and other information for hybrid apps
 using native components.
-
 
 ## Features
 
@@ -17,7 +16,9 @@ using native components.
 * Capture interactions and the sequence in which they were created
 * Pass user information to New Relic to track user sessions
 * Screen tracking via NavigationObserver
-* Capture print and debug print statement as CustomEvents
+* Capture print and debug print statement as Logs
+* Capture Offline Events and Exception
+* Capture Background Reporting Events
 
 ## Current Support:
 
@@ -28,7 +29,7 @@ using native components.
 ## Requirements
 
 - Flutter ">= 2.5.0"
-- Dart ">=2.16.2 <3.0.0"
+- Dart ">=2.16.2 <4.0.0"
 - [IOS native requirements](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/get-started/new-relic-ios-compatibility-requirements)
 - [Android native requirements](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/get-started/new-relic-android-compatibility-requirements)
 
@@ -39,7 +40,7 @@ Install NewRelic plugin into your dart project by adding it to dependecies in yo
 ```yaml
 
 dependencies:
-  newrelic_mobile: 1.0.0
+  newrelic_mobile: 1.1.4
   
 ```
 
@@ -68,10 +69,10 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
       // Optional:Enable or disable collection of event data.
       analyticsEventEnabled: true,
 
-      // Optional:Enable or disable reporting successful HTTP requests to the MobileRequest event type.
+      // Optional:Enable or disable reporting network and HTTP request errors to the MobileRequestError event type.
       networkErrorRequestEnabled: true,
 
-      // Optional:Enable or disable reporting network and HTTP request errors to the MobileRequestError event type.
+      // Optional:Enable or disable reporting successful HTTP requests to the MobileRequest event type.
       networkRequestEnabled: true,
 
       // Optional:Enable or disable crash reporting.
@@ -94,8 +95,28 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
       printStatementAsEventsEnabled : true,
 
        // Optional:Enable/Disable automatic instrumentation of Http Request
-      httpInstrumentationEnabled:true
-      );
+      httpInstrumentationEnabled:true,
+
+      // Optional : Enable or disable reporting data using different endpoints for US government clients
+      fedRampEnabled: false ,
+
+      // Optional: Enable or disable offline data storage when no internet connection is available.
+      offlineStorageEnabled:true,
+
+         // iOS Specific
+        // Optional: Enable or disable background reporting functionality.
+         backgroundReportingEnabled: false,
+
+         // iOS Specific 
+        // Optional: Enable or disable to use our new, more stable, event system for iOS agent.
+         newEventSystemEnabled: false,
+
+        // Optional: Enable or disable distributed tracing.
+        distributedTracingEnabled: true,
+
+        // Optional: Log Level for Agent Logs.
+         logLevel: LogLevel.DEBUG,
+);
 
   NewrelicMobile.instance.start(config, () {
     runApp(MyApp());
@@ -126,19 +147,17 @@ Config config = Config(
     loggingEnabled: true,
     webViewInstrumentation: true,
     printStatementAsEventsEnabled: true,
-    httpInstrumentationEnabled:true);
+    httpInstrumentationEnabled:true,distributedTracingEnabled: true);
 
-// NewrelicMobile.instance.start(config, () {
-//   runApp(MyApp());
-// });
+
 
 runZonedGuarded(() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  FlutterError.onError = NewrelicMobile.onError;
-  await NewrelicMobile.instance.startAgent(config);
-  runApp(MyApp());
+WidgetsFlutterBinding.ensureInitialized();
+FlutterError.onError = NewrelicMobile.onError;
+await NewrelicMobile.instance.startAgent(config);
+runApp(MyApp());
 }, (Object error, StackTrace stackTrace) {
-  NewrelicMobile.instance.recordError(error, stackTrace);
+NewrelicMobile.instance.recordError(error, stackTrace);
 });
 ```
 
@@ -190,31 +209,53 @@ final router = GoRouter(
 
 ### Android Setup
 
-1. Add the following changes to android/build.gradle:
+1. Add the following changes to Apply Gradle Plugin:
 
-  ```groovy
-    buildscript {
-      ...
-      repositories {
-        ...
-        mavenCentral()
-      }
-      dependencies {
-        ...
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.11.1"
-      }
-    }
-  ```
+If you are using Plugins DSL (Flutter 3.16 or Later) to Apply the NewRelic Gradle Plugin, make the following changes:
 
-2. Apply the newrelic plugin to the top of the android/app/build.gradle file::
+In android/settings.gradle:
+   ```groovy
+   plugins {
+      id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+      id "com.android.application" version "7.4.2" apply false
+      id "org.jetbrains.kotlin.android" version "1.7.10" apply false
+      id "com.newrelic.agent.android" version "7.5.1" apply false // <-- include this
+   }
+   ```
 
-  ``` groovy
-    apply plugin: "com.android.application"
-    apply plugin: 'newrelic' // <-- add this
-  
-  ```
+In android/app/build.gradle:
+   ```groovy
+   plugins {
+      id "com.android.application"
+      id "kotlin-android"
+      id "dev.flutter.flutter-gradle-plugin"
+      id "com.newrelic.agent.android"  //<-- include this
+   }
+   ```
 
-3. Make sure your app requests INTERNET and ACCESS_NETWORK_STATE permissions by adding these lines
+Or, if you are using the traditional way to apply the plugin:
+   ```groovy
+   buildscript {
+     ...
+     repositories {
+       ...
+       mavenCentral()
+     }
+     dependencies {
+       ...
+       classpath "com.newrelic.agent.android:agent-gradle-plugin:7.5.1"
+     }
+   }
+   ```
+
+Apply the NewRelic plugin to the top of the android/app/build.gradle file:
+   ```groovy
+   apply plugin: "com.android.application"
+   apply plugin: 'newrelic' // <-- include this
+   ```
+
+
+2. Make sure your app requests INTERNET and ACCESS_NETWORK_STATE permissions by adding these lines
    to your `AndroidManifest.xml`
 
   ``` xml
@@ -308,7 +349,8 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
 > Tracks network requests manually. You can use this method to record HTTP transactions, with an option to also send a response body.
  
  ``` dart
-     NewrelicMobile.instance.noticeNetworkFailure("https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage", "GET", 1000, 2000,'Test Network Failure', NetworkFailure.dnsLookupFailed);
+     NewrelicMobile.instance.noticeHttpTransaction("https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage", "GET",200, 1000, 2000,100,300,null,responseBody: "This is Test Payload");
+
   ```
 
 ### [noticeNetworkFailure](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/notice-network-failure/)(String url,String httpMethod,int startTime,int endTime,NetworkFailure errorCode): void;
@@ -350,6 +392,96 @@ or [Android SDK](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobi
     NewrelicMobile.instance.incrementAttribute("FlutterCustomAttrNumber",value :5.0);
 ```
 
+### [shutdown](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/android-sdk-api/shut-down/)() : void;
+> Shut down the agent within the current application lifecycle during runtime.
+```dart
+    NewrelicMobile.instance.shutdown();
+```
+### [addHTTPHeadersTrackingFor](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/mobile-sdk/add-tracked-headers/)() : void;
+> This API allows you to add any header field strings to a list that gets recorded as attributes with networking request events. After header fields have been added using this function, if the headers are in a network call they will be included in networking events in NR1.
+```dart
+     NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car","Music"]);
+```
+
+### logInfo(String message) : void
+
+> Logs an informational message to the New Relic log.
+``` dart
+    NewrelicMobile.instance.logInfo("This is an informational message");
+```
+
+### logError(String message) : void
+> Logs an error message to the New Relic log.
+``` dart
+     NewrelicMobile.instance.logError("This is an error message");
+```
+### logVerbose(String message) : void
+> Logs a verbose message to the New Relic log.
+``` dart
+     NewrelicMobile.instance.logVerbose("This is a verbose message");
+```
+
+### logWarning(String message) : void
+> Logs a warning message to the New Relic log.
+``` dart
+     NewrelicMobile.instance.logWarning("This is a warning message");
+```
+
+### logDebug(String message) : void
+> Logs a debug message to the New Relic log.
+``` dart
+     NewrelicMobile.instance.logDebug("This is a debug message");
+```
+
+### log(LogLevel level, String message) : void
+> Logs a message to the New Relic log with a specified log level.
+``` dart
+     NewrelicMobile.instance.log(LogLevel.Info, "This is an informational message");
+``` 
+
+### logAll(Exception exception,Map<String, dynamic>? attributes) : void
+> Logs an exception with attributes to the New Relic log.
+``` dart
+       NewrelicMobile.instance.logAll(Exception("This is an exception"),
+                          {"BreadNumValue": 12.3 ,
+                            "BreadStrValue": "FlutterBread",
+                            "BreadBoolValue": true ,
+                            "message": "This is a message with attributes" }
+       );
+```
+
+### logAttributes(Dictionary<string, object> attributes) : void
+> Logs a message with attributes to the New Relic log.
+``` dart
+           NewrelicMobile.instance.logAttributes(
+                            {"BreadNumValue": 12.3 ,
+                            "BreadStrValue": "FlutterBread",
+                            "BreadBoolValue": true ,
+                            "message": "This is a message with attributes" }
+                      );
+```
+
+### logAttributes(Dictionary<string, object> attributes) : void
+> Logs a message with attributes to the New Relic log.
+``` dart
+           NewrelicMobile.instance.logAttributes(
+                            {"BreadNumValue": 12.3 ,
+                            "BreadStrValue": "FlutterBread",
+                            "BreadBoolValue": true ,
+                            "message": "This is a message with attributes" }
+                      );
+```
+
+### crashNow({String name}) : void
+> Throws a demo run-time exception to test New Relic crash reporting.
+``` dart
+           NewrelicMobile.instance.crashNow(name: "This is a crash");
+            NewrelicMobile.instance.crashNow();
+```
+
+
+
+
 ## Manual Error reporting
 
 You can register non fatal exceptions using the following method with Custom Attributes:
@@ -365,22 +497,66 @@ NewrelicMobile.instance
 
 ## Troubleshoot
 
-No Http data appears:
+**No Http data appears:**
 
-Problem
+**Problem**
 After installing the Flutter agent and waiting at least 5 minutes, no http data appears in New Relic UI.
 
-Solution
+**Solution**
 If no http data appears after you wait at least five minutes, check you are not overriding HttpOverrides.global inside your flutter app.  
+
+
+**Crash reports may not be sent when ProGuard rules are not properly configured for New Relic in hybrid Android applications.**
+
+**Solution**:
+Ensure proper ProGuard rules are added to your ProGuard configuration file. See ["Configuring ProGuard Rules"](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/configure-proguard-or-dexguard-android-apps/) in setup documentation.
+
+## Uploading dSYM files
+
+Our iOS agent includes a Swift script intended to be run from a build script in your target's build phases in XCode. The script automatically uploads dSYM files in the background (or converts your dSYM to the New Relic map file format), and then performs a background upload of the files needed for crash symbolication to New Relic.
+
+To invoke this script during an XCode build:
+1. Copy the dsym-upload-tools folder from this repository: https://github.com/newrelic/newrelic-ios-agent-spm, to your projects SRCROOT folder first. 
+2. In Xcode, select your project in the navigator, then click on the application target.
+3. Select the Build Phases tab in the settings editor.
+4. Click the + icon above Target Dependencies and choose New Run Script Build Phase. Ensure the new build script is the very last build script.
+5. Add the following lines of code to the new phase and replace `APP_TOKEN` with your iOS application token.
+    1. If there is a checkbox below Run script that says "Run script: Based on Dependency analysis" please make sure it is not checked.
+
+
+### Flutter agent 1.0.2 or higher
+
+With the ios agent 7.4.6 release, the XCFramework no longer includes the dsym-upload-tools. You can find the dsym-upload-tools in the dsym-upload-tools folder of the https://github.com/newrelic/newrelic-ios-agent-spm Swift Package Manager repository. Please copy the dsym-upload-tools directory into your application source code directory by copying the XCFramework into your project or using Cocoapods if you're integrating the New Relic iOS Agent. Use the run script below in your Xcode build phases to perform symbol upload steps during app builds in Xcode.
+
+```
+ARTIFACT_DIR="${BUILD_DIR%Build/*}"
+SCRIPT=`/usr/bin/find "${SRCROOT}" "${ARTIFACT_DIR}" -type f -name run-symbol-tool | head -n 1`
+/bin/sh "${SCRIPT}" "APP_TOKEN"
+```
+
+#### Note: The automatic script requires bitcode to be disabled. You should clean and rebuild your app after adding the script. 
+
+### Missing dSYMs
+The automatic script will create an `upload_dsym_results.log` file in your project's iOS directory, which contains information about any failures that occur during symbol upload.
+
+If dSYM files are missing, you may need to check Xcode build settings to ensure the file is being generated. Frameworks which are built locally have separate build settings and may need to be updated as well.
+
+Build settings:
+```
+Debug Information Format : Dwarf with dSYM File
+Deployment Postprocessing: Yes
+Strip Linked Product: Yes
+Strip Debug Symbols During Copy : Yes
+```
+### Configure app launch times
+
+To measure app launch time, you can refer to the following documentation for both [Android](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/configure-app-launch-time-android-apps/) and [iOS](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/configuration/app-launch-times-ios-apps/) platforms.
 
 ## Support
 
-New Relic hosts and moderates an online forum where customers can interact with New Relic employees
-as well as other customers to get help and share best practices. Like all official New Relic open
-source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this
-project's topic/threads here:
+New Relic hosts and moderates an online forum where customers, users, maintainers, contributors, and New Relic employees can discuss and collaborate:
 
-> https://discuss.newrelic.com/tags/mobile
+[forum.newrelic.com](https://forum.newrelic.com/)
 
 ## Contribute
 
@@ -393,20 +569,19 @@ is on behalf of a company), drop us an email at opensource@newrelic.com.
 
 **A note about vulnerabilities**
 
-As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and
-security of our customers and their data. We believe that providing coordinated disclosure by
-security researchers and engaging with the security community are important means to achieve our
-security goals.
+As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
-If you believe you have found a security vulnerability in this project or any of New Relic's
-products or websites, we welcome and greatly appreciate you reporting it to New Relic
-through [HackerOne](https://hackerone.com/newrelic).
+If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [our bug bounty program](https://docs.newrelic.com/docs/security/security-privacy/information-security/report-security-vulnerabilities/).
 
 If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
+
+To all contributors, we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [New Relic Flutter Agent
+](https://opensource.newrelic.com/projects/newrelic/newrelic-flutter-agent).
 
 
 ## License
 
 newrelic-flutter-agent is licensed under the [Apache 2.0](https://apache.org/licenses/LICENSE-2.0.txt)
 License.
+
 > newrelic-flutter-agent also uses source code from third-party libraries. Full details on which libraries are used and the terms under which they are licensed can be found in the third-party notices document.

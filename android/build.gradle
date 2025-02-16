@@ -1,10 +1,11 @@
+import com.android.Version
+
 group 'com.newrelic.newrelic_mobile'
 version '1.0-SNAPSHOT'
 
 buildscript {
     ext.kotlin_version = '1.7.10'
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
     }
@@ -17,7 +18,6 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
 
@@ -28,8 +28,15 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 34
+    def agpVersion = Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0].toInteger()
+    if (agpVersion >= 7) {
+        namespace "com.newrelic.newrelic_mobile"
+    }
 
+    defaultConfig {
+        minSdkVersion 24
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -44,12 +51,14 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 24
     }
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.newrelic.agent.android:android-agent:6.11.1'
+    implementation 'com.newrelic.agent.android:android-agent:7.6.2'
+    implementation "com.newrelic.agent.android:agent-ndk:1.1.1"
+
 
 }

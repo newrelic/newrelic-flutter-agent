@@ -11,12 +11,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:newrelic_mobile/loglevel.dart';
 import 'package:newrelic_mobile/metricunit.dart';
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:newrelic_mobile_example/app_config.dart';
+import 'package:http/http.dart' as http;
 
 const String readCounters = """
    query (\$id: Int) { # Define which variables will be used in the query (id)
@@ -51,29 +53,36 @@ void main() {
       loggingEnabled: true,
       webViewInstrumentation: true,
       printStatementAsEventsEnabled: true,
-      httpInstrumentationEnabled: true);
+      httpInstrumentationEnabled: true,
+      distributedTracingEnabled: true,
+      logLevel: LogLevel.VERBOSE,
+      collectorAddress: "",
+      crashCollectorAddress: "",
+      fedRampEnabled: false);
 
   NewrelicMobile.instance.start(config, () {
-    runApp(MyApp());
+    runApp(const MyApp());
   });
   NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
+  NewrelicMobile.instance.setMaxOfflineStorageSize(200);
+  NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car", "Music"]);
 }
 
 /// The main app.
 class MyApp extends StatelessWidget {
   /// Creates an [App].
-  MyApp({Key? key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorObservers: [NewRelicNavigationObserver()],
       routes: {
-        'pageone': (context) => Page1Screen(),
+        'pageone': (context) => const Page1Screen(),
         'pagetwo': (context) => Page2Screen(),
-        'pagethree': (context) => Page3Screen(),
-        'pagefour': (context) => Page4Screen()
+        'pagethree': (context) => const Page3Screen(),
+        'pagefour': (context) => const Page4Screen()
       },
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -100,7 +109,57 @@ class Page1Screen extends StatelessWidget {
               children: <Widget>[
                 ElevatedButton(
                     onPressed: () async {
-                      print(NewrelicMobile.instance.currentSessionId());
+                      debugPrint(null);
+                      NewrelicMobile.instance
+                          .recordBreadcrumb("Button Got Pressed on Screen 3");
+                      NewrelicMobile.instance.logInfo("testing logs");
+                      NewrelicMobile.instance.logDebug("testing logs debug");
+                      NewrelicMobile.instance
+                          .logWarning("testing logs warning");
+                      NewrelicMobile.instance
+                          .logVerbose("testing logs verbose");
+                      NewrelicMobile.instance
+                          .log(LogLevel.ERROR, "testing logs");
+                      NewrelicMobile.instance.logInfo("testing logs");
+                      NewrelicMobile.instance.logInfo("testing logs");
+
+                      NewrelicMobile.instance.crashNow();
+
+                      var map = {};
+                      map["test12"] = "value";
+                      map["test23"] = "value1";
+                      map["logLevel"] = "INFO";
+                      map["message"] = "testing logs with attributes";
+
+                      NewrelicMobile.instance
+                          .logAttributes(map.cast<String, dynamic>());
+
+                      NewrelicMobile.instance
+                          .logAll(Exception("This is an exception"), {
+                        "BreadNumValue": 12.3,
+                        "BreadStrValue": "FlutterBread",
+                        "BreadBoolValue": true,
+                        "message": "This is a message with attributes"
+                      });
+
+                      NewrelicMobile.instance.logAttributes({
+                        "BreadNumValue": 12.3,
+                        "BreadStrValue": "FlutterBread",
+                        "BreadBoolValue": true,
+                        "message": "This is a message with attributes"
+                      });
+
+                      if (kDebugMode) {
+                        print(await NewrelicMobile.instance.currentSessionId());
+                      }
+                      // showDialog<String>(
+                      //   barrierDismissible: false,
+                      //   context: context,
+                      //   builder: (BuildContext context) => const PopPopPop(),
+                      // );
+                      if (kDebugMode) {
+                        print(NewrelicMobile.instance.currentSessionId());
+                      }
                       NewrelicMobile.instance.incrementAttribute(
                           "FlutterCustomAttrNumber",
                           value: 5.0);
@@ -110,15 +169,15 @@ class Page1Screen extends StatelessWidget {
                           value: 10,
                           valueUnit: MetricUnit.BYTES,
                           countUnit: MetricUnit.PERCENT);
-
                     },
                     child: const Text('Test New Static Methods',
                         maxLines: 1, textDirection: TextDirection.ltr)),
                 ElevatedButton(
                     onPressed: () async {
                       final client = HttpClient();
-                      final request = await client.postUrl(Uri.parse(
-                          "https://8f1d-2600-1006-b003-7627-ca1-491c-9b0-25ff.ngrok.io/notice_error"));
+                      // Here can be any non-existing URL.
+                      final request = await client
+                          .postUrl(Uri.parse("https://localhost:8080"));
                       request.headers.set(HttpHeaders.contentTypeHeader,
                           "application/json; charset=UTF-8");
                       request.headers.set("ngrok-skip-browser-warning", 69420);
@@ -128,24 +187,50 @@ class Page1Screen extends StatelessWidget {
                       final response = await request.close();
 
                       response.transform(utf8.decoder).listen((contents) {
-                        print(contents);
+                        if (kDebugMode) {
+                          print(contents);
+                        }
+                      });
+                    },
+                    child: const Text('Http call to non-existing URL',
+                        maxLines: 1, textDirection: TextDirection.ltr)),
+                ElevatedButton(
+                    onPressed: () async {
+                      final client = HttpClient();
+                      final request = await client.postUrl(Uri.parse(
+                          "https://8f1d-2600-1006-b003-7627-ca1-491c-9b0-25ff.ngrok.io/notice_error"));
+                      request.headers.set(HttpHeaders.contentTypeHeader,
+                          "application/json; charset=UTF-8");
+                      request.headers.set("Car", "Honda");
+                      request.headers.set("ngrok-skip-browser-warning", 69420);
+                      request.write(
+                          '{"title": "Foo","body": "Bar", "userId": 99}');
+
+                      final response = await request.close();
+
+                      response.transform(utf8.decoder).listen((contents) {
+                        if (kDebugMode) {
+                          print(contents);
+                        }
                       });
                     },
                     child: const Text('Http Default Client',
                         maxLines: 1, textDirection: TextDirection.ltr)),
                 ElevatedButton(
                     onPressed: () async {
-                      final client = HttpClient();
-                      var uri = Uri.parse("http://graph.facebook.com/");
-                      var request = await client.getUrl(uri);
-                      request.followRedirects = false;
-                      var response = await request.close();
+                      // final client = HttpClient();
+                      // var uri = Uri.parse("https://reactnative.dev/movies.json");
+                      var response = await http.get(
+                          Uri.parse("https://reactnative.dev/movies.json"));
+                      // request.followRedirects = false;
 
                       // var url = Uri.parse(
                       //     'http://graph.facebook.com/');
                       // var response = await http.get(url);
                       // print('Response status: ${await response.stream.bytesToString()}');
-                      print('Response body: ${response.statusCode}');
+                      if (kDebugMode) {
+                        print('Response body: ${response.statusCode}');
+                      }
                     },
                     child: const Text('Http Library ',
                         maxLines: 1, textDirection: TextDirection.ltr)),
@@ -153,12 +238,17 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       try {
                         var dio = Dio();
+                        dio.options.headers['Car'] = 'Toyota';
                         dio.options.followRedirects = false;
                         var response =
                             await dio.get('http://graph.facebook.com/');
-                        print(response);
+                        if (kDebugMode) {
+                          print(response);
+                        }
                       } catch (e) {
-                        print(e);
+                        if (kDebugMode) {
+                          print(e);
+                        }
                       }
                     },
                     child: const Text('Http Dio Library ',
@@ -167,11 +257,15 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       try {
                         var dio = Dio();
-                        var response = await dio.get(
-                            'https://cb6b02be-a319-4de5-a3b1-361de2564493.mock.pstmn.io/searchpage');
-                        print(response);
+                        var response = await dio
+                            .get('https://reactnative.dev/movies.json');
+                        if (kDebugMode) {
+                          print(response);
+                        }
                       } catch (e) {
-                        print(e);
+                        if (kDebugMode) {
+                          print(e);
+                        }
                       }
                     },
                     child: const Text('OOM Issue Library ',
@@ -194,9 +288,13 @@ class Page1Screen extends StatelessWidget {
                         var response = await dio.post(
                             'https://reqres.in/api/register',
                             data: "{ 'email': 'sydney@fife'}");
-                        print(response.data);
+                        if (kDebugMode) {
+                          print(response.data);
+                        }
                       } catch (e) {
-                        print(e);
+                        if (kDebugMode) {
+                          print(e);
+                        }
                       }
                     },
                     child: const Text('Http Dio Post Library ',
@@ -204,7 +302,9 @@ class Page1Screen extends StatelessWidget {
                 Query(
                     options: QueryOptions(document: gql(readCounters)),
                     builder: (result, {fetchMore, refetch}) {
-                      print(result.data.toString());
+                      if (kDebugMode) {
+                        print(result.data.toString());
+                      }
                       // If stements here to check handle different states;
                       if (result.isLoading) {
                         return const Center(
@@ -237,7 +337,7 @@ class Page1Screen extends StatelessWidget {
 class Page2Screen extends StatelessWidget {
   /// Creates a [Page2Screen].
 
-  var interActionId;
+  dynamic interActionId;
 
   Page2Screen({Key? key, this.interActionId}) : super(key: key);
 
@@ -271,7 +371,7 @@ class Page2Screen extends StatelessWidget {
               },
               child: const Text('State Error'),
             ),
-            Row(
+            const Row(
               children: [
                 Text(
                   "ErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorErrorError",
@@ -281,7 +381,9 @@ class Page2Screen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                print("test");
+                if (kDebugMode) {
+                  print("test");
+                }
                 debugPrint("test");
                 throw TypeError();
               },
@@ -331,7 +433,7 @@ class Page3Screen extends StatelessWidget {
             children: <Widget>[
               ElevatedButton(
                 onPressed: () {
-                  for (var i = 0; i < 100; i++)
+                  for (var i = 0; i < 100; i++) {
                     NewrelicMobile.instance.recordCustomEvent(
                         "Test Custom Event",
                         eventName: "User Purchase",
@@ -340,6 +442,7 @@ class Page3Screen extends StatelessWidget {
                           "price": 34.00,
                           "loop test": i
                         });
+                  }
                 },
                 child: const Text('Record Custom Event'),
               ),
@@ -356,10 +459,14 @@ class Page3Screen extends StatelessWidget {
                     var dio = Dio();
                     var response =
                         await dio.get('https://reqres.in/api/users?delay=15');
-                    print(response);
+                    if (kDebugMode) {
+                      print(response);
+                    }
                     NewrelicMobile.instance.endInteraction(id);
                   } catch (e) {
-                    print(e);
+                    if (kDebugMode) {
+                      print(e);
+                    }
                   }
                 },
                 child: const Text('Interaction Example'),
@@ -400,12 +507,24 @@ class _Page4ScreenState extends State<Page4Screen> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               ElevatedButton(
-                onPressed: () {
-                  computeService.fetchUser().then((value) {
-                    setState(() {
-                      person = value;
-                    });
+                onPressed: () async {
+                  ReceivePort port = ReceivePort();
+                  var errorPort = ReceivePort();
+                  errorPort.listen((message) {
+                    if (kDebugMode) {
+                      print('Error: $message');
+                    }
+                    NewrelicMobile.instance
+                        .recordError(message, StackTrace.current);
                   });
+                  await Isolate.spawn(_isolateFunction, port.sendPort,
+                      onError: errorPort.sendPort);
+
+                  // computeService.fetchUser().then((value) {
+                  //   setState(() {
+                  //     person = value;
+                  //   });
+                  // });
                 },
                 child: const Text('Isolate Compute Error'),
               ),
@@ -431,6 +550,10 @@ class _Page4ScreenState extends State<Page4Screen> {
       );
 }
 
+void _isolateFunction(_) {
+  throw Exception('Uncaught error in isolate');
+}
+
 class ComputeService {
   Future<Person> fetchUser() async {
     String userData = await Api.getUser("Compute");
@@ -438,7 +561,7 @@ class ComputeService {
   }
 
   Person deserializeJson(String data) {
-    throw new Error();
+    throw Error();
   }
 }
 
@@ -466,8 +589,10 @@ class SpawnService {
   void deserializePerson(List<dynamic> values) async {
     var dio = Dio();
     var response = await dio.get('https://reqres.in/api/users?delay=15');
-    print(response);
-    throw new Exception("this is isplation error");
+    if (kDebugMode) {
+      print(response);
+    }
+    throw Exception("this is isplation error");
   }
 }
 
@@ -494,3 +619,40 @@ const rickCharacters = '''
     }
   }
  ''';
+
+class PopPopPop extends StatelessWidget {
+  const PopPopPop({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+        title: const Text('Here we go...'),
+        icon: const Icon(
+          Icons.error_outline,
+          color: Colors.red,
+          size: 18.0,
+        ),
+        content: const SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Something went wrong but we\'re on it.'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, 'pagetwo',
+                      arguments: {'id': ""});
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          )
+        ]);
+  }
+}

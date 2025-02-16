@@ -5,15 +5,20 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/loglevel.dart';
 
 void main() {
   const accessToken = "12345678";
-  const printStatementAsEvents = false;
 
   test("Test Config Create", () {
     var config =
         Config(accessToken: accessToken, printStatementAsEventsEnabled: false);
     expect(accessToken, config.accessToken);
-    expect(printStatementAsEvents, config.printStatementAsEventsEnabled);
+    expect(false, config.printStatementAsEventsEnabled);
+    expect(true, config.offlineStorageEnabled);
+    expect(false, config.backgroundReportingEnabled);
+    expect(false, config.newEventSystemEnabled);
+    expect(true, config.collectorAddress.isEmpty);
+    expect(LogLevel.DEBUG, config.logLevel);
   });
 }
