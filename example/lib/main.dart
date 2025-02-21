@@ -58,6 +58,7 @@ void main() {
       logLevel: LogLevel.VERBOSE,
       collectorAddress: "",
       crashCollectorAddress: "",
+      newEventSystemEnabled: true,
       fedRampEnabled: false);
 
   NewrelicMobile.instance.start(config, () {
