@@ -101,6 +101,12 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.disableFeature(FeatureFlag.FedRampEnabled)
                 }
 
+                if (call.argument<Boolean>("backgroundReportingEnabled") as Boolean) {
+                    NewRelic.enableFeature(FeatureFlag.BackgroundReporting)
+                } else {
+                    NewRelic.disableFeature(FeatureFlag.BackgroundReporting)
+                }
+
                 if (call.argument<Boolean>("offlineStorageEnabled") as Boolean) {
                     NewRelic.enableFeature(FeatureFlag.OfflineStorage)
                 } else {
@@ -118,7 +124,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.withApplicationToken(
                         applicationToken
                     ).withLoggingEnabled(loggingEnabled!!)
-                        .withLogLevel(LogLevel.valueOf(logLevel!!).ordinal)
+                        .withLogLevel(AgentLog.VERBOSE)
                         .withApplicationFramework(ApplicationFramework.Flutter, "1.1.6")
                         .start(context)
                 } else {
