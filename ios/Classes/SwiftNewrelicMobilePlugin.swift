@@ -41,6 +41,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_WebViewInstrumentation)
             }
             if(args?["interactionTracingEnabled"] as! Bool == false) {
+                NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_DefaultInteractions)
                 NewRelic.disableFeatures(NRMAFeatureFlags.NRFeatureFlag_InteractionTracing)
             }
             

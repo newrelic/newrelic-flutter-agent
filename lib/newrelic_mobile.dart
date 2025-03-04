@@ -232,12 +232,19 @@ class NewrelicMobile {
   }
 
   Future<String> startInteraction(String actionName) async {
+    Config con = getAgentConfiguration();
+
+
+    if(con.interactionTracingEnabled){
     final Map<String, String> params = <String, String>{
       'actionName': actionName
     };
     final String interactionId =
         await _channel.invokeMethod('startInteraction', params);
     return interactionId;
+    } else {
+      return "";
+    }
   }
 
   void addHTTPHeadersTrackingFor(List<String> headers) async {
