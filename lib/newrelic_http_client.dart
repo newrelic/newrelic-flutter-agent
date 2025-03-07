@@ -177,45 +177,30 @@ class NewRelicHttpClient implements HttpClient {
 
 Future<NewRelicHttpClientRequest> _wrapRequest(
     Future<HttpClientRequest> request) async {
-  var timestamp = DateTime.now().millisecondsSinceEpoch;
+  try {
+    var timestamp = DateTime.now().millisecondsSinceEpoch;
 
-  Config config = NewrelicMobile.instance.getAgentConfiguration();
+    Config config = NewrelicMobile.instance.getAgentConfiguration();
+    Map<String, dynamic> traceAttributes = {};
 
-  if (config.distributedTracingEnabled) {
-    Map<String, dynamic> traceAttributes =
-        await NewrelicMobile.instance.noticeDistributedTrace({});
+    if (config.distributedTracingEnabled) {
+      traceAttributes = await NewrelicMobile.instance.noticeDistributedTrace({});
+    }
 
-    Map<String, dynamic> params = Map();
+    final actualRequest = await request;
+    if (config.distributedTracingEnabled) {
+      actualRequest.headers.add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
+      actualRequest.headers.add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
+      actualRequest.headers.add(DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
+    }
 
-    return request.then((actualRequest) {
-      actualRequest.headers
-          .add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
-      actualRequest.headers
-          .add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
-      actualRequest.headers.add(
-          DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
-      if (actualRequest is NewRelicHttpClientRequest) {
-        return request as Future<NewRelicHttpClientRequest>;
-      }
-
-      return Future.value(NewRelicHttpClientRequest(
-          actualRequest, timestamp, traceAttributes, params));
-    }, onError: (dynamic err) {
-      NewrelicMobile.instance.recordError(err, StackTrace.current);
-      throw err;
+    final newRelicRequest = NewRelicHttpClientRequest(actualRequest, timestamp, traceAttributes, {});
+    newRelicRequest.performRequest().catchError((err, stackTrace) {
     });
-  } else {
-    return request.then((actualRequest) {
-      if (actualRequest is NewRelicHttpClientRequest) {
-        return request as Future<NewRelicHttpClientRequest>;
-      }
-
-      return Future.value(
-          NewRelicHttpClientRequest(actualRequest, timestamp, {}, {}));
-    }, onError: (dynamic err) {
-      NewrelicMobile.instance.recordError(err, StackTrace.current);
-      Error.throwWithStackTrace(err, StackTrace.current);
-    });
+    return newRelicRequest;
+  } catch (e, stackTrace) {
+    NewrelicMobile.instance.recordError(e, stackTrace);
+    return Future.error(e, stackTrace);
   }
 }
 
@@ -251,20 +236,21 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
 
   NewRelicHttpClientRequest(
       this._httpClientRequest, this.timestamp, this.traceData,
-      [this.params]) {
-    var request = this;
-    request.done.then((value) {
-      var response = _wrapResponse(
+      [this.params]) {}
+
+  Future<void> performRequest() async {
+    try {
+      final value = await this.done;
+      _wrapResponse(
         value,
-        request,
+        this,
         this.timestamp,
         this.traceData,
       );
-      return response;
-    }, onError: (dynamic err) {
-      NewrelicMobile.instance.recordError(err, StackTrace.current);
-      Error.throwWithStackTrace(err, StackTrace.current);
-    });
+    } catch (err, stackTrace) {
+      NewrelicMobile.instance.recordError(err, stackTrace);
+      throw err;
+    }
   }
 
   void _checkAndResetBufferIfRequired() {
@@ -319,14 +305,14 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
   }
 
   @override
-  Future<HttpClientResponse> close() {
-    return _httpClientRequest.close().then(
-        (response) => _wrapResponse(
-            response, _httpClientRequest, this.timestamp, traceData),
-        onError: (dynamic err) {
-      NewrelicMobile.instance.recordError(err, StackTrace.current);
-      Error.throwWithStackTrace(err, StackTrace.current);
-    });
+  Future<HttpClientResponse> close() async {
+    try {
+      final response = await _httpClientRequest.close();
+      return await _wrapResponse(response, _httpClientRequest, this.timestamp, traceData);
+    } catch (err, stackTrace) {
+      NewrelicMobile.instance.recordError(err, stackTrace);
+      return Future<NewRelicHttpClientResponse>.error(err, stackTrace);
+    }
   }
 
   @override
@@ -336,14 +322,14 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
   List<Cookie> get cookies => _httpClientRequest.cookies;
 
   @override
-  Future<HttpClientResponse> get done {
-    return _httpClientRequest.done.then(
-        (response) =>
-            _wrapResponse(response, _httpClientRequest, timestamp, traceData),
-        onError: (dynamic err) {
-      NewrelicMobile.instance.recordError(err, StackTrace.current);
-      Error.throwWithStackTrace(err, StackTrace.current);
-    });
+  Future<HttpClientResponse> get done async {
+    try {
+      final response = await _httpClientRequest.done;
+      return _wrapResponse(response, _httpClientRequest, timestamp, traceData);
+    } catch (err, stackTrace) {
+      NewrelicMobile.instance.recordError(err, stackTrace);
+      return Future<NewRelicHttpClientResponse>.error(err, stackTrace);
+    }
   }
 
   @override
@@ -625,7 +611,7 @@ class NewRelicHttpClientResponse extends HttpClientResponse {
       return _wrapResponse(response, request, timestamp, traceData);
     }, onError: (dynamic err) {
       NewrelicMobile.instance.recordError(err, StackTrace.current);
-      Error.throwWithStackTrace(err, StackTrace.current);
+      throw err;
     });
   }
 
