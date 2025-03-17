@@ -1,3 +1,10 @@
+### 1.1.9
+
+## Enhancements
+
+- Upgraded native iOS agent to version 7.5.4
+- Added Tracing flag for start interaction method
+
 ### 1.1.8
 
 ## Enhancements
