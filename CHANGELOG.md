@@ -4,7 +4,7 @@
 
 - Updated the native Android agent to version 7.6.7.
 - Updated the native iOS agent to version 7.5.6.
-- Resolved an issue in Android where the agent did not handle null values correctly in the `recordMetric` method.
+- Resolved an issue for Android where the agent did not handle null values correctly in the `recordMetric` method.
 
 ### 1.1.11
 
