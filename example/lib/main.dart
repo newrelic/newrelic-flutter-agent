@@ -59,7 +59,8 @@ void main() {
       collectorAddress: "",
       crashCollectorAddress: "",
       newEventSystemEnabled: true,
-      fedRampEnabled: false);
+      fedRampEnabled: false,
+      );
 
   NewrelicMobile.instance.start(config, () {
     runApp(const MyApp());
@@ -111,6 +112,10 @@ class Page1Screen extends StatelessWidget {
                 ElevatedButton(
                     onPressed: () async {
                       debugPrint(null);
+                      NewrelicMobile.instance.recordMetric(
+                          "Button Clicks",
+                          "Test Champ",
+                          );
                       NewrelicMobile.instance
                           .recordBreadcrumb("Button Got Pressed on Screen 3");
                       NewrelicMobile.instance.logInfo("testing logs");
@@ -124,7 +129,7 @@ class Page1Screen extends StatelessWidget {
                       NewrelicMobile.instance.logInfo("testing logs");
                       NewrelicMobile.instance.logInfo("testing logs");
 
-                      NewrelicMobile.instance.crashNow();
+                      // NewrelicMobile.instance.crashNow();
 
                       var map = {};
                       map["test12"] = "value";
