@@ -35,6 +35,15 @@ void main() {
   const int port = 8888;
   const String path = '/posts';
   const body = {'testKey': 'testValue'};
+  const defaultTraceAttributes = <String, dynamic>{
+    'id': 'test1',
+    'newrelic': 'test3',
+    'guid': 'test3',
+    'trace.id': 'test3',
+    'tracestate': 'test3',
+    'traceparent': 'test3'
+  };
+  Map<String, dynamic>? mockTraceAttributes = null;
 
   late NewRelicHttpClient newRelicHttpClient;
   late NewRelicHttpClientRequest newRelicHttpClientRequest;
@@ -54,14 +63,8 @@ void main() {
       log.add(methodCall);
       switch (methodCall.method) {
         case 'noticeDistributedTrace':
-          Map<String, dynamic> map = {
-            'id': 'test1',
-            'newrelic': 'test3',
-            'guid': 'test3',
-            'trace.id': 'test3',
-            'tracestate': 'test3',
-            'traceparent': 'test3'
-          };
+          Map<String, dynamic> map =
+              mockTraceAttributes ?? defaultTraceAttributes;
           return map;
         default:
           return true;
@@ -103,169 +106,189 @@ void main() {
   });
 
   tearDown(() async {
+    mockTraceAttributes = null;
     log.clear();
   });
 
-  test('expect newrelic custom http client GET URL to return request and log',
-      () async {
-    when<dynamic>((newRelicHttpClient.client as MockHttpClient).getUrl(any))
-        .thenAnswer((_) async => mockRequest);
-    // when<Future<HttpClientResponse>>(newRelicHttpClientRequest.done).thenAnswer((_) async => mockResponse);
-    when(mockRequest.done).thenAnswer((_) async => newRelicHttpClientResponse);
+  void testDistributedTraceRequests() {
+    test('expect newrelic custom http client GET URL to return request and log',
+        () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient).getUrl(any))
+          .thenAnswer((_) async => mockRequest);
+      // when<Future<HttpClientResponse>>(newRelicHttpClientRequest.done).thenAnswer((_) async => mockResponse);
+      when(mockRequest.done)
+          .thenAnswer((_) async => newRelicHttpClientResponse);
 
-    await newRelicHttpClient.getUrl(Uri.parse(url));
-    await newRelicHttpClientRequest.close();
+      await newRelicHttpClient.getUrl(Uri.parse(url));
+      await newRelicHttpClientRequest.close();
 
-    expect(log[0].method, 'noticeDistributedTrace');
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client DELETE URL', () async {
+      when<dynamic>(
+              (newRelicHttpClient.client as MockHttpClient).deleteUrl(any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.deleteUrl(Uri.parse(url));
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client GET', () async {
+      when<dynamic>(
+              (newRelicHttpClient.client as MockHttpClient).get(any, any, any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.get(url, port, path);
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client DELETE', () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient)
+              .delete(any, any, any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.delete(url, port, path);
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client POST URL', () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient).postUrl(any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.postUrl(Uri.parse(url));
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client POST ', () async {
+      when<dynamic>(
+              (newRelicHttpClient.client as MockHttpClient).post(any, any, any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.post(url, port, path);
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client WRITE Body', () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient).postUrl(any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.postUrl(Uri.parse(url));
+      newRelicHttpClientRequest.write(body.toString());
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client PUT URL', () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient).putUrl(any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.putUrl(Uri.parse(url));
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client PUT ', () async {
+      when<dynamic>(
+              (newRelicHttpClient.client as MockHttpClient).put(any, any, any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.put(url, port, path);
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client HEAD URL', () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient).headUrl(any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.headUrl(Uri.parse(url));
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client HEAD ', () async {
+      when<dynamic>(
+              (newRelicHttpClient.client as MockHttpClient).head(any, any, any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.head(url, port, path);
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client OPEN URL', () async {
+      when<dynamic>(
+              (newRelicHttpClient.client as MockHttpClient).openUrl(any, any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.openUrl('GET', Uri.parse(url));
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client OPEN ', () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient)
+              .open(any, any, any, any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.open('GET', url, port, path);
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client PATCH URL', () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient).patchUrl(any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.patchUrl(Uri.parse(url));
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+
+    test('expect newrelic custom http client HEAD ', () async {
+      when<dynamic>((newRelicHttpClient.client as MockHttpClient)
+              .patch(any, any, any))
+          .thenAnswer((_) async => mockRequest);
+
+      await newRelicHttpClient.patch(url, port, path);
+      await newRelicHttpClientRequest.close();
+
+      expect(log[0].method, 'noticeDistributedTrace');
+    });
+  }
+
+  group('when noticeDistributedTrace returns a empty map', () {
+    setUp(() {
+      mockTraceAttributes = {};
+    });
+    tearDown(() {
+      mockTraceAttributes = null;
+    });
+
+    testDistributedTraceRequests();
   });
 
-  test('expect newrelic custom http client DELETE URL', () async {
-    when<dynamic>((newRelicHttpClient.client as MockHttpClient).deleteUrl(any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.deleteUrl(Uri.parse(url));
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client GET', () async {
-    when<dynamic>(
-            (newRelicHttpClient.client as MockHttpClient).get(any, any, any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.get(url, port, path);
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client DELETE', () async {
-    when<dynamic>(
-            (newRelicHttpClient.client as MockHttpClient).delete(any, any, any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.delete(url, port, path);
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client POST URL', () async {
-    when<dynamic>((newRelicHttpClient.client as MockHttpClient).postUrl(any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.postUrl(Uri.parse(url));
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client POST ', () async {
-    when<dynamic>(
-            (newRelicHttpClient.client as MockHttpClient).post(any, any, any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.post(url, port, path);
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client WRITE Body', () async {
-    when<dynamic>((newRelicHttpClient.client as MockHttpClient).postUrl(any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.postUrl(Uri.parse(url));
-    newRelicHttpClientRequest.write(body.toString());
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client PUT URL', () async {
-    when<dynamic>((newRelicHttpClient.client as MockHttpClient).putUrl(any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.putUrl(Uri.parse(url));
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client PUT ', () async {
-    when<dynamic>(
-            (newRelicHttpClient.client as MockHttpClient).put(any, any, any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.put(url, port, path);
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client HEAD URL', () async {
-    when<dynamic>((newRelicHttpClient.client as MockHttpClient).headUrl(any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.headUrl(Uri.parse(url));
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client HEAD ', () async {
-    when<dynamic>(
-            (newRelicHttpClient.client as MockHttpClient).head(any, any, any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.head(url, port, path);
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client OPEN URL', () async {
-    when<dynamic>(
-            (newRelicHttpClient.client as MockHttpClient).openUrl(any, any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.openUrl('GET', Uri.parse(url));
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client OPEN ', () async {
-    when<dynamic>((newRelicHttpClient.client as MockHttpClient)
-            .open(any, any, any, any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.open('GET', url, port, path);
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client PATCH URL', () async {
-    when<dynamic>((newRelicHttpClient.client as MockHttpClient).patchUrl(any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.patchUrl(Uri.parse(url));
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
-  });
-
-  test('expect newrelic custom http client HEAD ', () async {
-    when<dynamic>(
-            (newRelicHttpClient.client as MockHttpClient).patch(any, any, any))
-        .thenAnswer((_) async => mockRequest);
-
-    await newRelicHttpClient.patch(url, port, path);
-    await newRelicHttpClientRequest.close();
-
-    expect(log[0].method, 'noticeDistributedTrace');
+  group('when noticeDistributedTrace returns the trace attributes map', () {
+    testDistributedTraceRequests();
   });
 
   test('expect newrelic custom http client to get client autoUncompress',

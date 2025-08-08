@@ -5,7 +5,8 @@
 - Updated the native Android agent to version 7.6.8.
 - Updated the native iOS agent to version 7.5.8.
 
-
+## Bug Fixes
+- Resolved an issue where network requests would fail where `noticeDistributedTrace` returns an empty Map
 
 ### 1.1.12
 

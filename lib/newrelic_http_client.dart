@@ -188,12 +188,17 @@ Future<NewRelicHttpClientRequest> _wrapRequest(
     Map<String, dynamic> params = Map();
 
     return request.then((actualRequest) {
-      actualRequest.headers
-          .add(DTTraceTags.traceState, traceAttributes[DTTraceTags.traceState]);
-      actualRequest.headers
-          .add(DTTraceTags.newrelic, traceAttributes[DTTraceTags.newrelic]);
-      actualRequest.headers.add(
-          DTTraceTags.traceParent, traceAttributes[DTTraceTags.traceParent]);
+      final availableTraceAttributesHeaders = <String>[
+        if (traceAttributes[DTTraceTags.traceState] != null)
+          DTTraceTags.traceState,
+        if (traceAttributes[DTTraceTags.newrelic] != null) DTTraceTags.newrelic,
+        if (traceAttributes[DTTraceTags.traceParent] != null)
+          DTTraceTags.traceParent,
+      ];
+      for (String header in availableTraceAttributesHeaders) {
+        actualRequest.headers.add(header, traceAttributes[header]);
+      }
+
       if (actualRequest is NewRelicHttpClientRequest) {
         return request as Future<NewRelicHttpClientRequest>;
       }
