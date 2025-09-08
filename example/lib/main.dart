@@ -63,12 +63,18 @@ void main() {
       );
 
   NewrelicMobile.instance.start(config, () {
+    _testFetch();
     runApp(const MyApp());
   });
   NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
   NewrelicMobile.instance.setMaxOfflineStorageSize(200);
   NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car", "Music"]);
+}
+
+Future<void> _testFetch() async {
+  final response = await http.get(Uri.parse('https://api.github.com'));
+  print(response.body);
 }
 
 /// The main app.
