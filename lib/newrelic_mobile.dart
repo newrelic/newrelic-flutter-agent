@@ -41,7 +41,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.1.13");
+          .setAttribute("Flutter Agent Version", "1.1.14");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
@@ -320,7 +320,7 @@ class NewrelicMobile {
       String responseBody = ""}) async {
     Map<String, dynamic>? traceAttributes;
     if (config!.distributedTracingEnabled) {
-      if (traceData != null) {
+      if (traceData != null && traceData.isNotEmpty) {
         if (PlatformManager.instance.isAndroid()) {
           traceAttributes = {
             DTTraceTags.id: traceData[DTTraceTags.id],
