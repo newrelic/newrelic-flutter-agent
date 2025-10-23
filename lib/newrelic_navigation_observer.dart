@@ -80,7 +80,6 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
     return settings.name ?? '/';
   }
 
-  /// Formats page name with optional key (matches old behavior exactly)
   String _formatPageName(Widget child, LocalKey? key, String? fallbackName) {
     final childString = child.toString();
 
@@ -88,7 +87,6 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
       return fallbackName ?? '/';
     }
 
-    // Always include key in parentheses (matches old code behavior)
     // When key is null, toString() returns "null" as a string
     return '$childString(${key.toString()})';
   }
