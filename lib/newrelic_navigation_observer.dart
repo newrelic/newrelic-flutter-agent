@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:go_router/go_router.dart';
+import 'package:newrelic_mobile/newrelic_mobile.dart';
 
 const breadCrumbName = 'navigation';
 
@@ -13,87 +14,82 @@ class NewRelicNavigationObserver extends RouteObserver<PageRoute<dynamic>> {
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
+    // Only record if both routes are PageRoute
     if (route is PageRoute && previousRoute is PageRoute) {
-      if (route.settings is MaterialPage ||
-          route.settings is CustomTransitionPage) {
-        var goRoute = route.settings;
-
-        var goPreviousRoute = previousRoute.settings;
-
-        _addGoRouterBreadcrumb('didPop', goRoute, goPreviousRoute);
-      } else {
-        _addBreadcrumb('didPop', route.settings, previousRoute.settings);
-      }
+      _recordNavigation('didPop', route, previousRoute);
     }
   }
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
-
+    // Only record if the main route is PageRoute
     if (route is PageRoute) {
-      if (route.settings is MaterialPage ||
-          route.settings is CustomTransitionPage) {
-        var goRoute = route.settings;
-
-        var goPreviousRoute;
-
-        if (previousRoute != null) {
-          goPreviousRoute = previousRoute.settings;
-        }
-
-        _addGoRouterBreadcrumb('didPush', goPreviousRoute, goRoute);
-      } else {
-        _addBreadcrumb('didPush', previousRoute?.settings, route.settings);
-      }
+      _recordNavigation('didPush', previousRoute, route);
     }
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    // Only record if both routes are PageRoute
     if (newRoute is PageRoute && oldRoute is PageRoute) {
-      if (newRoute.settings is MaterialPage ||
-          newRoute.settings is CustomTransitionPage) {
-        var goRoute = newRoute.settings;
-
-        var goPreviousRoute = oldRoute.settings;
-
-        _addGoRouterBreadcrumb('didReplace', goPreviousRoute, goRoute);
-      } else {
-        _addBreadcrumb('didReplace', oldRoute.settings, newRoute.settings);
-      }
+      _recordNavigation('didReplace', oldRoute, newRoute);
     }
   }
 
-  void _addBreadcrumb(
-      String methodType, RouteSettings? fromRoute, RouteSettings? toRoute) {
-    Map<String, String?> attributes = <String, String?>{
-      'methodType': methodType,
-      // ignore: prefer_if_null_operators
-      'from': fromRoute?.name != null ? fromRoute?.name : '/',
-      'to': toRoute?.name ?? '/'
-    };
-    NewrelicMobile.instance
-        .recordBreadcrumb(breadCrumbName, eventAttributes: attributes);
-  }
-
-  void _addGoRouterBreadcrumb(
-      String methodType, dynamic fromRoute, dynamic toRoute) {
-    if (fromRoute is RouteSettings || toRoute is RouteSettings) {
-      var fromKey = fromRoute?.key.toString();
-      var toKey = toRoute?.key.toString();
-
-      Map<String, String?> attributes = <String, String?>{
+  /// Records navigation event
+  void _recordNavigation(
+    String methodType,
+    Route<dynamic>? fromRoute,
+    Route<dynamic>? toRoute,
+  ) {
+    NewrelicMobile.instance.recordBreadcrumb(
+      breadCrumbName,
+      eventAttributes: {
         'methodType': methodType,
-        // ignore: prefer_if_null_operators
-        'from': fromRoute?.child != null
-            ? ((fromRoute?.child.toString())! + '(' + fromKey! + ')')
-            : '/',
-        'to': (toRoute?.child.toString())! + '(' + toKey! + ')'
-      };
-      NewrelicMobile.instance
-          .recordBreadcrumb(breadCrumbName, eventAttributes: attributes);
+        'from': _getRouteName(fromRoute?.settings),
+        'to': _getRouteName(toRoute?.settings),
+      },
+    );
+  }
+
+  /// Extracts route name for all route types
+  String _getRouteName(RouteSettings? settings) {
+    if (settings == null) {
+      return '/';
     }
+
+    if (settings is MaterialPage) {
+      return _formatPageName(settings.child, settings.key, settings.name);
+    }
+
+    if (settings is CupertinoPage) {
+      return _formatPageName(settings.child, settings.key, settings.name);
+    }
+
+    if (settings is CustomTransitionPage) {
+      return _formatPageName(settings.child, settings.key, settings.name);
+    }
+
+    if (settings is NoTransitionPage) {
+      return _formatPageName(settings.child, settings.key, settings.name);
+    }
+
+    // Handle standard routes
+    return settings.name ?? '/';
+  }
+
+  /// Formats page name with optional key (matches old behavior exactly)
+  String _formatPageName(Widget child, LocalKey? key, String? fallbackName) {
+    final childString = child.toString();
+
+    if (childString.isEmpty) {
+      return fallbackName ?? '/';
+    }
+
+    // Always include key in parentheses (matches old code behavior)
+    // When key is null, toString() returns "null" as a string
+    return '$childString(${key.toString()})';
   }
 }
