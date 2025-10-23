@@ -43,24 +43,24 @@ void main() {
   }
 
   Config config = Config(
-      accessToken: appToken,
-      analyticsEventEnabled: true,
-      networkErrorRequestEnabled: true,
-      networkRequestEnabled: true,
-      crashReportingEnabled: true,
-      interactionTracingEnabled: true,
-      httpResponseBodyCaptureEnabled: true,
-      loggingEnabled: true,
-      webViewInstrumentation: true,
-      printStatementAsEventsEnabled: true,
-      httpInstrumentationEnabled: true,
-      distributedTracingEnabled: true,
-      logLevel: LogLevel.VERBOSE,
-      collectorAddress: "",
-      crashCollectorAddress: "",
-      newEventSystemEnabled: true,
-      fedRampEnabled: false,
-      );
+    accessToken: appToken,
+    analyticsEventEnabled: true,
+    networkErrorRequestEnabled: true,
+    networkRequestEnabled: true,
+    crashReportingEnabled: true,
+    interactionTracingEnabled: true,
+    httpResponseBodyCaptureEnabled: true,
+    loggingEnabled: true,
+    webViewInstrumentation: true,
+    printStatementAsEventsEnabled: true,
+    httpInstrumentationEnabled: true,
+    distributedTracingEnabled: true,
+    logLevel: LogLevel.VERBOSE,
+    collectorAddress: "",
+    crashCollectorAddress: "",
+    newEventSystemEnabled: true,
+    fedRampEnabled: false,
+  );
 
   NewrelicMobile.instance.start(config, () {
     _testFetch();
@@ -119,9 +119,9 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       debugPrint(null);
                       NewrelicMobile.instance.recordMetric(
-                          "Button Clicks",
-                          "Test Champ",
-                          );
+                        "Button Clicks",
+                        "Test Champ",
+                      );
                       NewrelicMobile.instance
                           .recordBreadcrumb("Button Got Pressed on Screen 3");
                       NewrelicMobile.instance.logInfo("testing logs");

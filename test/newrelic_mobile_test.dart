@@ -152,7 +152,9 @@ void main() {
     expect(await NewrelicMobile.instance.platformVersion, '42');
   });
 
-  test('test setUserId should be called with a String argument and return a bool', () async {
+  test(
+      'test setUserId should be called with a String argument and return a bool',
+      () async {
     final result = await NewrelicMobile.instance.setUserId(name);
     final Map<String, dynamic> params = <String, dynamic>{
       'userId': name,
@@ -166,9 +168,14 @@ void main() {
     expect(result, true);
   });
 
-  test('test setAttribute should be called with a String Attribute and return a bool', () async {
+  test(
+      'test setAttribute should be called with a String Attribute and return a bool',
+      () async {
     final result = await NewrelicMobile.instance.setAttribute(name, value);
-    final Map<String, dynamic> params = <String, dynamic>{'name': name, 'value': value};
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': name,
+      'value': value
+    };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'setAttribute',
@@ -178,9 +185,14 @@ void main() {
     expect(result, true);
   });
 
-  test('test setAttribute should be called with a Boolean Attribute and return a bool', () async {
+  test(
+      'test setAttribute should be called with a Boolean Attribute and return a bool',
+      () async {
     final result = await NewrelicMobile.instance.setAttribute(name, boolValue);
-    final Map<String, dynamic> params = <String, dynamic>{'name': name, 'value': boolValue};
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': name,
+      'value': boolValue
+    };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'setAttribute',
@@ -190,7 +202,9 @@ void main() {
     expect(result, true);
   });
 
-  test('test removeAttribute should be called with a String Arguments and return a bool', () async {
+  test(
+      'test removeAttribute should be called with a String Arguments and return a bool',
+      () async {
     final result = await NewrelicMobile.instance.removeAttribute(name);
     final Map<String, dynamic> params = <String, dynamic>{'name': name};
     expect(methodCalLogs, <Matcher>[
@@ -202,8 +216,13 @@ void main() {
     expect(result, false);
   });
 
-  test('test record BreadCrumb should be called with a Map Arguments and return a bool', () async {
-    final Map<String, dynamic> eventAttributes = <String, dynamic>{'name': name, 'value;': value};
+  test(
+      'test record BreadCrumb should be called with a Map Arguments and return a bool',
+      () async {
+    final Map<String, dynamic> eventAttributes = <String, dynamic>{
+      'name': name,
+      'value;': value
+    };
 
     final result = await NewrelicMobile.instance
         .recordBreadcrumb(breadcrumb, eventAttributes: eventAttributes);
@@ -220,9 +239,13 @@ void main() {
     expect(result, true);
   });
 
-  test('test record CustomEvent should be called with a Map Arguments,eventType and return a bool',
+  test(
+      'test record CustomEvent should be called with a Map Arguments,eventType and return a bool',
       () async {
-    final Map<String, dynamic> eventAttributes = <String, dynamic>{'name': name, 'value;': value};
+    final Map<String, dynamic> eventAttributes = <String, dynamic>{
+      'name': name,
+      'value;': value
+    };
 
     final result = await NewrelicMobile.instance
         .recordCustomEvent(customEvent, eventAttributes: eventAttributes);
@@ -243,10 +266,13 @@ void main() {
   test(
       'test record CustomEvent should be called with a Map Arguments,eventType,eventName and return a bool',
       () async {
-    final Map<String, dynamic> eventAttributes = <String, dynamic>{'name': name, 'value;': value};
+    final Map<String, dynamic> eventAttributes = <String, dynamic>{
+      'name': name,
+      'value;': value
+    };
 
-    final result = await NewrelicMobile.instance
-        .recordCustomEvent(customEvent, eventName: eventName, eventAttributes: eventAttributes);
+    final result = await NewrelicMobile.instance.recordCustomEvent(customEvent,
+        eventName: eventName, eventAttributes: eventAttributes);
     final Map<String, dynamic> params = <String, dynamic>{
       'eventType': customEvent,
       'eventName': eventName,
@@ -261,7 +287,8 @@ void main() {
     expect(result, true);
   });
 
-  test('test startInteraction should be called with a action Name and Return interactionId ',
+  test(
+      'test startInteraction should be called with a action Name and Return interactionId ',
       () async {
     final result = await NewrelicMobile.instance.startInteraction(actionName);
     final Map<String, dynamic> params = <String, dynamic>{
@@ -276,7 +303,8 @@ void main() {
     expect(result, '42');
   });
 
-  test('test noticeDistributedTrace should be called and Return map with trace Attributes ',
+  test(
+      'test noticeDistributedTrace should be called and Return map with trace Attributes ',
       () async {
     final result = await NewrelicMobile.instance.noticeDistributedTrace({});
     expect(methodCalLogs, <Matcher>[
@@ -288,8 +316,11 @@ void main() {
     expect(result.keys.length, 2);
   });
 
-  test('test getHTTPHeadersTrackingFor should be called and Return List with Headers ', () async {
-    final List<Object?> result = await NewrelicMobile.instance.getHTTPHeadersTrackingFor();
+  test(
+      'test getHTTPHeadersTrackingFor should be called and Return List with Headers ',
+      () async {
+    final List<Object?> result =
+        await NewrelicMobile.instance.getHTTPHeadersTrackingFor();
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'getHTTPHeadersTrackingFor',
@@ -299,7 +330,8 @@ void main() {
     expect(result.length, 2);
   });
 
-  test('test addHTTPHeadersTrackingFor should be called with parameters ', () async {
+  test('test addHTTPHeadersTrackingFor should be called with parameters ',
+      () async {
     List<String> list = ["Car", "Music"];
     final Map<String, dynamic> params = <String, dynamic>{
       'headers': list,
@@ -340,7 +372,8 @@ void main() {
     ]);
   });
 
-  test('test setMaxOfflineStorageSize should be called with megaBytes', () async {
+  test('test setMaxOfflineStorageSize should be called with megaBytes',
+      () async {
     NewrelicMobile.instance.setMaxOfflineStorageSize(megaBytes);
     final Map<String, dynamic> params = <String, dynamic>{
       'megaBytes': megaBytes,
@@ -354,7 +387,8 @@ void main() {
     ]);
   });
 
-  test('test setMaxEventBufferTime should be called with maxBufferTime', () async {
+  test('test setMaxEventBufferTime should be called with maxBufferTime',
+      () async {
     NewrelicMobile.instance.setMaxEventBufferTime(maxBufferTime);
     final Map<String, dynamic> params = <String, dynamic>{
       'maxBufferTimeInSec': maxBufferTime,
@@ -368,7 +402,9 @@ void main() {
     ]);
   });
 
-  test('test interactionName should be called with interActionName on Android Platform ', () async {
+  test(
+      'test interactionName should be called with interActionName on Android Platform ',
+      () async {
     var platformManger = MockPlatformManager();
     PlatformManager.setPlatformInstance(platformManger);
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
@@ -393,7 +429,8 @@ void main() {
     expect(methodCalLogs, <Matcher>[]);
   });
 
-  test('test noticeHttpTransaction should be called on Android Platform', () async {
+  test('test noticeHttpTransaction should be called on Android Platform',
+      () async {
     var platformManger = MockPlatformManager();
     PlatformManager.setPlatformInstance(platformManger);
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
@@ -403,8 +440,8 @@ void main() {
       DTTraceTags.guid: traceData[DTTraceTags.guid],
       DTTraceTags.traceId: traceData[DTTraceTags.traceId]
     };
-    await NewrelicMobile.instance.noticeHttpTransaction(
-        url, httpMethod, statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
+    await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+        statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
         responseBody: responseBody, httpParams: httpParams);
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
@@ -433,8 +470,8 @@ void main() {
     PlatformManager.setPlatformInstance(platformManger);
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
 
-    await NewrelicMobile.instance.noticeHttpTransaction(
-        url, httpMethod, statusCode, startTime, endTime, bytesSent, bytesReceived, null,
+    await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+        statusCode, startTime, endTime, bytesSent, bytesReceived, null,
         responseBody: responseBody);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -468,8 +505,8 @@ void main() {
       DTTraceTags.traceState: traceData[DTTraceTags.traceState],
       DTTraceTags.traceParent: traceData[DTTraceTags.traceParent]
     };
-    await NewrelicMobile.instance.noticeHttpTransaction(
-        url, httpMethod, statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
+    await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+        statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
         responseBody: responseBody, httpParams: httpParams);
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
@@ -499,8 +536,8 @@ void main() {
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
     when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
 
-    await NewrelicMobile.instance.noticeHttpTransaction(
-        url, httpMethod, statusCode, startTime, endTime, bytesSent, bytesReceived, null,
+    await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+        statusCode, startTime, endTime, bytesSent, bytesReceived, null,
         responseBody: responseBody);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -523,9 +560,10 @@ void main() {
     ]);
   });
 
-  test('test noticeNetworkFailure should be called with NetworkFailure Enum', () async {
-    await NewrelicMobile.instance
-        .noticeNetworkFailure(url, httpMethod, startTime, endTime, NetworkFailure.unknown);
+  test('test noticeNetworkFailure should be called with NetworkFailure Enum',
+      () async {
+    await NewrelicMobile.instance.noticeNetworkFailure(
+        url, httpMethod, startTime, endTime, NetworkFailure.unknown);
 
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
@@ -544,7 +582,10 @@ void main() {
 
   test('test incrementAttribute should be called with name', () async {
     final result = await NewrelicMobile.instance.incrementAttribute(name);
-    final Map<String, dynamic> params = <String, dynamic>{'name': name, 'value': null};
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': name,
+      'value': null
+    };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'incrementAttribute',
@@ -580,9 +621,14 @@ void main() {
     ]);
   });
 
-  test('test incrementAttribute should be called with name and value', () async {
-    final result = await NewrelicMobile.instance.incrementAttribute(name, value: dValue);
-    final Map<String, dynamic> params = <String, dynamic>{'name': name, 'value': dValue};
+  test('test incrementAttribute should be called with name and value',
+      () async {
+    final result =
+        await NewrelicMobile.instance.incrementAttribute(name, value: dValue);
+    final Map<String, dynamic> params = <String, dynamic>{
+      'name': name,
+      'value': dValue
+    };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'incrementAttribute',
@@ -626,14 +672,15 @@ void main() {
     ]);
   });
 
-  test('test recordMetric should be called with name,category,value and valueUnit on IOS Platform',
+  test(
+      'test recordMetric should be called with name,category,value and valueUnit on IOS Platform',
       () async {
     var platformManger = MockPlatformManager();
     PlatformManager.setPlatformInstance(platformManger);
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
     when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
-    await NewrelicMobile.instance
-        .recordMetric(name, category, value: dValue, valueUnit: MetricUnit.BYTES);
+    await NewrelicMobile.instance.recordMetric(name, category,
+        value: dValue, valueUnit: MetricUnit.BYTES);
     final Map<String, dynamic> params = <String, dynamic>{
       'name': name,
       'category': category,
@@ -656,8 +703,8 @@ void main() {
     PlatformManager.setPlatformInstance(platformManger);
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
     when(platformManger.isIOS()).thenAnswer((realInvocation) => false);
-    await NewrelicMobile.instance
-        .recordMetric(name, category, value: dValue, valueUnit: MetricUnit.BYTES);
+    await NewrelicMobile.instance.recordMetric(name, category,
+        value: dValue, valueUnit: MetricUnit.BYTES);
     final Map<String, dynamic> params = <String, dynamic>{
       'name': name,
       'category': category,
@@ -673,14 +720,17 @@ void main() {
     ]);
   });
 
-  test('test recordMetric should be called with name,category,value, valueUnit and countUnit',
+  test(
+      'test recordMetric should be called with name,category,value, valueUnit and countUnit',
       () async {
     var platformManger = MockPlatformManager();
     PlatformManager.setPlatformInstance(platformManger);
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
     when(platformManger.isIOS()).thenAnswer((realInvocation) => false);
     await NewrelicMobile.instance.recordMetric(name, category,
-        value: dValue, valueUnit: MetricUnit.BYTES, countUnit: MetricUnit.SECONDS);
+        value: dValue,
+        valueUnit: MetricUnit.BYTES,
+        countUnit: MetricUnit.SECONDS);
     final Map<String, dynamic> params = <String, dynamic>{
       'name': name,
       'category': category,
@@ -723,7 +773,8 @@ void main() {
   test('test CurrentSession should be called', () async {
     await NewrelicMobile.instance.currentSessionId();
 
-    expect(methodCalLogs, <Matcher>[isMethodCall('currentSessionId', arguments: null)]);
+    expect(methodCalLogs,
+        <Matcher>[isMethodCall('currentSessionId', arguments: null)]);
 
     expect(await NewrelicMobile.instance.currentSessionId(), '123456');
   });
@@ -741,7 +792,8 @@ void main() {
   test('should return 6 elements', () {
     StackTrace stackTrace = StackTrace.fromString(dartError);
 
-    List<Map<String, String>> elements = NewrelicMobile.getStackTraceElements(stackTrace);
+    List<Map<String, String>> elements =
+        NewrelicMobile.getStackTraceElements(stackTrace);
 
     expect(6, elements.length);
   });
@@ -749,7 +801,8 @@ void main() {
   test('obfuscate error should return 5 elements', () {
     StackTrace stackTrace = StackTrace.fromString(obfuscateDartError);
 
-    List<Map<String, String>> elements = NewrelicMobile.getStackTraceElements(stackTrace);
+    List<Map<String, String>> elements =
+        NewrelicMobile.getStackTraceElements(stackTrace);
 
     expect(11, elements.length);
   });
@@ -768,7 +821,9 @@ void main() {
 
   test('agent should start with AppToken with network disabled', () async {
     Config config = Config(
-        accessToken: appToken, networkRequestEnabled: false, networkErrorRequestEnabled: false);
+        accessToken: appToken,
+        networkRequestEnabled: false,
+        networkErrorRequestEnabled: false);
     await NewrelicMobile.instance.startAgent(config);
 
     params['networkRequestEnabled'] = false;
@@ -817,7 +872,9 @@ void main() {
       'agent should start with AppToken with  backgroundReporting Enabled and newEventSystem Disabled',
       () async {
     Config config = Config(
-        accessToken: appToken, backgroundReportingEnabled: true, newEventSystemEnabled: false);
+        accessToken: appToken,
+        backgroundReportingEnabled: true,
+        newEventSystemEnabled: false);
     await NewrelicMobile.instance.startAgent(
       config,
     );
@@ -851,7 +908,8 @@ void main() {
     params['fedRampEnabled'] = false;
   });
 
-  test('agent should start with AppToken with offlineStorage disabled', () async {
+  test('agent should start with AppToken with offlineStorage disabled',
+      () async {
     Config config = Config(accessToken: appToken, offlineStorageEnabled: false);
     await NewrelicMobile.instance.startAgent(
       config,
@@ -906,7 +964,8 @@ void main() {
   });
 
   test('test Record DebugPrint method', () {
-    Config config = Config(accessToken: appToken, printStatementAsEventsEnabled: false);
+    Config config =
+        Config(accessToken: appToken, printStatementAsEventsEnabled: false);
     NewrelicMobile.instance.startAgent(config);
     debugPrint(name);
 
@@ -920,12 +979,14 @@ void main() {
   });
 
   test('test Record DebugPrint method as Log Attributes', () {
-    Config config = Config(accessToken: appToken, printStatementAsEventsEnabled: true);
+    Config config =
+        Config(accessToken: appToken, printStatementAsEventsEnabled: true);
     NewrelicMobile.instance.startAgent(config);
     debugPrint(name);
     expect(methodCalLogs[1].method, 'logAttributes');
   });
-  test('test Start of Agent should also start method with logging disabled ', () async {
+  test('test Start of Agent should also start method with logging disabled ',
+      () async {
     Config config = Config(accessToken: appToken, loggingEnabled: false);
 
     Function fun = () {
@@ -968,7 +1029,8 @@ void main() {
   test(
       'test Start of Agent should also start method with print statement as custom Events disabled ',
       () async {
-    Config config = Config(accessToken: appToken, printStatementAsEventsEnabled: false);
+    Config config =
+        Config(accessToken: appToken, printStatementAsEventsEnabled: false);
 
     Function fun = () {
       print('test');
@@ -993,7 +1055,8 @@ void main() {
     ]);
   });
 
-  test('test Start of Agent should also start method and also record error if run app throw error ',
+  test(
+      'test Start of Agent should also start method and also record error if run app throw error ',
       () async {
     Config config = Config(accessToken: appToken);
 
@@ -1078,7 +1141,8 @@ void main() {
       'eventAttributes': attributes
     };
 
-    expect(methodCalLogs, <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
+    expect(methodCalLogs,
+        <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
   });
 
   test("test navigation observer did push method", () {
@@ -1098,7 +1162,8 @@ void main() {
       'eventAttributes': attributes
     };
 
-    expect(methodCalLogs, <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
+    expect(methodCalLogs,
+        <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
   });
 
   test("test navigation observer did replace method", () {
@@ -1118,7 +1183,8 @@ void main() {
       'eventAttributes': attributes
     };
 
-    expect(methodCalLogs, <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
+    expect(methodCalLogs,
+        <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
   });
 
   test('test navigation observer from route null name', () {
@@ -1138,7 +1204,8 @@ void main() {
       'eventAttributes': attributes
     };
 
-    expect(methodCalLogs, <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
+    expect(methodCalLogs,
+        <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
   });
 
   test('test navigation observer to route null name', () {
@@ -1158,7 +1225,8 @@ void main() {
       'eventAttributes': attributes
     };
 
-    expect(methodCalLogs, <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
+    expect(methodCalLogs,
+        <Matcher>[isMethodCall('recordBreadcrumb', arguments: params)]);
   });
 
   test('test logDebug should be called with message', () async {
@@ -1196,7 +1264,8 @@ void main() {
     ]);
   });
 
-  test('test logVerbose should be called with message and log level Verbose', () async {
+  test('test logVerbose should be called with message and log level Verbose',
+      () async {
     NewrelicMobile.instance.logVerbose(message);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -1213,7 +1282,8 @@ void main() {
       )
     ]);
   });
-  test('test logWarning should be called with message and log level Warning', () async {
+  test('test logWarning should be called with message and log level Warning',
+      () async {
     NewrelicMobile.instance.logWarning(message);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -1231,7 +1301,8 @@ void main() {
     ]);
   });
 
-  test('test logError should be called with message and log level Error', () async {
+  test('test logError should be called with message and log level Error',
+      () async {
     NewrelicMobile.instance.logError(message);
 
     final Map<String, dynamic> params = <String, dynamic>{
@@ -1330,8 +1401,11 @@ void main() {
     expect(methodCalLogs, <Matcher>[]);
   });
 
-  test('test Start of Agent should also start method with distributedTracing disabled ', () async {
-    Config config = Config(accessToken: appToken, distributedTracingEnabled: false);
+  test(
+      'test Start of Agent should also start method with distributedTracing disabled ',
+      () async {
+    Config config =
+        Config(accessToken: appToken, distributedTracingEnabled: false);
 
     Function fun = () {
       print('test');
@@ -1373,12 +1447,13 @@ void main() {
       () async {
     var platformManger = MockPlatformManager();
     PlatformManager.setPlatformInstance(platformManger);
-    Config config = Config(accessToken: appToken, distributedTracingEnabled: false);
+    Config config =
+        Config(accessToken: appToken, distributedTracingEnabled: false);
     NewrelicMobile.instance.setAgentConfiguration(config);
     when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
 
-    await NewrelicMobile.instance.noticeHttpTransaction(
-        url, httpMethod, statusCode, startTime, endTime, bytesSent, bytesReceived, {},
+    await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
+        statusCode, startTime, endTime, bytesSent, bytesReceived, {},
         responseBody: responseBody, httpParams: httpParams);
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
@@ -1451,7 +1526,8 @@ void main() {
     params['loggingEnabled'] = true;
   });
 
-  test('test Start of Agent should also start method with LogLevel Error', () async {
+  test('test Start of Agent should also start method with LogLevel Error',
+      () async {
     Config config = Config(accessToken: appToken, logLevel: LogLevel.ERROR);
 
     Function fun = () {
