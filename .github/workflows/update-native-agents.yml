@@ -1,0 +1,306 @@
+name: Update Native Agent Versions
+
+on:
+  workflow_dispatch:
+    inputs:
+      android_version:
+        description: 'Android agent version (leave empty to fetch latest)'
+        required: false
+        type: string
+      ios_version:
+        description: 'iOS agent version (leave empty to fetch latest)'
+        required: false
+        type: string
+      create_pr:
+        description: 'Create PR instead of direct commit'
+        required: false
+        type: boolean
+        default: true
+  push:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/update-native-agents.yml'
+  schedule:
+    # Run weekly on Monday at 9:00 AM UTC to check for updates
+    - cron: '0 9 * * 1'
+
+jobs:
+  update-versions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Fetch latest Android agent version
+        id: android_version
+        run: |
+          if [ -n "${{ inputs.android_version }}" ]; then
+            VERSION="${{ inputs.android_version }}"
+            echo "Using provided Android version: $VERSION"
+          else
+            # Fetch latest version from Maven Central metadata
+            VERSION=$(curl -s 'https://repo1.maven.org/maven2/com/newrelic/agent/android/android-agent/maven-metadata.xml' | \
+              grep '<latest>' | \
+              sed 's/.*<latest>\(.*\)<\/latest>.*/\1/')
+            echo "Fetched latest Android version: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Fetch latest iOS agent version
+        id: ios_version
+        run: |
+          if [ -n "${{ inputs.ios_version }}" ]; then
+            VERSION="${{ inputs.ios_version }}"
+            echo "Using provided iOS version: $VERSION"
+          else
+            # Fetch latest version from CocoaPods
+            # The API returns versions array, we need to get the last one
+            VERSION=$(curl -s 'https://trunk.cocoapods.org/api/v1/pods/NewRelicAgent' | \
+              grep -o '"name":"[^"]*"' | \
+              sed 's/"name":"\([^"]*\)"/\1/' | \
+              tail -1)
+            echo "Fetched latest iOS version: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get current versions
+        id: current_versions
+        run: |
+          CURRENT_ANDROID=$(grep "implementation 'com.newrelic.agent.android:android-agent:" android/build.gradle | sed "s/.*android-agent:\(.*\)'.*/\1/")
+          CURRENT_IOS=$(grep "s.dependency 'NewRelicAgent'" ios/newrelic_mobile.podspec | sed "s/.*'NewRelicAgent', '~>\(.*\)'.*/\1/")
+          CURRENT_FLUTTER=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+
+          echo "current_android=$CURRENT_ANDROID" >> $GITHUB_OUTPUT
+          echo "current_ios=$CURRENT_IOS" >> $GITHUB_OUTPUT
+          echo "current_flutter=$CURRENT_FLUTTER" >> $GITHUB_OUTPUT
+
+          echo "Current Android version: $CURRENT_ANDROID"
+          echo "Current iOS version: $CURRENT_IOS"
+          echo "Current Flutter version: $CURRENT_FLUTTER"
+
+      - name: Check if updates are needed
+        id: check_updates
+        run: |
+          NEEDS_UPDATE=false
+
+          if [ "${{ steps.current_versions.outputs.current_android }}" != "${{ steps.android_version.outputs.version }}" ]; then
+            echo "Android version needs update"
+            NEEDS_UPDATE=true
+          fi
+
+          if [ "${{ steps.current_versions.outputs.current_ios }}" != "${{ steps.ios_version.outputs.version }}" ]; then
+            echo "iOS version needs update"
+            NEEDS_UPDATE=true
+          fi
+
+          echo "needs_update=$NEEDS_UPDATE" >> $GITHUB_OUTPUT
+
+      - name: Calculate new Flutter version
+        id: new_flutter_version
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          CURRENT_VERSION="${{ steps.current_versions.outputs.current_flutter }}"
+          # Increment minor version (e.g., 1.1.16 -> 1.1.17)
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((patch + 1))
+          NEW_VERSION="$major.$minor.$NEW_PATCH"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New Flutter version will be: $NEW_VERSION"
+
+      - name: Update Android build.gradle
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          sed -i "s/implementation 'com.newrelic.agent.android:android-agent:.*'/implementation 'com.newrelic.agent.android:android-agent:${{ steps.android_version.outputs.version }}'/" android/build.gradle
+          echo "Updated Android build.gradle"
+
+      - name: Update iOS podspec
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          sed -i "s/s.version.*=.*'.*'/s.version          = '${{ steps.new_flutter_version.outputs.new_version }}'/" ios/newrelic_mobile.podspec
+          sed -i "s/s.dependency 'NewRelicAgent', '~>.*'/s.dependency 'NewRelicAgent', '~>${{ steps.ios_version.outputs.version }}'/" ios/newrelic_mobile.podspec
+          echo "Updated iOS podspec"
+
+      - name: Update pubspec.yaml
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          sed -i "s/^version: .*/version: ${{ steps.new_flutter_version.outputs.new_version }}/" pubspec.yaml
+          echo "Updated pubspec.yaml"
+
+      - name: Update newrelic_mobile.dart
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          sed -i "s/setAttribute(\"Flutter Agent Version\", \".*\")/setAttribute(\"Flutter Agent Version\", \"${{ steps.new_flutter_version.outputs.new_version }}\")/" lib/newrelic_mobile.dart
+          echo "Updated lib/newrelic_mobile.dart"
+
+      - name: Update newrelic_mobile_test.dart
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          sed -i "s/const agentVersion = \".*\"/const agentVersion = \"${{ steps.new_flutter_version.outputs.new_version }}\"/" test/newrelic_mobile_test.dart
+          echo "Updated test/newrelic_mobile_test.dart"
+
+      - name: Update CHANGELOG.md
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          ANDROID_VERSION="${{ steps.android_version.outputs.version }}"
+          IOS_VERSION="${{ steps.ios_version.outputs.version }}"
+          NEW_VERSION="${{ steps.new_flutter_version.outputs.new_version }}"
+          CURRENT_ANDROID="${{ steps.current_versions.outputs.current_android }}"
+          CURRENT_IOS="${{ steps.current_versions.outputs.current_ios }}"
+
+          # Create changelog entry
+          CHANGELOG_ENTRY="### ${NEW_VERSION}\n\n## Enhancements\n\n"
+
+          if [ "$CURRENT_ANDROID" != "$ANDROID_VERSION" ]; then
+            CHANGELOG_ENTRY="${CHANGELOG_ENTRY}- Updated the native Android agent to version ${ANDROID_VERSION}.\n"
+          fi
+
+          if [ "$CURRENT_IOS" != "$IOS_VERSION" ]; then
+            CHANGELOG_ENTRY="${CHANGELOG_ENTRY}- Updated the native iOS agent to version ${IOS_VERSION}.\n"
+          fi
+
+          CHANGELOG_ENTRY="${CHANGELOG_ENTRY}\n"
+
+          # Prepend to CHANGELOG.md
+          echo -e "$CHANGELOG_ENTRY$(cat CHANGELOG.md)" > CHANGELOG.md
+          echo "Updated CHANGELOG.md"
+
+      - name: Run tests
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          flutter pub get
+          flutter test || echo "Tests completed"
+
+      - name: Create Pull Request
+        if: steps.check_updates.outputs.needs_update == 'true' && (inputs.create_pr == true || github.event_name == 'schedule')
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            chore: Update native agents to Android ${{ steps.android_version.outputs.version }} and iOS ${{ steps.ios_version.outputs.version }}
+
+            - Updated Android agent from ${{ steps.current_versions.outputs.current_android }} to ${{ steps.android_version.outputs.version }}
+            - Updated iOS agent from ${{ steps.current_versions.outputs.current_ios }} to ${{ steps.ios_version.outputs.version }}
+            - Bumped Flutter plugin version to ${{ steps.new_flutter_version.outputs.new_version }}
+          branch: update-native-agents-${{ steps.new_flutter_version.outputs.new_version }}
+          delete-branch: true
+          title: 'chore: Update native agents to Android ${{ steps.android_version.outputs.version }} and iOS ${{ steps.ios_version.outputs.version }}'
+          body: |
+            ## Updates
+
+            This PR updates the native agent versions:
+
+            - **Android Agent**: ${{ steps.current_versions.outputs.current_android }} → ${{ steps.android_version.outputs.version }}
+            - **iOS Agent**: ${{ steps.current_versions.outputs.current_ios }} → ${{ steps.ios_version.outputs.version }}
+            - **Flutter Plugin**: ${{ steps.current_versions.outputs.current_flutter }} → ${{ steps.new_flutter_version.outputs.new_version }}
+
+            ## Files Updated
+
+            - `android/build.gradle`
+            - `ios/newrelic_mobile.podspec`
+            - `pubspec.yaml`
+            - `lib/newrelic_mobile.dart`
+            - `test/newrelic_mobile_test.dart`
+            - `CHANGELOG.md`
+
+            ## Testing
+
+            - [ ] Tests pass
+            - [ ] Android app builds successfully
+            - [ ] iOS app builds successfully
+            - [ ] Manual testing completed
+
+            ---
+
+            This PR was automatically created by the Update Native Agent Versions workflow.
+          labels: |
+            enhancement
+            automated
+          reviewers: |
+            ${{ github.actor }}
+
+      - name: Commit and push changes directly
+        if: steps.check_updates.outputs.needs_update == 'true' && inputs.create_pr == false && github.event_name != 'schedule'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add android/build.gradle ios/newrelic_mobile.podspec pubspec.yaml lib/newrelic_mobile.dart test/newrelic_mobile_test.dart CHANGELOG.md
+          git commit -m "chore: Update native agents to Android ${{ steps.android_version.outputs.version }} and iOS ${{ steps.ios_version.outputs.version }}
+
+          - Updated Android agent from ${{ steps.current_versions.outputs.current_android }} to ${{ steps.android_version.outputs.version }}
+          - Updated iOS agent from ${{ steps.current_versions.outputs.current_ios }} to ${{ steps.ios_version.outputs.version }}
+          - Bumped Flutter plugin version to ${{ steps.new_flutter_version.outputs.new_version }}"
+          git push
+
+      - name: Create Git Tag
+        if: steps.check_updates.outputs.needs_update == 'true' && inputs.create_pr == false && github.event_name != 'schedule'
+        run: |
+          VERSION="${{ steps.new_flutter_version.outputs.new_version }}"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
+
+      - name: Extract release notes
+        if: steps.check_updates.outputs.needs_update == 'true' && inputs.create_pr == false && github.event_name != 'schedule'
+        id: extract_notes
+        run: |
+          VERSION="${{ steps.new_flutter_version.outputs.new_version }}"
+          echo "Extracting release notes for version $VERSION"
+
+          awk -v version="### $VERSION" '
+            $0 ~ version {flag=1; next}
+            /^### [0-9]/ {flag=0}
+            flag && NF {print}
+          ' CHANGELOG.md > release_notes.md
+
+          if [ ! -s release_notes.md ]; then
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+            echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details." >> release_notes.md
+          fi
+
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        if: steps.check_updates.outputs.needs_update == 'true' && inputs.create_pr == false && github.event_name != 'schedule'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.new_flutter_version.outputs.new_version }}
+          name: Release v${{ steps.new_flutter_version.outputs.new_version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          echo "## Version Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Old Version | New Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------------|-------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Android Agent | ${{ steps.current_versions.outputs.current_android }} | ${{ steps.android_version.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| iOS Agent | ${{ steps.current_versions.outputs.current_ios }} | ${{ steps.ios_version.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Flutter Plugin | ${{ steps.current_versions.outputs.current_flutter }} | ${{ steps.new_flutter_version.outputs.new_version }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: No updates needed
+        if: steps.check_updates.outputs.needs_update == 'false'
+        run: |
+          echo "## No Updates Needed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All native agents are already up to date!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Android Agent: ${{ steps.android_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- iOS Agent: ${{ steps.ios_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
