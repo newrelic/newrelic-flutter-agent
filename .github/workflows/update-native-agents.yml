@@ -66,8 +66,10 @@ jobs:
             echo "Using provided iOS version: $VERSION"
           else
             # Fetch latest version from CocoaPods
-            # The API returns versions array, we need to get the last one
+
+            # The API returns versions array, we need to get the last version before "owners" section
             VERSION=$(curl -s 'https://trunk.cocoapods.org/api/v1/pods/NewRelicAgent' | \
+              sed -n '/"versions":/,/"owners":/p' | \
               grep -o '"name":"[^"]*"' | \
               sed 's/"name":"\([^"]*\)"/\1/' | \
               tail -1)
@@ -242,47 +244,6 @@ jobs:
           - Updated iOS agent from ${{ steps.current_versions.outputs.current_ios }} to ${{ steps.ios_version.outputs.version }}
           - Bumped Flutter plugin version to ${{ steps.new_flutter_version.outputs.new_version }}"
           git push
-
-      - name: Create Git Tag
-        if: steps.check_updates.outputs.needs_update == 'true' && inputs.create_pr == false && github.event_name != 'schedule'
-        run: |
-          VERSION="${{ steps.new_flutter_version.outputs.new_version }}"
-          git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push origin "v$VERSION"
-
-      - name: Extract release notes
-        if: steps.check_updates.outputs.needs_update == 'true' && inputs.create_pr == false && github.event_name != 'schedule'
-        id: extract_notes
-        run: |
-          VERSION="${{ steps.new_flutter_version.outputs.new_version }}"
-          echo "Extracting release notes for version $VERSION"
-
-          awk -v version="### $VERSION" '
-            $0 ~ version {flag=1; next}
-            /^### [0-9]/ {flag=0}
-            flag && NF {print}
-          ' CHANGELOG.md > release_notes.md
-
-          if [ ! -s release_notes.md ]; then
-            echo "## What's Changed" > release_notes.md
-            echo "" >> release_notes.md
-            echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details." >> release_notes.md
-          fi
-
-          cat release_notes.md
-
-      - name: Create GitHub Release
-        if: steps.check_updates.outputs.needs_update == 'true' && inputs.create_pr == false && github.event_name != 'schedule'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.new_flutter_version.outputs.new_version }}
-          name: Release v${{ steps.new_flutter_version.outputs.new_version }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: false
-          make_latest: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Summary
         if: steps.check_updates.outputs.needs_update == 'true'
