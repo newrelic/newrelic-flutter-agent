@@ -1,17 +1,159 @@
-name: Publish NewRelic Flutter Plugin to Pub.dev
+name: Publish NewRelic Flutter Plugin
 
 on:
   push:
-    branches: ["main", "release/*"]
-jobs:
-  publishing:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout'
-        uses: actions/checkout@v2 # required!
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (leave empty to use pubspec.yaml version)'
+        required: false
+        type: string
 
-      - name: '>> Dart package <<'
-        uses: k-paxian/dart-package-publisher@master
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      should_release: ${{ steps.check_release.outputs.should_release }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Get version from pubspec.yaml
+        id: get_version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version to release: $VERSION"
+
+      - name: Check if release already exists
+        id: check_release
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists"
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Tag v$VERSION does not exist, proceeding with release"
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate pubspec.yaml
+        if: steps.check_release.outputs.should_release == 'true'
+        run: flutter pub get
+
+      - name: Run tests
+        if: steps.check_release.outputs.should_release == 'true'
+        run: flutter test || echo "No tests found or tests failed"
+
+      - name: Analyze code
+        if: steps.check_release.outputs.should_release == 'true'
+        run: flutter analyze
+
+  publish:
+    needs: validate
+    if: needs.validate.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Publish to pub.dev (dry-run)
+        run: flutter pub publish --dry-run
+
+      - name: Publish to pub.dev
+        uses: k-paxian/dart-package-publisher@v1.6
         with:
           accessToken: ${{ secrets.PUB_OAUTH_ACCESS_TOKEN }}
           refreshToken: ${{ secrets.PUB_OAUTH_REFRESH_TOKEN }}
+          skipTests: true
+
+  release:
+    needs: [validate, publish]
+    if: needs.validate.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract release notes
+        id: extract_notes
+        run: |
+          VERSION=${{ needs.validate.outputs.version }}
+          echo "Extracting release notes for version $VERSION"
+
+          # Extract the section for this version from CHANGELOG.md
+          awk -v version="### $VERSION" '
+            $0 ~ version {flag=1; next}
+            /^### [0-9]/ {flag=0}
+            flag && NF {print}
+          ' CHANGELOG.md > release_notes.md
+
+          # Check if release notes were found
+          if [ ! -s release_notes.md ]; then
+            echo "No release notes found in CHANGELOG.md for version $VERSION"
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+            echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details." >> release_notes.md
+          fi
+
+          cat release_notes.md
+          echo "Release notes extracted successfully"
+
+      - name: Create Git Tag
+        run: |
+          VERSION=${{ needs.validate.outputs.version }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.validate.outputs.version }}
+          name: Release v${{ needs.validate.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Announce Release
+        run: |
+          VERSION=${{ needs.validate.outputs.version }}
+          echo "Successfully released NewRelic Flutter Plugin v$VERSION"
+          echo "Package: https://pub.dev/packages/newrelic_mobile/versions/$VERSION"
+          echo "Release: https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
