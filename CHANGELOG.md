@@ -1,3 +1,10 @@
+### 1.1.17
+
+## Enhancements
+
+- Updated the native Android agent to version 7.6.11.
+- Updated the native iOS agent to version Mike Bruin.
+
 ### 1.1.16
 
 ## Bug Fixes
