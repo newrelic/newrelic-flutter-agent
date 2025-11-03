@@ -43,31 +43,38 @@ void main() {
   }
 
   Config config = Config(
-      accessToken: appToken,
-      analyticsEventEnabled: true,
-      networkErrorRequestEnabled: true,
-      networkRequestEnabled: true,
-      crashReportingEnabled: true,
-      interactionTracingEnabled: true,
-      httpResponseBodyCaptureEnabled: true,
-      loggingEnabled: true,
-      webViewInstrumentation: true,
-      printStatementAsEventsEnabled: true,
-      httpInstrumentationEnabled: true,
-      distributedTracingEnabled: true,
-      logLevel: LogLevel.VERBOSE,
-      collectorAddress: "",
-      crashCollectorAddress: "",
-      newEventSystemEnabled: true,
-      fedRampEnabled: false);
+    accessToken: appToken,
+    analyticsEventEnabled: true,
+    networkErrorRequestEnabled: true,
+    networkRequestEnabled: true,
+    crashReportingEnabled: true,
+    interactionTracingEnabled: true,
+    httpResponseBodyCaptureEnabled: true,
+    loggingEnabled: true,
+    webViewInstrumentation: true,
+    printStatementAsEventsEnabled: true,
+    httpInstrumentationEnabled: true,
+    distributedTracingEnabled: true,
+    logLevel: LogLevel.VERBOSE,
+    collectorAddress: "",
+    crashCollectorAddress: "",
+    newEventSystemEnabled: true,
+    fedRampEnabled: false,
+  );
 
   NewrelicMobile.instance.start(config, () {
+    _testFetch();
     runApp(const MyApp());
   });
   NewrelicMobile.instance.setMaxEventPoolSize(3000);
   NewrelicMobile.instance.setMaxEventBufferTime(200);
   NewrelicMobile.instance.setMaxOfflineStorageSize(200);
   NewrelicMobile.instance.addHTTPHeadersTrackingFor(["Car", "Music"]);
+}
+
+Future<void> _testFetch() async {
+  final response = await http.get(Uri.parse('https://api.github.com'));
+  print(response.body);
 }
 
 /// The main app.
@@ -111,6 +118,10 @@ class Page1Screen extends StatelessWidget {
                 ElevatedButton(
                     onPressed: () async {
                       debugPrint(null);
+                      NewrelicMobile.instance.recordMetric(
+                        "Button Clicks",
+                        "Test Champ",
+                      );
                       NewrelicMobile.instance
                           .recordBreadcrumb("Button Got Pressed on Screen 3");
                       NewrelicMobile.instance.logInfo("testing logs");
@@ -124,7 +135,7 @@ class Page1Screen extends StatelessWidget {
                       NewrelicMobile.instance.logInfo("testing logs");
                       NewrelicMobile.instance.logInfo("testing logs");
 
-                      NewrelicMobile.instance.crashNow();
+                      // NewrelicMobile.instance.crashNow();
 
                       var map = {};
                       map["test12"] = "value";

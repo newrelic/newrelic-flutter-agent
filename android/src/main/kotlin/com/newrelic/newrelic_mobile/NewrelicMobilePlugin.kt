@@ -34,7 +34,9 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
     /// when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
-
+    companion object {
+        private const val AGENT_VERSION = "1.1.12"
+    }
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "newrelic_mobile")
         channel.setMethodCallHandler(this)
@@ -125,7 +127,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                         applicationToken
                     ).withLoggingEnabled(loggingEnabled!!)
                         .withLogLevel(AgentLog.VERBOSE)
-                        .withApplicationFramework(ApplicationFramework.Flutter, "1.1.6")
+                        .withApplicationFramework(ApplicationFramework.Flutter, AGENT_VERSION)
                         .start(context)
                 } else {
 
@@ -138,7 +140,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                             "crashCollectorAddress"
                         ) as String);
                     NewRelic.withApplicationToken(applicationToken)
-                        .withApplicationFramework(ApplicationFramework.Flutter, "1.1.5")
+                        .withApplicationFramework(ApplicationFramework.Flutter, AGENT_VERSION)
                         .withLoggingEnabled(loggingEnabled!!)
                         .withLogLevel(LogLevel.valueOf(logLevel!!).ordinal)
                         .usingCollectorAddress(collectorAddress)
@@ -146,8 +148,10 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                         .start(context)
 
                 }
+
+
                 NewRelic.setAttribute("DartVersion", dartVersion)
-                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/1.1.5")
+                StatsEngine.get().inc("Supportability/Mobile/Android/Flutter/Agent/$AGENT_VERSION")
                 result.success("Agent Started")
             }
 
@@ -392,6 +396,8 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                         1, it, 0.0,
                         countUnit?.let { it2 -> MetricUnit.valueOf(it2) },
                         valueUnit?.let { it3 -> MetricUnit.valueOf(it3) })
+                } ?: run {
+                    NewRelic.recordMetric(name, category)
                 }
                 result.success("Recorded Metric")
 
