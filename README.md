@@ -219,7 +219,7 @@ In android/settings.gradle:
       id "dev.flutter.flutter-plugin-loader" version "1.0.0"
       id "com.android.application" version "7.4.2" apply false
       id "org.jetbrains.kotlin.android" version "1.7.10" apply false
-      id "com.newrelic.agent.android" version "7.5.1" apply false // <-- include this
+      id "com.newrelic.agent.android" version "7.6.7" apply false // <-- include this
    }
    ```
 
@@ -243,7 +243,7 @@ Or, if you are using the traditional way to apply the plugin:
      }
      dependencies {
        ...
-       classpath "com.newrelic.agent.android:agent-gradle-plugin:7.5.1"
+       classpath "com.newrelic.agent.android:agent-gradle-plugin:7.6.6"
      }
    }
    ```
@@ -254,14 +254,6 @@ Apply the NewRelic plugin to the top of the android/app/build.gradle file:
    apply plugin: 'newrelic' // <-- include this
    ```
 
-
-2. Make sure your app requests INTERNET and ACCESS_NETWORK_STATE permissions by adding these lines
-   to your `AndroidManifest.xml`
-
-  ``` xml
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  ```
 
 ## Usage
 
