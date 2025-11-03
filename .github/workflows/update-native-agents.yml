@@ -65,14 +65,9 @@ jobs:
             VERSION="${{ inputs.ios_version }}"
             echo "Using provided iOS version: $VERSION"
           else
-            # Fetch latest version from CocoaPods
-            # Extract only the versions array, stopping before "owners"
+            # Fetch latest version from CocoaPods using jq to properly parse JSON
             VERSION=$(curl -s 'https://trunk.cocoapods.org/api/v1/pods/NewRelicAgent' | \
-              awk '/"versions":/,/"owners":/' | \
-              grep -v '"owners":' | \
-              grep -o '"name":"[^"]*"' | \
-              sed 's/"name":"\([^"]*\)"/\1/' | \
-              tail -1)
+              jq -r '.versions[-1].name')
             echo "Fetched latest iOS version: $VERSION"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
