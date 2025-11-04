@@ -191,6 +191,7 @@ jobs:
             - Updated iOS agent from ${{ steps.current_versions.outputs.current_ios }} to ${{ steps.ios_version.outputs.version }}
             - Bumped Flutter plugin version to ${{ steps.new_flutter_version.outputs.new_version }}
           branch: update-native-agents-${{ steps.new_flutter_version.outputs.new_version }}
+          base: main
           delete-branch: true
           title: 'chore: Update native agents to Android ${{ steps.android_version.outputs.version }} and iOS ${{ steps.ios_version.outputs.version }}'
           body: |
