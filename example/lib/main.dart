@@ -17,7 +17,6 @@ import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
-// import 'package:newrelic_mobile_example/app_config.dart';
 import 'package:http/http.dart' as http;
 
 const String readCounters = """
