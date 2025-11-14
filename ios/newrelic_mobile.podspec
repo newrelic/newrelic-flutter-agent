@@ -9,7 +9,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'newrelic_mobile'
-  s.version          = '1.1.17'
+  s.version          = '1.1.18'
   s.summary          = 'Flutter plugin for NewRelic Mobile.'
   s.description      = <<-DESC
 Flutter plugin for NewRelic Mobile.
