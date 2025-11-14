@@ -16,6 +16,7 @@ import 'package:newrelic_mobile/newrelic_dt_trace.dart';
 import 'package:newrelic_mobile/newrelic_http_overrides.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'package:stack_trace/stack_trace.dart';
+
 import 'metricunit.dart';
 
 class NewrelicMobile {
@@ -41,7 +42,7 @@ class NewrelicMobile {
       await NewrelicMobile.instance.startAgent(config);
       runApp();
       await NewrelicMobile.instance
-          .setAttribute("Flutter Agent Version", "1.1.15");
+          .setAttribute("Flutter Agent Version", "1.1.19");
     }, (Object error, StackTrace stackTrace) {
       NewrelicMobile.instance.recordError(error, stackTrace);
       FlutterError.presentError(
