@@ -23,15 +23,15 @@ class NewRelicHttpOverrides extends HttpOverrides {
   HttpClient createHttpClient(SecurityContext? context) {
     return NewRelicHttpClient(
         client: createHttpClientFn != null
-            ? createHttpClientFn!(context!)
+            ? createHttpClientFn!(context)
             : current?.createHttpClient(context) ??
                 super.createHttpClient(context));
   }
 
   @override
-  String findProxyFromEnvironment(Uri? url, Map<String, String>? environment) {
+  String findProxyFromEnvironment(Uri url, Map<String, String>? environment) {
     return findProxyFromEnvironmentFn != null
-        ? findProxyFromEnvironmentFn!(url, environment!)
-        : super.findProxyFromEnvironment(url!, environment);
+        ? findProxyFromEnvironmentFn!(url, environment)
+        : super.findProxyFromEnvironment(url, environment);
   }
 }
