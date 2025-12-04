@@ -5,8 +5,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'dart:isolate';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +16,13 @@ import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
+import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'package:http/http.dart' as http;
+import 'package:newrelic_mobile_example/app_config.dart';
+
+// Conditional imports for platform-specific functionality
+import 'dart:io' if (dart.library.js_interop) 'io_stub.dart';
+import 'dart:isolate' if (dart.library.js_interop) 'isolate_stub.dart';
 
 const String readCounters = """
    query (\$id: Int) { # Define which variables will be used in the query (id)
@@ -35,10 +40,10 @@ const String readCounters = """
 void main() {
   var appToken = "";
 
-  if (Platform.isAndroid) {
+  if (PlatformManager.instance.isAndroid()) {
     appToken = "";
-  } else if (Platform.isIOS) {
-    appToken = "";
+  } else if (PlatformManager.instance.isIOS()) {
+    appToken = AppConfig.iOSToken;
   }
 
   Config config = Config(
@@ -232,7 +237,7 @@ class Page1Screen extends StatelessWidget {
                       // final client = HttpClient();
                       // var uri = Uri.parse("https://reactnative.dev/movies.json");
                       var response = await http.get(
-                          Uri.parse("https://reactnative.dev/movies.json"));
+                          Uri.parse("https://www.talabat.com/restaurantapi/v1/vendors/725706/fees"));
                       // request.followRedirects = false;
 
                       // var url = Uri.parse(
