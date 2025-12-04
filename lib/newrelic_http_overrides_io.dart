@@ -31,7 +31,7 @@ class NewRelicHttpOverrides extends HttpOverrides {
   @override
   String findProxyFromEnvironment(Uri url, Map<String, String>? environment) {
     return findProxyFromEnvironmentFn != null
-        ? findProxyFromEnvironmentFn!(url, environment)
+        ? findProxyFromEnvironmentFn!(url, environment ?? {})
         : super.findProxyFromEnvironment(url, environment);
   }
 }
