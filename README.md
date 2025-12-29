@@ -25,6 +25,7 @@ using native components.
 - Android API 24+
 - iOS 10
 - Depends on New Relic iOS/XCFramework and Android agents
+- **Flutter Web**: Compiles without errors (monitoring is no-op, use New Relic Browser Agent for web monitoring)
 
 ## Requirements
 
@@ -32,6 +33,17 @@ using native components.
 - Dart ">=2.16.2 <4.0.0"
 - [IOS native requirements](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-ios/get-started/new-relic-ios-compatibility-requirements)
 - [Android native requirements](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/get-started/new-relic-android-compatibility-requirements)
+
+## Web Platform Support
+
+As of version 1.1.20, this package supports compilation for Flutter Web (including WASM). However, **monitoring functionality is only available on native mobile platforms (iOS/Android)**.
+
+- On **mobile platforms**: Full New Relic Mobile SDK functionality
+- On **web platforms**: All methods are no-ops (compile without errors, but don't collect data)
+
+For web application monitoring, use the [New Relic Browser Agent](https://docs.newrelic.com/docs/browser/browser-monitoring/getting-started/introduction-browser-monitoring/) instead.
+
+See [WEB_SUPPORT.md](WEB_SUPPORT.md) for more details.
 
 ## Installation
 
