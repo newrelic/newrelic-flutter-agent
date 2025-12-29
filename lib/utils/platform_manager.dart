@@ -3,18 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import 'dart:io';
-
-class PlatformManager {
-  static PlatformManager _platform = PlatformManager();
-
-  static PlatformManager get instance => _platform;
-
-  static void setPlatformInstance(PlatformManager platform) {
-    _platform = platform;
-  }
-
-  bool isAndroid() => Platform.isAndroid;
-
-  bool isIOS() => Platform.isIOS;
-}
+// Conditional export: use native implementation for mobile platforms,
+// and web stub for web/WASM platforms
+export 'platform_manager_io.dart'
+    if (dart.library.js_interop) 'platform_manager_web.dart';
