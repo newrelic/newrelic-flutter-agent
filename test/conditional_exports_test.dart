@@ -53,7 +53,8 @@ void main() {
 
   test('NewrelicMobile configuration methods work', () {
     final config = Config(accessToken: 'test');
-    expect(() => NewrelicMobile.instance.setAgentConfiguration(config), returnsNormally);
+    expect(() => NewrelicMobile.instance.setAgentConfiguration(config),
+        returnsNormally);
 
     final retrievedConfig = NewrelicMobile.instance.getAgentConfiguration();
     expect(retrievedConfig, isNotNull);

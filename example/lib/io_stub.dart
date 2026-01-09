@@ -13,7 +13,8 @@ class HttpClient {
   HttpClient();
 
   Future<HttpClientRequest> postUrl(Uri url) {
-    throw UnsupportedError('HttpClient is not supported on web. Use package:http or dio instead.');
+    throw UnsupportedError(
+        'HttpClient is not supported on web. Use package:http or dio instead.');
   }
 }
 

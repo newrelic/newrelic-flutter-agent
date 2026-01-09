@@ -35,7 +35,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
     companion object {
-        private const val AGENT_VERSION = "1.1.21"
+        private const val AGENT_VERSION = "1.1.20"
     }
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "newrelic_mobile")

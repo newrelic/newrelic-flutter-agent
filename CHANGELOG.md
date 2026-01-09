@@ -1,9 +1,3 @@
-### 1.1.21
-
-## Enhancements
-
-- Updated the native Android agent to version 7.6.14.
-
 ### 1.1.20
 
 ## Enhancements
@@ -13,6 +7,7 @@
   - Web platforms use no-op stubs (monitoring only works on iOS/Android)
   - No breaking changes for existing mobile users
   - See `WEB_SUPPORT.md` for details
+  - Updated the native Android agent to version 7.6.14.
 
 ### 1.1.19
 

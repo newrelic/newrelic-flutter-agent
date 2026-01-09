@@ -31,9 +31,11 @@ class ReceivePort {
     throw UnsupportedError('Isolates are not supported on web');
   }
 
-  SendPort get sendPort => throw UnsupportedError('Isolates are not supported on web');
+  SendPort get sendPort =>
+      throw UnsupportedError('Isolates are not supported on web');
 
-  dynamic get first => throw UnsupportedError('Isolates are not supported on web');
+  dynamic get first =>
+      throw UnsupportedError('Isolates are not supported on web');
 }
 
 class SendPort {}
