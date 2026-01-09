@@ -29,61 +29,83 @@ void main() {
       final config = Config(accessToken: 'test-token');
 
       // All these methods should complete without errors
-      expect(() => NewrelicMobile.instance.setAgentConfiguration(config), returnsNormally);
-      expect(() => NewrelicMobile.instance.setUserId('user123'), returnsNormally);
-      expect(() => NewrelicMobile.instance.setAttribute('key', 'value'), returnsNormally);
-      expect(() => NewrelicMobile.instance.removeAttribute('key'), returnsNormally);
-      expect(() => NewrelicMobile.instance.recordBreadcrumb('test breadcrumb'), returnsNormally);
+      expect(() => NewrelicMobile.instance.setAgentConfiguration(config),
+          returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.setUserId('user123'), returnsNormally);
+      expect(() => NewrelicMobile.instance.setAttribute('key', 'value'),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.removeAttribute('key'),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.recordBreadcrumb('test breadcrumb'),
+          returnsNormally);
     });
 
     test('NewrelicMobile logging methods work without errors', () {
       // Test all logging methods
-      expect(() => NewrelicMobile.instance.logInfo('info message'), returnsNormally);
-      expect(() => NewrelicMobile.instance.logError('error message'), returnsNormally);
-      expect(() => NewrelicMobile.instance.logWarning('warning message'), returnsNormally);
-      expect(() => NewrelicMobile.instance.logDebug('debug message'), returnsNormally);
-      expect(() => NewrelicMobile.instance.logVerbose('verbose message'), returnsNormally);
-      expect(() => NewrelicMobile.instance.log(LogLevel.INFO, 'log message'), returnsNormally);
+      expect(() => NewrelicMobile.instance.logInfo('info message'),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.logError('error message'),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.logWarning('warning message'),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.logDebug('debug message'),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.logVerbose('verbose message'),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.log(LogLevel.INFO, 'log message'),
+          returnsNormally);
     });
 
     test('NewrelicMobile metric methods work without errors', () {
-      expect(() => NewrelicMobile.instance.recordMetric('metric', 'category'), returnsNormally);
-      expect(() => NewrelicMobile.instance.recordMetric(
-        'metric',
-        'category',
-        value: 100,
-        valueUnit: MetricUnit.BYTES,
-        countUnit: MetricUnit.PERCENT,
-      ), returnsNormally);
-      expect(() => NewrelicMobile.instance.incrementAttribute('counter'), returnsNormally);
+      expect(() => NewrelicMobile.instance.recordMetric('metric', 'category'),
+          returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.recordMetric(
+                'metric',
+                'category',
+                value: 100,
+                valueUnit: MetricUnit.BYTES,
+                countUnit: MetricUnit.PERCENT,
+              ),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.incrementAttribute('counter'),
+          returnsNormally);
     });
 
     test('NewrelicMobile network methods work without errors', () {
-      expect(() => NewrelicMobile.instance.noticeNetworkFailure(
-        'https://example.com',
-        'GET',
-        1000,
-        2000,
-        NetworkFailure.unknown,
-      ), returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.noticeNetworkFailure(
+                'https://example.com',
+                'GET',
+                1000,
+                2000,
+                NetworkFailure.unknown,
+              ),
+          returnsNormally);
     });
 
-    test('NewrelicMobile interaction tracking methods work without errors', () async {
-      final interactionId = await NewrelicMobile.instance.startInteraction('test interaction');
+    test('NewrelicMobile interaction tracking methods work without errors',
+        () async {
+      final interactionId =
+          await NewrelicMobile.instance.startInteraction('test interaction');
       expect(interactionId, isNotNull);
 
-      expect(() => NewrelicMobile.instance.endInteraction(interactionId), returnsNormally);
+      expect(() => NewrelicMobile.instance.endInteraction(interactionId),
+          returnsNormally);
     });
 
     test('NewrelicMobile custom event recording works', () {
-      expect(() => NewrelicMobile.instance.recordCustomEvent(
-        'TestEvent',
-        eventName: 'User Action',
-        eventAttributes: {
-          'action': 'click',
-          'count': 1,
-        },
-      ), returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.recordCustomEvent(
+                'TestEvent',
+                eventName: 'User Action',
+                eventAttributes: {
+                  'action': 'click',
+                  'count': 1,
+                },
+              ),
+          returnsNormally);
     });
   });
 
@@ -109,7 +131,8 @@ void main() {
     });
 
     test('noticeDistributedTrace completes and returns map', () async {
-      final traceData = await NewrelicMobile.instance.noticeDistributedTrace({});
+      final traceData =
+          await NewrelicMobile.instance.noticeDistributedTrace({});
       expect(traceData, isA<Map>());
     });
 
@@ -138,7 +161,8 @@ void main() {
         loggingEnabled: true,
       );
 
-      expect(() => NewrelicMobile.instance.setAgentConfiguration(config), returnsNormally);
+      expect(() => NewrelicMobile.instance.setAgentConfiguration(config),
+          returnsNormally);
     });
 
     test('getAgentConfiguration returns valid config', () {
@@ -154,26 +178,34 @@ void main() {
     });
 
     test('setMaxEventPoolSize accepts valid values', () {
-      expect(() => NewrelicMobile.instance.setMaxEventPoolSize(1000), returnsNormally);
-      expect(() => NewrelicMobile.instance.setMaxEventPoolSize(5000), returnsNormally);
+      expect(() => NewrelicMobile.instance.setMaxEventPoolSize(1000),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.setMaxEventPoolSize(5000),
+          returnsNormally);
     });
 
     test('setMaxEventBufferTime accepts valid values', () {
-      expect(() => NewrelicMobile.instance.setMaxEventBufferTime(60), returnsNormally);
-      expect(() => NewrelicMobile.instance.setMaxEventBufferTime(300), returnsNormally);
+      expect(() => NewrelicMobile.instance.setMaxEventBufferTime(60),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.setMaxEventBufferTime(300),
+          returnsNormally);
     });
 
     test('setMaxOfflineStorageSize accepts valid values', () {
-      expect(() => NewrelicMobile.instance.setMaxOfflineStorageSize(100), returnsNormally);
-      expect(() => NewrelicMobile.instance.setMaxOfflineStorageSize(500), returnsNormally);
+      expect(() => NewrelicMobile.instance.setMaxOfflineStorageSize(100),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.setMaxOfflineStorageSize(500),
+          returnsNormally);
     });
 
     test('addHTTPHeadersTrackingFor accepts header list', () {
-      expect(() => NewrelicMobile.instance.addHTTPHeadersTrackingFor([
-        'Content-Type',
-        'Authorization',
-        'X-Custom-Header',
-      ]), returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.addHTTPHeadersTrackingFor([
+                'Content-Type',
+                'Authorization',
+                'X-Custom-Header',
+              ]),
+          returnsNormally);
     });
 
     test('getHTTPHeadersTrackingFor returns list', () async {
@@ -184,57 +216,76 @@ void main() {
 
   group('Error handling', () {
     test('recordError handles Exception', () {
-      expect(() => NewrelicMobile.instance.recordError(
-        Exception('Test exception'),
-        StackTrace.current,
-      ), returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.recordError(
+                Exception('Test exception'),
+                StackTrace.current,
+              ),
+          returnsNormally);
     });
 
     test('recordError handles StateError with attributes', () {
-      expect(() => NewrelicMobile.instance.recordError(
-        StateError('State error'),
-        StackTrace.current,
-        attributes: {
-          'userId': 'user123',
-          'screenName': 'Home',
-          'errorCode': 500,
-        },
-      ), returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.recordError(
+                StateError('State error'),
+                StackTrace.current,
+                attributes: {
+                  'userId': 'user123',
+                  'screenName': 'Home',
+                  'errorCode': 500,
+                },
+              ),
+          returnsNormally);
     });
 
     test('recordError handles string error as fatal', () {
-      expect(() => NewrelicMobile.instance.recordError(
-        'String error message',
-        StackTrace.current,
-        isFatal: true,
-      ), returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.recordError(
+                'String error message',
+                StackTrace.current,
+                isFatal: true,
+              ),
+          returnsNormally);
     });
 
     test('logAll handles error with attributes', () {
-      expect(() => NewrelicMobile.instance.logAll(
-        Exception('Combined log error'),
-        {
-          'attribute1': 'value1',
-          'attribute2': 42,
-          'attribute3': true,
-        },
-      ), returnsNormally);
+      expect(
+          () => NewrelicMobile.instance.logAll(
+                Exception('Combined log error'),
+                {
+                  'attribute1': 'value1',
+                  'attribute2': 42,
+                  'attribute3': true,
+                },
+              ),
+          returnsNormally);
     });
   });
 
   group('Attribute management', () {
     test('setAttribute and removeAttribute work', () {
-      expect(() => NewrelicMobile.instance.setAttribute('stringAttr', 'value'), returnsNormally);
-      expect(() => NewrelicMobile.instance.setAttribute('numberAttr', 123), returnsNormally);
-      expect(() => NewrelicMobile.instance.setAttribute('boolAttr', true), returnsNormally);
+      expect(() => NewrelicMobile.instance.setAttribute('stringAttr', 'value'),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.setAttribute('numberAttr', 123),
+          returnsNormally);
+      expect(() => NewrelicMobile.instance.setAttribute('boolAttr', true),
+          returnsNormally);
 
-      expect(() => NewrelicMobile.instance.removeAttribute('stringAttr'), returnsNormally);
+      expect(() => NewrelicMobile.instance.removeAttribute('stringAttr'),
+          returnsNormally);
     });
 
     test('incrementAttribute works with different values', () {
-      expect(() => NewrelicMobile.instance.incrementAttribute('counter'), returnsNormally);
-      expect(() => NewrelicMobile.instance.incrementAttribute('counter', value: 5.0), returnsNormally);
-      expect(() => NewrelicMobile.instance.incrementAttribute('counter', value: -2.5), returnsNormally);
+      expect(() => NewrelicMobile.instance.incrementAttribute('counter'),
+          returnsNormally);
+      expect(
+          () =>
+              NewrelicMobile.instance.incrementAttribute('counter', value: 5.0),
+          returnsNormally);
+      expect(
+          () => NewrelicMobile.instance
+              .incrementAttribute('counter', value: -2.5),
+          returnsNormally);
     });
   });
 

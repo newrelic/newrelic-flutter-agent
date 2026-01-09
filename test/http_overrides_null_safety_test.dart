@@ -44,7 +44,8 @@ void main() {
     expect(result, equals('PROXY proxy.example.com'));
   });
 
-  test('findProxyFromEnvironment falls back to super when no custom function', () {
+  test('findProxyFromEnvironment falls back to super when no custom function',
+      () {
     final overrides = NewRelicHttpOverrides();
 
     // Should not throw with null environment
