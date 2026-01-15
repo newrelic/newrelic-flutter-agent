@@ -18,7 +18,6 @@ import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'package:http/http.dart' as http;
-import 'package:newrelic_mobile_example/app_config.dart';
 
 // Conditional imports for platform-specific functionality
 import 'dart:io' if (dart.library.js_interop) 'io_stub.dart';
@@ -43,7 +42,7 @@ void main() {
   if (PlatformManager.instance.isAndroid()) {
     appToken = "";
   } else if (PlatformManager.instance.isIOS()) {
-    appToken = AppConfig.iOSToken;
+    appToken = "";
   }
 
   Config config = Config(
