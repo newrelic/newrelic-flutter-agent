@@ -158,131 +158,72 @@ jobs:
           echo "Package: https://pub.dev/packages/newrelic_mobile/versions/$VERSION"
           echo "Release: https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
 
-  docs-pr:
+  update-documentation:
     needs: [validate, release]
     if: needs.validate.outputs.should_release == 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    env:
+      AGENT_NAME: "flutter"
+      AGENT_TITLE: "Flutter agent"
+      DOCS_PATH: "src/content/docs/release-notes/mobile-release-notes/flutter-release-notes"
+      REPO_URL: "https://github.com/newrelic/newrelic-flutter-agent"
+      BOT_EMAIL: ${{ secrets.BOT_EMAIL }}
+      PASSED_VERSION: ${{ needs.validate.outputs.version }}
+
     steps:
-      - name: Checkout agent repository
+      - name: Checkout Agent Repo
         uses: actions/checkout@v4
         with:
           path: agent-repo
 
-      - name: Checkout docs-website fork
+      - name: Checkout Docs-Website
         uses: actions/checkout@v4
         with:
-          repository: ndesai-newrelic/docs-website
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: newrelic/docs-website
+          ref: develop
+          token: ${{ secrets.BOT_PAT }}
           path: docs-website
+          fetch-depth: 1
 
-      - name: Sync fork with upstream
-        working-directory: docs-website
-        run: |
-          git remote add upstream https://github.com/newrelic/docs-website.git
-          git fetch upstream
-          git checkout main
-          git merge upstream/main --no-edit || echo "Already up to date"
-          git push origin main || echo "Nothing to push"
-
-      - name: Create release notes MDX file
-        run: |
-          VERSION=${{ needs.validate.outputs.version }}
-          VERSION_NUMBER=$(echo $VERSION | tr -d '.')
-          FILE_NAME="flutter-agent-${VERSION_NUMBER}.mdx"
-
-          # Extract release notes for this version from CHANGELOG.md
-          awk -v version="### $VERSION" '
-            $0 ~ version {flag=1; next}
-            /^### [0-9]/ {flag=0}
-            flag && NF {print}
-          ' agent-repo/CHANGELOG.md > release_content.md
-
-          # Create MDX file with frontmatter
-          cat > "docs-website/src/content/docs/release-notes/mobile-release-notes/flutter-release-notes/${FILE_NAME}" << 'EOF'
-          ---
-          subject: Flutter agent
-          releaseDate: '$(date +%Y-%m-%d)'
-          version: $VERSION
-          ---
-
-          ## New in this release
-
-          $(cat release_content.md)
-
-          ## How to upgrade
-
-          To upgrade your Flutter agent to the latest version:
-
-          1. Update your \`pubspec.yaml\`:
-             \`\`\`yaml
-             dependencies:
-               newrelic_mobile: ^$VERSION
-             \`\`\`
-
-          2. Run:
-             \`\`\`bash
-             flutter pub get
-             \`\`\`
-
-          For more information, see the [Flutter agent installation documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-flutter/monitor-your-flutter-application/).
-          EOF
-
-          echo "Created release notes file: ${FILE_NAME}"
-
-      - name: Create Pull Request to docs-website
-        working-directory: docs-website
-        run: |
-          VERSION=${{ needs.validate.outputs.version }}
-          VERSION_NUMBER=$(echo $VERSION | tr -d '.')
-          FILE_NAME="flutter-agent-${VERSION_NUMBER}.mdx"
-          BRANCH_NAME="flutter-release-${VERSION}"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Create and checkout new branch
-          git checkout -b "$BRANCH_NAME"
-
-          # Add the new file
-          git add "src/content/docs/release-notes/mobile-release-notes/flutter-release-notes/${FILE_NAME}"
-
-          # Commit changes
-          git commit -m "Add Flutter agent ${VERSION} release notes
-
-          This PR adds release notes for the Flutter agent version ${VERSION}.
-
-          Release page: https://github.com/newrelic/newrelic-flutter-agent/releases/tag/v${VERSION}
-          Package: https://pub.dev/packages/newrelic_mobile/versions/${VERSION}"
-
-          # Push to fork
-          git push origin "$BRANCH_NAME"
-
-      - name: Create PR using GitHub CLI
-        working-directory: docs-website
+      - name: Generate Release Document
+        working-directory: agent-repo
         env:
-          GH_TOKEN: ${{ secrets.DOCS_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
         run: |
-          VERSION=${{ needs.validate.outputs.version }}
-          BRANCH_NAME="flutter-release-${VERSION}"
+          chmod +x ./.github/scripts/generate-docs.sh
+          ./.github/scripts/generate-docs.sh
+          
+          if [ -f "release_info.env" ]; then
+            cat release_info.env >> $GITHUB_ENV
+          else
+            echo "::error::Script failed to create release_info.env"
+            exit 1
+          fi
+
+      - name: Create branch, commit, and PR
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+        run: |
+          cd docs-website
+          VERSION="${{ env.FINAL_VERSION }}"
+          VERSION_STRIPPED=$(echo "${VERSION}" | tr -d '.')
+          FINAL_FILENAME="${{ env.AGENT_NAME }}-agent-${VERSION_STRIPPED}.mdx"
+          BRANCH_NAME="${{ env.AGENT_NAME }}_release_notes_$(echo ${VERSION} | tr '.' '-')"
+          
+          git config user.name "newrelic-mobile-agent-bot"
+          git config user.email "${{ env.BOT_EMAIL }}"
+          
+          git checkout -b "$BRANCH_NAME"
+          cp ../agent-repo/release-notes.mdx "${{ env.DOCS_PATH }}/$FINAL_FILENAME"
+          
+          git add .
+          git commit -m "chore(${{ env.AGENT_NAME }} agent): add release notes v${VERSION}"
+          git push origin "$BRANCH_NAME"
 
           gh pr create \
             --repo newrelic/docs-website \
-            --base main \
-            --head ndesai-newrelic:${BRANCH_NAME} \
-            --title "Flutter agent ${VERSION} release notes" \
-            --body "## Summary
-
-          This PR adds release notes for the Flutter agent version ${VERSION}.
-
-          ## Changes
-          - Added release notes MDX file for Flutter agent ${VERSION}
-
-          ## Links
-          - [Release on GitHub](https://github.com/newrelic/newrelic-flutter-agent/releases/tag/v${VERSION})
-          - [Package on pub.dev](https://pub.dev/packages/newrelic_mobile/versions/${VERSION})
-          - [Agent repository](https://github.com/newrelic/newrelic-flutter-agent)
-
-          ---
-          🤖 This PR was automatically created by the Flutter agent release workflow."
+            --base develop \
+            --head "$BRANCH_NAME" \
+            --title "${{ env.AGENT_TITLE }} Release Notes v${VERSION}" \
+            --body "Automated PR for ${{ env.AGENT_TITLE }} v${VERSION} release." \
+            --label "documentation"
