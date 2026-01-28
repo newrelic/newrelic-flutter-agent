@@ -63,13 +63,10 @@ jobs:
         if: steps.check_release.outputs.should_release == 'true'
         run: flutter analyze
 
-  publish:
+  publish-dry-run:
     needs: validate
     if: needs.validate.outputs.should_release == 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -88,16 +85,14 @@ jobs:
       - name: Publish to pub.dev (dry-run)
         run: flutter pub publish --dry-run
 
-      - name: Publish to pub.dev
-        uses: k-paxian/dart-package-publisher@v1.6
-        with:
-          accessToken: ${{ secrets.PUB_OAUTH_ACCESS_TOKEN }}
-          refreshToken: ${{ secrets.PUB_OAUTH_REFRESH_TOKEN }}
-          skipTests: true
+  publish:
+    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@main
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
 
   release:
-    needs: [validate, publish]
-    if: needs.validate.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -159,8 +154,6 @@ jobs:
           echo "Release: https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
 
   update-documentation:
-    needs: [validate, release]
-    if: needs.validate.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     env:
       AGENT_NAME: "flutter"
