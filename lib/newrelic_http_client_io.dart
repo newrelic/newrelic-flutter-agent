@@ -319,8 +319,19 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
 
   @override
   Future addStream(Stream<List<int>> stream) async {
-    var newStream = _readAndRecreateStream(stream);
-    return _httpClientRequest.addStream(newStream);
+    try {
+      var newStream = _readAndRecreateStream(stream);
+      return _httpClientRequest.addStream(newStream);
+    } catch (err, stackTrace) {
+      // Silently handle stream closure errors to prevent app crashes
+      if (err is StateError) {
+        // Request was cancelled, don't crash the app
+        return Future.value();
+      }
+      // Record other errors and rethrow
+      NewrelicMobile.instance.recordError(err, stackTrace);
+      rethrow;
+    }
   }
 
   @override
