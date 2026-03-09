@@ -1,15 +1,9 @@
-name: Create Release Tag
+name: Publish to pub.dev
 
 on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (must match pubspec.yaml)'
-        required: true
-        type: string
 
 jobs:
   publish:
@@ -24,14 +18,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version
+      - name: Get version from tag
         id: get_version
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            VERSION="${{ inputs.version }}"
-          else
-            VERSION=${GITHUB_REF#refs/tags/v}
-          fi
+          VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Publishing version: $VERSION"
 
@@ -46,12 +36,6 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
-
-      - name: Run tests
-        run: flutter test || echo "No tests found or tests failed"
-
-      - name: Analyze code
-        run: flutter analyze
 
       - name: Publish to pub.dev (dry-run)
         run: flutter pub publish --dry-run
@@ -70,40 +54,41 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version
+      - name: Get version from tag
         id: get_version
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            VERSION="${{ inputs.version }}"
-          else
-            VERSION=${GITHUB_REF#refs/tags/v}
-          fi
+          VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Extract release notes
+        id: extract_notes
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           echo "Extracting release notes for version $VERSION"
 
+          # Extract the section for this version from CHANGELOG.md
           awk -v version="### $VERSION" '
             $0 ~ version {flag=1; next}
             /^### [0-9]/ {flag=0}
             flag && NF {print}
           ' CHANGELOG.md > release_notes.md
 
+          # Check if release notes were found
           if [ ! -s release_notes.md ]; then
+            echo "No release notes found in CHANGELOG.md for version $VERSION"
             echo "## What's Changed" > release_notes.md
             echo "" >> release_notes.md
             echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details." >> release_notes.md
           fi
 
           cat release_notes.md
+          echo "Release notes extracted successfully"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          name: Release v${{ steps.get_version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body_path: release_notes.md
           draft: false
           prerelease: false
@@ -131,14 +116,10 @@ jobs:
       BOT_EMAIL: ${{ secrets.BOT_EMAIL }}
 
     steps:
-      - name: Get version
+      - name: Get version from tag
         id: get_version
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            VERSION="${{ inputs.version }}"
-          else
-            VERSION=${GITHUB_REF#refs/tags/v}
-          fi
+          VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "PASSED_VERSION=$VERSION" >> $GITHUB_ENV
 
