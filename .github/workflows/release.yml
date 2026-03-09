@@ -67,6 +67,7 @@ jobs:
     needs: validate
     if: needs.validate.outputs.should_release == 'true'
     runs-on: ubuntu-latest
+    environment: pub.dev
     permissions:
       contents: write
       id-token: write
@@ -75,6 +76,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -89,11 +93,7 @@ jobs:
         run: flutter pub publish --dry-run
 
       - name: Publish to pub.dev
-        uses: k-paxian/dart-package-publisher@v1.6
-        with:
-          accessToken: ${{ secrets.PUB_OAUTH_ACCESS_TOKEN }}
-          refreshToken: ${{ secrets.PUB_OAUTH_REFRESH_TOKEN }}
-          skipTests: true
+        run: dart pub publish --force
 
   release:
     needs: [validate, publish]
