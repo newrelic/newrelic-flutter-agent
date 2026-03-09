@@ -9,7 +9,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'newrelic_mobile'
-  s.version          = '1.1.21'
+  s.version          = '1.1.22'
   s.summary          = 'Flutter plugin for NewRelic Mobile.'
   s.description      = <<-DESC
 Flutter plugin for NewRelic Mobile.
@@ -22,7 +22,7 @@ Flutter plugin for NewRelic Mobile.
   s.dependency 'Flutter'
   s.platform = :ios, '9.0'
 
-  s.dependency 'NewRelicAgent', '~>7.6.1'
+  s.dependency 'NewRelicAgent', '~>7.6.3'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
