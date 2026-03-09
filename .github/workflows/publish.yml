@@ -106,6 +106,8 @@ jobs:
   update-documentation:
     needs: release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       AGENT_NAME: "flutter"
       AGENT_TITLE: "Flutter agent"
