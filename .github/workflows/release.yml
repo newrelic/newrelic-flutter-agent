@@ -1,4 +1,4 @@
-name: Publish NewRelic Flutter Plugin
+name: Create Release Tag
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
         type: string
 
 jobs:
-  validate:
+  validate-and-tag:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
@@ -63,167 +63,13 @@ jobs:
         if: steps.check_release.outputs.should_release == 'true'
         run: flutter analyze
 
-  publish:
-    needs: validate
-    if: needs.validate.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
-    environment: pub.dev
-    permissions:
-      contents: write
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.x'
-          channel: 'stable'
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Publish to pub.dev (dry-run)
-        run: flutter pub publish --dry-run
-
-      - name: Publish to pub.dev
-        run: dart pub publish --force
-
-  release:
-    needs: [validate, publish]
-    if: needs.validate.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Extract release notes
-        id: extract_notes
-        run: |
-          VERSION=${{ needs.validate.outputs.version }}
-          echo "Extracting release notes for version $VERSION"
-
-          # Extract the section for this version from CHANGELOG.md
-          awk -v version="### $VERSION" '
-            $0 ~ version {flag=1; next}
-            /^### [0-9]/ {flag=0}
-            flag && NF {print}
-          ' CHANGELOG.md > release_notes.md
-
-          # Check if release notes were found
-          if [ ! -s release_notes.md ]; then
-            echo "No release notes found in CHANGELOG.md for version $VERSION"
-            echo "## What's Changed" > release_notes.md
-            echo "" >> release_notes.md
-            echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details." >> release_notes.md
-          fi
-
-          cat release_notes.md
-          echo "Release notes extracted successfully"
-
       - name: Create Git Tag
+        if: steps.check_release.outputs.should_release == 'true'
         run: |
-          VERSION=${{ needs.validate.outputs.version }}
+          VERSION=${{ steps.get_version.outputs.version }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "v$VERSION" -m "Release v$VERSION"
           git push origin "v$VERSION"
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ needs.validate.outputs.version }}
-          name: Release v${{ needs.validate.outputs.version }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Announce Release
-        run: |
-          VERSION=${{ needs.validate.outputs.version }}
-          echo "Successfully released NewRelic Flutter Plugin v$VERSION"
-          echo "Package: https://pub.dev/packages/newrelic_mobile/versions/$VERSION"
-          echo "Release: https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
-
-  update-documentation:
-    needs: [validate, release]
-    if: needs.validate.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
-    env:
-      AGENT_NAME: "flutter"
-      AGENT_TITLE: "Flutter agent"
-      DOCS_PATH: "src/content/docs/release-notes/mobile-release-notes/flutter-release-notes"
-      REPO_URL: "https://github.com/newrelic/newrelic-flutter-agent"
-      BOT_EMAIL: ${{ secrets.BOT_EMAIL }}
-      PASSED_VERSION: ${{ needs.validate.outputs.version }}
-
-    steps:
-      - name: Checkout Agent Repo
-        uses: actions/checkout@v4
-        with:
-          path: agent-repo
-
-      - name: Checkout Docs-Website
-        uses: actions/checkout@v4
-        with:
-          repository: newrelic/docs-website
-          ref: develop
-          token: ${{ secrets.BOT_PAT }}
-          path: docs-website
-          fetch-depth: 1
-
-      - name: Generate Release Document
-        working-directory: agent-repo
-        env:
-          GH_TOKEN: ${{ secrets.BOT_PAT }}
-        run: |
-          chmod +x ./.github/scripts/generate-docs.sh
-          ./.github/scripts/generate-docs.sh
-          
-          if [ -f "release_info.env" ]; then
-            cat release_info.env >> $GITHUB_ENV
-          else
-            echo "::error::Script failed to create release_info.env"
-            exit 1
-          fi
-
-      - name: Create branch, commit, and PR
-        env:
-          GH_TOKEN: ${{ secrets.BOT_PAT }}
-        run: |
-          cd docs-website
-          VERSION="${{ env.FINAL_VERSION }}"
-          VERSION_STRIPPED=$(echo "${VERSION}" | tr -d '.')
-          FINAL_FILENAME="${{ env.AGENT_NAME }}-agent-${VERSION_STRIPPED}.mdx"
-          BRANCH_NAME="${{ env.AGENT_NAME }}_release_notes_$(echo ${VERSION} | tr '.' '-')"
-          
-          git config user.name "newrelic-mobile-agent-bot"
-          git config user.email "${{ env.BOT_EMAIL }}"
-          
-          git checkout -b "$BRANCH_NAME"
-          cp ../agent-repo/release-notes.mdx "${{ env.DOCS_PATH }}/$FINAL_FILENAME"
-          
-          git add .
-          git commit -m "chore(${{ env.AGENT_NAME }} agent): add release notes v${VERSION}"
-          git push origin "$BRANCH_NAME"
-
-          gh pr create \
-            --repo newrelic/docs-website \
-            --base develop \
-            --head "$BRANCH_NAME" \
-            --title "${{ env.AGENT_TITLE }} Release Notes v${VERSION}" \
-            --body "Automated PR for ${{ env.AGENT_TITLE }} v${VERSION} release." \
-            --label "documentation"
+          echo "Created and pushed tag v$VERSION"
+          echo "This will trigger the publish workflow"
