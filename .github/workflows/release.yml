@@ -1,27 +1,42 @@
-name: Create Release Tag
+name: Publish NewRelic Flutter Plugin
 
 on:
   push:
-    branches: ["main"]
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (leave empty to use pubspec.yaml version)'
-        required: false
+        description: 'Version to release (must match pubspec.yaml)'
+        required: true
         type: string
 
 jobs:
-  validate-and-tag:
+  publish:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
-      should_release: ${{ steps.check_release.outputs.should_release }}
+    environment: pub.dev
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.BOT_PAT }}
+
+      - name: Get version
+        id: get_version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version: $VERSION"
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -29,48 +44,157 @@ jobs:
           flutter-version: '3.x'
           channel: 'stable'
 
-      - name: Get version from pubspec.yaml
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test || echo "No tests found or tests failed"
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Publish to pub.dev (dry-run)
+        run: flutter pub publish --dry-run
+
+      - name: Publish to pub.dev
+        run: dart pub publish --force
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version
         id: get_version
         run: |
           if [ -n "${{ inputs.version }}" ]; then
             VERSION="${{ inputs.version }}"
           else
-            VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+            VERSION=${GITHUB_REF#refs/tags/v}
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version to release: $VERSION"
 
-      - name: Check if release already exists
-        id: check_release
+      - name: Extract release notes
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
-          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-            echo "Tag v$VERSION already exists"
-            echo "should_release=false" >> $GITHUB_OUTPUT
-          else
-            echo "Tag v$VERSION does not exist, proceeding with release"
-            echo "should_release=true" >> $GITHUB_OUTPUT
+          echo "Extracting release notes for version $VERSION"
+
+          awk -v version="### $VERSION" '
+            $0 ~ version {flag=1; next}
+            /^### [0-9]/ {flag=0}
+            flag && NF {print}
+          ' CHANGELOG.md > release_notes.md
+
+          if [ ! -s release_notes.md ]; then
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+            echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details." >> release_notes.md
           fi
 
-      - name: Validate pubspec.yaml
-        if: steps.check_release.outputs.should_release == 'true'
-        run: flutter pub get
+          cat release_notes.md
 
-      - name: Run tests
-        if: steps.check_release.outputs.should_release == 'true'
-        run: flutter test || echo "No tests found or tests failed"
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Release v${{ steps.get_version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Analyze code
-        if: steps.check_release.outputs.should_release == 'true'
-        run: flutter analyze
-
-      - name: Create Git Tag
-        if: steps.check_release.outputs.should_release == 'true'
+      - name: Announce Release
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push origin "v$VERSION"
-          echo "Created and pushed tag v$VERSION"
-          echo "This will trigger the publish workflow"
+          echo "Successfully released NewRelic Flutter Plugin v$VERSION"
+          echo "Package: https://pub.dev/packages/newrelic_mobile/versions/$VERSION"
+          echo "Release: https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
+
+  update-documentation:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AGENT_NAME: "flutter"
+      AGENT_TITLE: "Flutter agent"
+      DOCS_PATH: "src/content/docs/release-notes/mobile-release-notes/flutter-release-notes"
+      REPO_URL: "https://github.com/newrelic/newrelic-flutter-agent"
+      BOT_EMAIL: ${{ secrets.BOT_EMAIL }}
+
+    steps:
+      - name: Get version
+        id: get_version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "PASSED_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Checkout Agent Repo
+        uses: actions/checkout@v4
+        with:
+          path: agent-repo
+
+      - name: Checkout Docs-Website
+        uses: actions/checkout@v4
+        with:
+          repository: newrelic/docs-website
+          ref: develop
+          token: ${{ secrets.BOT_PAT }}
+          path: docs-website
+          fetch-depth: 1
+
+      - name: Generate Release Document
+        working-directory: agent-repo
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+        run: |
+          chmod +x ./.github/scripts/generate-docs.sh
+          ./.github/scripts/generate-docs.sh
+
+          if [ -f "release_info.env" ]; then
+            cat release_info.env >> $GITHUB_ENV
+          else
+            echo "::error::Script failed to create release_info.env"
+            exit 1
+          fi
+
+      - name: Create branch, commit, and PR
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+        run: |
+          cd docs-website
+          VERSION="${{ env.FINAL_VERSION }}"
+          VERSION_STRIPPED=$(echo "${VERSION}" | tr -d '.')
+          FINAL_FILENAME="${{ env.AGENT_NAME }}-agent-${VERSION_STRIPPED}.mdx"
+          BRANCH_NAME="${{ env.AGENT_NAME }}_release_notes_$(echo ${VERSION} | tr '.' '-')"
+
+          git config user.name "newrelic-mobile-agent-bot"
+          git config user.email "${{ env.BOT_EMAIL }}"
+
+          git checkout -b "$BRANCH_NAME"
+          cp ../agent-repo/release-notes.mdx "${{ env.DOCS_PATH }}/$FINAL_FILENAME"
+
+          git add .
+          git commit -m "chore(${{ env.AGENT_NAME }} agent): add release notes v${VERSION}"
+          git push origin "$BRANCH_NAME"
+
+          gh pr create \
+            --repo newrelic/docs-website \
+            --base develop \
+            --head "$BRANCH_NAME" \
+            --title "${{ env.AGENT_TITLE }} Release Notes v${VERSION}" \
+            --body "Automated PR for ${{ env.AGENT_TITLE }} v${VERSION} release." \
+            --label "documentation"
