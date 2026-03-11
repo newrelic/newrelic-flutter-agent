@@ -24,8 +24,13 @@ using native components.
 
 - Android API 24+
 - iOS:
-    - iOS 10+ (for agent versions below 1.1.17)
-    - iOS 16+ (starting from agent version 1.1.17)
+
+  | Agent Version | Minimum iOS Version |
+  | :--- | :--- |
+  | < 1.1.17 | iOS 10+ |
+  | 1.1.17 – 1.1.21 | iOS 16+ |
+  | >= 1.2.0 | iOS 15+ |
+
 - Depends on New Relic iOS/XCFramework and Android agents
 - **Flutter Web**: Compiles without errors (monitoring is no-op, use New Relic Browser Agent for web monitoring)
 
