@@ -9,7 +9,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'newrelic_mobile'
-  s.version          = '1.2.0'
+  s.version          = '1.2.1'
   s.summary          = 'Flutter plugin for NewRelic Mobile.'
   s.description      = <<-DESC
 Flutter plugin for NewRelic Mobile.
@@ -20,7 +20,7 @@ Flutter plugin for NewRelic Mobile.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '9.0'
+  s.platform = :ios, '15.0'
 
   s.dependency 'NewRelicAgent', '~>7.6.3'
 
