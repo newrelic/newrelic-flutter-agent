@@ -20,7 +20,7 @@ Flutter plugin for NewRelic Mobile.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '9.0'
+  s.platform = :ios, '15.0'
 
   s.dependency 'NewRelicAgent', '~>7.6.3'
 
