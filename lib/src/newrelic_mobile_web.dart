@@ -5,7 +5,6 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/loglevel.dart';
