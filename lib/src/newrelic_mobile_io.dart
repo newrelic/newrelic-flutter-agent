@@ -107,8 +107,6 @@ class NewrelicMobile {
     eventParams.remove('stackTraceElements');
     eventParams.remove('attributes');
 
-    NewrelicMobile.instance
-        .recordCustomEvent("Mobile Dart Errors", eventAttributes: eventParams);
 
     await _channel.invokeMethod('recordError', params);
   }
