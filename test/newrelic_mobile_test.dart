@@ -53,7 +53,7 @@ void main() {
   const megaBytes = 100;
   const maxBufferTime = 300;
   const metricUnitBytes = "bytes";
-  const agentVersion = "1.2.4";
+  const agentVersion = "1.2.5";
   const traceData = {
     "id": "1",
     "guid": "2",
@@ -945,17 +945,8 @@ void main() {
     final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
     eventParams.remove('stackTraceElements');
 
-    final Map<String, dynamic> customEventParams = <String, dynamic>{
-      'eventType': 'Mobile Dart Errors',
-      'eventName': '',
-      'eventAttributes': eventParams
-    };
 
     expect(methodCalLogs, <Matcher>[
-      isMethodCall(
-        'recordCustomEvent',
-        arguments: customEventParams,
-      ),
       isMethodCall(
         'recordError',
         arguments: params,
@@ -1076,9 +1067,7 @@ void main() {
 
     expect(methodCalLogs[1].method, 'logAttributes');
 
-    expect(methodCalLogs[2].method, 'recordCustomEvent');
-
-    expect(methodCalLogs[3].method, 'recordError');
+    expect(methodCalLogs[2].method, 'recordError');
   });
 
   test('test onError should called record error and record error as Fatal', () {
@@ -1112,14 +1101,8 @@ void main() {
     final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
     eventParams.remove('stackTraceElements');
 
-    final Map<String, dynamic> customEventParams = <String, dynamic>{
-      'eventType': 'Mobile Dart Errors',
-      'eventName': '',
-      'eventAttributes': eventParams
-    };
 
     expect(methodCalLogs, <Matcher>[
-      isMethodCall('recordCustomEvent', arguments: customEventParams),
       isMethodCall('recordError', arguments: params)
     ]);
   });
