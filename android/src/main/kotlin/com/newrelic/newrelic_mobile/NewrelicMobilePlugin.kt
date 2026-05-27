@@ -126,7 +126,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                     NewRelic.withApplicationToken(
                         applicationToken
                     ).withLoggingEnabled(loggingEnabled!!)
-                        .withLogLevel(AgentLog.VERBOSE)
+                        .withLogLevel(LogLevel.valueOf(logLevel ?: "WARN").ordinal)
                         .withApplicationFramework(ApplicationFramework.Flutter, AGENT_VERSION)
                         .start(context)
                 } else {

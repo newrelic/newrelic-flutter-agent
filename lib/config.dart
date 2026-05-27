@@ -45,5 +45,5 @@ class Config {
       this.newEventSystemEnabled = false,
       this.collectorAddress = "",
       this.crashCollectorAddress = "",
-      this.logLevel = LogLevel.DEBUG});
+      this.logLevel = LogLevel.WARN});
 }
