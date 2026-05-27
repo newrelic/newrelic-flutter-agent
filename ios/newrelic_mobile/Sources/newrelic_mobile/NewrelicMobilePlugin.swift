@@ -23,7 +23,7 @@ public class NewrelicMobilePlugin: NSObject, FlutterPlugin {
         case "startAgent":
             let applicationToken = args?["applicationToken"] as? String
             let dartVersion = args?["dartVersion"] as? String
-            var logLevel = NRLogLevelDebug.rawValue
+            var logLevel = NRLogLevelWarning.rawValue
             var collectorAddress: String? = nil
             var crashCollectorAddress: String? = nil
             
@@ -61,6 +61,7 @@ public class NewrelicMobilePlugin: NSObject, FlutterPlugin {
                 
                 let strToLogLevel = [
                     "ERROR": NRLogLevelError.rawValue,
+                    "WARN": NRLogLevelWarning.rawValue,
                     "WARNING": NRLogLevelWarning.rawValue,
                     "INFO": NRLogLevelInfo.rawValue,
                     "VERBOSE": NRLogLevelVerbose.rawValue,

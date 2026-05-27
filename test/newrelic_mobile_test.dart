@@ -102,7 +102,7 @@ void main() {
     'distributedTracingEnabled': true,
     'collectorAddress': '',
     'crashCollectorAddress': '',
-    'logLevel': 'DEBUG'
+    'logLevel': 'WARN'
   };
 
   const boolValue = false;
@@ -1546,5 +1546,5 @@ void main() {
     ]);
   });
 
-  params['logLevel'] = 'DEBUG';
+  params['logLevel'] = 'WARN';
 }

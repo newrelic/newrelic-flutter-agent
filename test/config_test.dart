@@ -19,6 +19,6 @@ void main() {
     expect(false, config.backgroundReportingEnabled);
     expect(false, config.newEventSystemEnabled);
     expect(true, config.collectorAddress.isEmpty);
-    expect(LogLevel.DEBUG, config.logLevel);
+    expect(LogLevel.WARN, config.logLevel);
   });
 }
