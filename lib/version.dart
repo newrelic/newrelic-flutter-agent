@@ -5,4 +5,4 @@
 
 /// Flutter Agent version
 /// This should match the version in pubspec.yaml
-const String agentVersion = '1.2.5';
+const String agentVersion = '1.2.6';

@@ -129,6 +129,12 @@ jobs:
           sed -i "s/s.dependency 'NewRelicAgent', '~>.*'/s.dependency 'NewRelicAgent', '~>${{ steps.ios_version.outputs.version }}'/" ios/newrelic_mobile.podspec
           echo "Updated iOS podspec"
 
+      - name: Update iOS Package.swift
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          sed -i 's|\.package(url: "https://github.com/newrelic/newrelic-ios-agent-spm".*|.package(url: "https://github.com/newrelic/newrelic-ios-agent-spm", exact: "${{ steps.ios_version.outputs.version }}")|' ios/newrelic_mobile/Package.swift
+          echo "Updated ios/newrelic_mobile/Package.swift"
+
       - name: Update pubspec.yaml
         if: steps.check_updates.outputs.needs_update == 'true'
         run: |
@@ -156,8 +162,8 @@ jobs:
       - name: Update iOS platform version
         if: steps.check_updates.outputs.needs_update == 'true'
         run: |
-          sed -i "s/NewRelic.perform(selector, with:\".*\")/NewRelic.perform(selector, with:\"${{ steps.new_flutter_version.outputs.new_version }}\")/" ios/Classes/SwiftNewrelicMobilePlugin.swift
-          echo "Updated ios/Classes/SwiftNewrelicMobilePlugin.swift"
+          sed -i "s/NewRelic.perform(selector, with:\".*\")/NewRelic.perform(selector, with:\"${{ steps.new_flutter_version.outputs.new_version }}\")/" ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift
+          echo "Updated ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift"
 
       - name: Update CHANGELOG.md
         if: steps.check_updates.outputs.needs_update == 'true'
@@ -220,7 +226,8 @@ jobs:
             - `android/build.gradle`
             - `android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt`
             - `ios/newrelic_mobile.podspec`
-            - `ios/Classes/SwiftNewrelicMobilePlugin.swift`
+            - `ios/newrelic_mobile/Package.swift`
+            - `ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift`
             - `pubspec.yaml`
             - `lib/newrelic_mobile.dart`
             - `test/newrelic_mobile_test.dart`
@@ -247,7 +254,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add android/build.gradle android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt ios/newrelic_mobile.podspec ios/Classes/SwiftNewrelicMobilePlugin.swift pubspec.yaml lib/newrelic_mobile.dart test/newrelic_mobile_test.dart CHANGELOG.md
+          git add android/build.gradle android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt ios/newrelic_mobile.podspec ios/newrelic_mobile/Package.swift ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift pubspec.yaml lib/newrelic_mobile.dart test/newrelic_mobile_test.dart CHANGELOG.md
           git commit -m "chore: Update native agents to Android ${{ steps.android_version.outputs.version }} and iOS ${{ steps.ios_version.outputs.version }}
 
           - Updated Android agent from ${{ steps.current_versions.outputs.current_android }} to ${{ steps.android_version.outputs.version }}

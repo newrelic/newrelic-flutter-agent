@@ -53,7 +53,7 @@ void main() {
   const megaBytes = 100;
   const maxBufferTime = 300;
   const metricUnitBytes = "bytes";
-  const agentVersion = "1.2.5";
+  const agentVersion = "1.2.6";
   const traceData = {
     "id": "1",
     "guid": "2",
@@ -945,7 +945,6 @@ void main() {
     final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
     eventParams.remove('stackTraceElements');
 
-
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'recordError',
@@ -1101,10 +1100,8 @@ void main() {
     final Map<String, dynamic> eventParams = Map<String, dynamic>.from(params);
     eventParams.remove('stackTraceElements');
 
-
-    expect(methodCalLogs, <Matcher>[
-      isMethodCall('recordError', arguments: params)
-    ]);
+    expect(methodCalLogs,
+        <Matcher>[isMethodCall('recordError', arguments: params)]);
   });
 
   test("test navigation observer did pop method", () {

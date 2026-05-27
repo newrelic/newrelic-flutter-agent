@@ -235,8 +235,8 @@ class Page1Screen extends StatelessWidget {
                     onPressed: () async {
                       // final client = HttpClient();
                       // var uri = Uri.parse("https://reactnative.dev/movies.json");
-                      var response = await http.get(
-                          Uri.parse("https://www.talabat.com/restaurantapi/v1/vendors/725706/fees"));
+                      var response = await http.get(Uri.parse(
+                          "https://www.talabat.com/restaurantapi/v1/vendors/725706/fees"));
                       // request.followRedirects = false;
 
                       // var url = Uri.parse(

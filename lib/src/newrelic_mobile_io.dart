@@ -107,7 +107,6 @@ class NewrelicMobile {
     eventParams.remove('stackTraceElements');
     eventParams.remove('attributes');
 
-
     await _channel.invokeMethod('recordError', params);
   }
 

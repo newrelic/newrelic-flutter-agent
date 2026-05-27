@@ -15,15 +15,14 @@ let package = Package(
         .library(name: "newrelic-mobile", targets: ["newrelic_mobile"])
     ],
     dependencies: [
-        .package(url: "https://github.com/newrelic/newrelic-ios-agent-spm", from: "7.7.1")
+        .package(url: "https://github.com/newrelic/newrelic-ios-agent-spm", from: "7.7.2")
     ],
     targets: [
         .target(
             name: "newrelic_mobile",
             dependencies: [
                 .product(name: "NewRelic", package: "newrelic-ios-agent-spm")
-            ],
-            publicHeadersPath: "."
+            ]
         )
     ]
 )
