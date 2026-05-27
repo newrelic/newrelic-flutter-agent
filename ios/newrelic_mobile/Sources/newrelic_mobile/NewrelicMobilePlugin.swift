@@ -7,10 +7,12 @@ import Flutter
 import UIKit
 import NewRelic
 import NewRelic.NRLogger
-public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
+
+@objc(NewrelicMobilePlugin)
+public class NewrelicMobilePlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "newrelic_mobile", binaryMessenger: registrar.messenger())
-        let instance = SwiftNewrelicMobilePlugin()
+        let instance = NewrelicMobilePlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
     
@@ -108,7 +110,7 @@ public class SwiftNewrelicMobilePlugin: NSObject, FlutterPlugin {
             
             NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
             let selector = NSSelectorFromString("setPlatformVersion:")
-            NewRelic.perform(selector, with:"1.2.5")
+            NewRelic.perform(selector, with:"1.2.6")
             
             if collectorAddress == nil && crashCollectorAddress == nil {
                 NewRelic.start(withApplicationToken: applicationToken!)
