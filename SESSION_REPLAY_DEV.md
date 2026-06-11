@@ -1,0 +1,178 @@
+# Session Replay — Live Streaming Dev Setup
+
+This file documents the dev-only loop for previewing Flutter session replay
+output in real time using the `rrweb-live-streaming` viewer.
+
+The streaming code is **not committed** to this branch — it lives as a git
+stash. This mirrors the pattern used by the Android agent team for the same
+debug tool. The committed feature on this branch is the capture pipeline
+itself (IR walker, rrweb encoder, thingy registry); the websocket transport
+that ships frames to a local viewer is intentionally kept out of source so
+no debug-only dependency leaks into production builds.
+
+## Pieces involved
+
+- **`feature/session-replay` branch** — contains the SDK plumbing
+  (`lib/src/session_replay/**`, debug dump methods, example app debug
+  buttons). Commits `f2ae5f3` and `d7ae8e3`.
+- **Stash `socketio-streaming-dev`** — adds the `startLiveCapture` API,
+  `socket_io_client` dependency, and the example app's `_setupSessionReplayStreaming`
+  wiring. ~30 lines across three files.
+- **`rrweb-live-streaming` repo** at
+  `~/desktop/newrelic/rrweb-live-streaming` — Socket.IO server (`:3000`)
+  and Vite viewer (`:5173`). Owned by the AppExp team.
+
+## Running the loop
+
+1. Apply the stash:
+   ```sh
+   git stash apply 'stash^{/socketio-streaming-dev}'
+   ```
+2. Get pub deps (only needed once after a clean stash apply):
+   ```sh
+   cd example && flutter pub get
+   ```
+3. Start the rrweb server + viewer (concurrent):
+   ```sh
+   cd ~/desktop/newrelic/rrweb-live-streaming
+   npm install     # first time only
+   npm run dev
+   ```
+4. Run the Flutter example app on the iOS simulator:
+   ```sh
+   cd ~/Desktop/newrelic/newrelic-flutter-agent/example
+   flutter run -d <booted-iphone-simulator-id>
+   ```
+   The app auto-connects to `localhost:3000` on launch (gated behind
+   `kDebugMode`) and emits a Meta + FullSnapshot once per second.
+5. Open the viewer at <http://localhost:5173>. Every navigation /
+   interaction in the simulator updates the viewer within ~1 second.
+
+## Verifying the connection
+
+```sh
+curl -s localhost:3000/api/status | jq .hasRecorder    # true
+curl -s localhost:3000/api/status | jq .eventCount     # increases over time
+```
+
+## Putting changes back in the stash
+
+When you're done iterating, restage the streaming files into the same
+stash so the working tree returns to the committed baseline:
+
+```sh
+git stash drop 'stash^{/socketio-streaming-dev}'    # if old one still around
+git stash push -m socketio-streaming-dev -- \
+  lib/src/session_replay/session_replay.dart \
+  example/pubspec.yaml \
+  example/lib/main.dart
+```
+
+## Recreating from scratch if the stash is lost
+
+The stash contains exactly three modifications:
+
+### 1. `lib/src/session_replay/session_replay.dart`
+
+Add `import 'dart:async';` and a `static Timer? _liveTimer;` field at the
+top of the `SessionReplay` class, plus two methods:
+
+```dart
+static void startLiveCapture({
+  required void Function(RrwebEvent event) onEvent,
+  Duration interval = const Duration(seconds: 1),
+  String href = 'flutter://app',
+}) {
+  stopLiveCapture();
+  void tick() {
+    final events = buildEvents(href: href);
+    if (events == null) return;
+    for (final e in events) {
+      onEvent(e);
+    }
+  }
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    tick();
+    _liveTimer = Timer.periodic(interval, (_) => tick());
+  });
+}
+
+static void stopLiveCapture() {
+  _liveTimer?.cancel();
+  _liveTimer = null;
+}
+```
+
+### 2. `example/pubspec.yaml`
+
+```yaml
+dependencies:
+  ...
+  socket_io_client: ^2.0.3
+```
+
+### 3. `example/lib/main.dart`
+
+Add the import:
+
+```dart
+import 'package:socket_io_client/socket_io_client.dart' as socket_io;
+```
+
+Inside `main()`'s `NewrelicMobile.instance.start(config, () { ... })`
+callback, after `runApp(...)`:
+
+```dart
+if (kDebugMode) _setupSessionReplayStreaming();
+```
+
+Then the helper:
+
+```dart
+void _setupSessionReplayStreaming() {
+  final socket = socket_io.io(
+    'http://localhost:3000',
+    socket_io.OptionBuilder()
+        .setTransports(['websocket'])
+        .setQuery({'type': 'recorder'})
+        .build(),
+  );
+
+  var recorderStarted = false;
+
+  socket.onConnect((_) {
+    debugPrint('[SessionReplay] socket connected');
+    if (!recorderStarted) {
+      socket.emit('recorder-start');
+      recorderStarted = true;
+    }
+  });
+  socket.onConnectError(
+      (err) => debugPrint('[SessionReplay] connect error: $err'));
+  socket.onDisconnect((_) {
+    debugPrint('[SessionReplay] socket disconnected');
+    recorderStarted = false;
+  });
+
+  SessionReplay.startLiveCapture(
+    onEvent: (event) {
+      if (socket.connected) socket.emit('rrweb-event', event.toJson());
+    },
+  );
+}
+```
+
+After re-creating: re-stash with the command in the previous section.
+
+## Notes & limitations
+
+- iOS simulator reaches `localhost:3000` on the host Mac directly. A real
+  iOS device would need the Mac's LAN IP plus a network reachable from
+  the device — adjust the `socket_io.io` URL accordingly.
+- Each tick emits a fresh Meta + FullSnapshot. Real `IncrementalSnapshot`
+  diffing isn't implemented yet — the viewer effectively flips between
+  full snapshots once per second. Fine for the dev loop; not what we'd
+  ship for production transport.
+- Bumping the interval to faster than ~500ms is wasteful right now
+  because the encoder rebuilds the whole tree each tick.
