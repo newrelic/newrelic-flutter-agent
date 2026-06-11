@@ -16,6 +16,7 @@ import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/network_failure.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
+import 'package:newrelic_mobile/session_replay.dart';
 import 'package:newrelic_mobile/utils/platform_manager.dart';
 import 'package:http/http.dart' as http;
 
@@ -407,6 +408,18 @@ class Page2Screen extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, 'pagethree'),
               child: const Text('Go to home page'),
+            ),
+            ElevatedButton(
+              onPressed: SessionReplay.dumpCurrentFrame,
+              child: const Text('Dump Session Replay Frame'),
+            ),
+            ElevatedButton(
+              onPressed: SessionReplay.dumpCurrentFrameAsRrweb,
+              child: const Text('Dump rrweb JSON'),
+            ),
+            ElevatedButton(
+              onPressed: SessionReplay.dumpCurrentFrameAsRrwebEvents,
+              child: const Text('Dump rrweb events array'),
             ),
           ],
         ),

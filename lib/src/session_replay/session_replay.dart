@@ -1,0 +1,81 @@
+import 'dart:convert';
+
+import 'package:flutter/widgets.dart';
+
+import 'capture/render_walker.dart';
+import 'ir/ir_node.dart';
+import 'rrweb/event.dart';
+import 'rrweb/full_snapshot_builder.dart';
+
+class SessionReplay {
+  static IRNode? captureCurrentFrame() {
+    final root = WidgetsBinding.instance.rootElement?.renderObject;
+    if (root == null) return null;
+    return RenderWalker().walk(root);
+  }
+
+  static FullSnapshotEvent? buildFullSnapshot() {
+    final ir = captureCurrentFrame();
+    if (ir == null) return null;
+    return FullSnapshotBuilder().build(
+      ir,
+      timestamp: DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+
+  static List<RrwebEvent>? buildEvents({String href = 'flutter://app'}) {
+    final ir = captureCurrentFrame();
+    if (ir == null) return null;
+    final ts = DateTime.now().millisecondsSinceEpoch;
+    final viewport = _viewportFromIr(ir);
+    final meta = MetaEvent(
+      timestamp: ts,
+      href: href,
+      width: viewport.width.toInt(),
+      height: viewport.height.toInt(),
+    );
+    final full = FullSnapshotBuilder().build(ir, timestamp: ts + 1);
+    return [meta, full];
+  }
+
+  static IRRect _viewportFromIr(IRNode root) {
+    var node = root;
+    while (node.bounds == null && node.children.isNotEmpty) {
+      node = node.children.first;
+    }
+    return node.bounds ?? const IRRect(0, 0, 0, 0);
+  }
+
+  static void dumpCurrentFrame() {
+    final ir = captureCurrentFrame();
+    if (ir == null) {
+      debugPrint('[SessionReplay] no frame to capture');
+      return;
+    }
+    debugPrint(
+      '[SessionReplay] frame nodes=${ir.countNodes()}\n'
+      '${ir.toIndentedString()}',
+    );
+  }
+
+  static void dumpCurrentFrameAsRrweb() {
+    final event = buildFullSnapshot();
+    if (event == null) {
+      debugPrint('[SessionReplay] no frame to capture');
+      return;
+    }
+    final json = const JsonEncoder.withIndent('  ').convert(event.toJson());
+    debugPrint('[SessionReplay] rrweb FullSnapshot:\n$json');
+  }
+
+  static void dumpCurrentFrameAsRrwebEvents() {
+    final events = buildEvents();
+    if (events == null) {
+      debugPrint('[SessionReplay] no frame to capture');
+      return;
+    }
+    final payload = events.map((e) => e.toJson()).toList();
+    final json = const JsonEncoder.withIndent('  ').convert(payload);
+    debugPrint('[SessionReplay] rrweb events array:\n$json\n[SessionReplay] end events array');
+  }
+}
