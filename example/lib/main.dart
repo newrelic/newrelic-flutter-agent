@@ -421,6 +421,10 @@ class Page2Screen extends StatelessWidget {
               onPressed: SessionReplay.dumpCurrentFrameAsRrwebEvents,
               child: const Text('Dump rrweb events array'),
             ),
+            ElevatedButton(
+              onPressed: SessionReplay.dumpCurrentFrameTimings,
+              child: const Text('Dump frame timings'),
+            ),
           ],
         ),
       ),

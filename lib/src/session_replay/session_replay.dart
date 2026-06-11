@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import 'capture/render_walker.dart';
 import 'ir/ir_node.dart';
+import 'perf/frame_timings.dart';
 import 'rrweb/event.dart';
 import 'rrweb/full_snapshot_builder.dart';
 
@@ -66,6 +67,52 @@ class SessionReplay {
     }
     final json = const JsonEncoder.withIndent('  ').convert(event.toJson());
     debugPrint('[SessionReplay] rrweb FullSnapshot:\n$json');
+  }
+
+  static FrameTimingStats? captureFrameTimings({int iterations = 30}) {
+    if (captureCurrentFrame() == null) return null;
+
+    final walkMs = <double>[];
+    final encodeMs = <double>[];
+    final jsonMs = <double>[];
+    var nodeCount = 0;
+
+    for (var i = 0; i < iterations; i++) {
+      final sw1 = Stopwatch()..start();
+      final ir = captureCurrentFrame();
+      sw1.stop();
+      if (ir == null) continue;
+
+      final sw2 = Stopwatch()..start();
+      final event = FullSnapshotBuilder().build(ir, timestamp: 0);
+      sw2.stop();
+
+      final sw3 = Stopwatch()..start();
+      jsonEncode(event.toJson());
+      sw3.stop();
+
+      walkMs.add(sw1.elapsedMicroseconds / 1000.0);
+      encodeMs.add(sw2.elapsedMicroseconds / 1000.0);
+      jsonMs.add(sw3.elapsedMicroseconds / 1000.0);
+      nodeCount = ir.countNodes();
+    }
+
+    return FrameTimingStats(
+      iterations: walkMs.length,
+      nodeCount: nodeCount,
+      walkMs: walkMs,
+      encodeMs: encodeMs,
+      jsonMs: jsonMs,
+    );
+  }
+
+  static void dumpCurrentFrameTimings({int iterations = 30}) {
+    final stats = captureFrameTimings(iterations: iterations);
+    if (stats == null) {
+      debugPrint('[SessionReplay] no frame to capture');
+      return;
+    }
+    debugPrint(stats.report());
   }
 
   static void dumpCurrentFrameAsRrwebEvents() {

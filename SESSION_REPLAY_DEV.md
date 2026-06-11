@@ -165,6 +165,57 @@ void _setupSessionReplayStreaming() {
 
 After re-creating: re-stash with the command in the previous section.
 
+## Baseline performance
+
+The plugin exposes `SessionReplay.captureFrameTimings({iterations: 30})`
+returning a `FrameTimingStats` with min/p50/p95/max for the three phases
+(walk, encode, JSON serialize). A debug button on Page 2 of the example
+app calls `dumpCurrentFrameTimings`, printing a one-line report.
+
+### Reference numbers
+
+Captured on **iPhone 17 Pro simulator, M-series Mac, Page 2 of the
+example app (~330 widgets, 194 IR nodes)**, plugin commit `1804648` plus
+the perf instrumentation. Median of four warm runs (cold first-run
+discarded), 30 iterations each:
+
+| phase                   | p50    | p95    | max    |
+|-------------------------|--------|--------|--------|
+| walk (RenderObject → IR)| 0.36 ms| 0.73 ms| 1.0 ms |
+| encode (IR → rrweb)     | 0.13 ms| 0.28 ms| 0.48 ms|
+| json serialize          | 0.38 ms| 0.83 ms| 1.03 ms|
+| **end-to-end**          | **0.87 ms** | **1.84 ms** | **2.5 ms** |
+
+First (cold) run is ~2-3× slower across all three phases due to JIT
+warmup and first-time allocations. After warmup the numbers above are
+stable across runs.
+
+### Caveats
+
+- **Simulator on M-series Mac is optimistic.** Real iPhone/Android
+  devices will likely be 2-3× slower on the same code. Numbers above
+  are for **regression detection**, not for "are we under production
+  budget?" — that requires real-device measurement (deferred).
+- **Debug build.** Release builds use AOT compilation and tree-shake;
+  expect somewhat different numbers (often faster steady-state).
+- **194 IR nodes** is a moderately complex screen. A list/grid screen
+  with hundreds of cells will have far more nodes, and timings should
+  scale roughly linearly with `IR nodes` for walk and encode.
+
+### Targets
+
+For relative comparisons going forward (sim, debug, this code path):
+
+| metric             | green   | yellow  | red          |
+|--------------------|---------|---------|--------------|
+| walk p95           | < 2 ms  | 2-5 ms  | > 5 ms       |
+| encode p95         | < 1 ms  | 1-3 ms  | > 3 ms       |
+| json p95           | < 2 ms  | 2-5 ms  | > 5 ms       |
+| **end-to-end p95** | < 5 ms  | 5-10 ms | > 10 ms      |
+
+A new thingy or encoder change adding 0.5+ ms to any phase deserves
+investigation. We currently have ~3× headroom in the green band.
+
 ## Notes & limitations
 
 - iOS simulator reaches `localhost:3000` on the host Mac directly. A real
