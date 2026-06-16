@@ -36,6 +36,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var context: Context
     companion object {
         private const val AGENT_VERSION = "1.2.6"
+        private const val EMPTY_RESPONSE_BODY = ""
     }
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "newrelic_mobile")
@@ -316,8 +317,6 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val traceAttributes: HashMap<String, Any>? = call.argument("traceAttributes")
 
                 val nf = NetworkFailure.fromErrorCode(errorCode)
-                val responseBody = ""
-
                 if (traceAttributes != null) {
                     NewRelic.noticeNetworkFailure(
                         url,
@@ -325,7 +324,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                         startTime,
                         endTime,
                         nf,
-                        responseBody,
+                        EMPTY_RESPONSE_BODY,
                         traceAttributes
                     )
                 } else {
