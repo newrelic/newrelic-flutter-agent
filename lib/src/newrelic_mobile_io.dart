@@ -350,14 +350,35 @@ class NewrelicMobile {
     return await _channel.invokeMethod('noticeHttpTransaction', params);
   }
 
-  Future<void> noticeNetworkFailure(String url, String httpMethod,
-      int startTime, int endTime, NetworkFailure errorCode) async {
+  Future<void> noticeNetworkFailure(
+      String url, String httpMethod, int startTime, int endTime,
+      NetworkFailure errorCode,
+      {Map<String, dynamic>? traceData}) async {
+    Map<String, dynamic>? traceAttributes;
+    if (config!.distributedTracingEnabled) {
+      if (traceData != null && traceData.isNotEmpty) {
+        if (PlatformManager.instance.isAndroid()) {
+          traceAttributes = {
+            DTTraceTags.id: traceData[DTTraceTags.id],
+            DTTraceTags.guid: traceData[DTTraceTags.guid],
+            DTTraceTags.traceId: traceData[DTTraceTags.traceId]
+          };
+        } else if (PlatformManager.instance.isIOS()) {
+          traceAttributes = {
+            DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
+            DTTraceTags.traceState: traceData[DTTraceTags.traceState],
+            DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
+          };
+        }
+      }
+    }
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
       'httpMethod': httpMethod,
       'startTime': startTime,
       'endTime': endTime,
-      'errorCode': errorCode.code
+      'errorCode': errorCode.code,
+      'traceAttributes': traceAttributes
     };
     return await _channel.invokeMethod('noticeNetworkFailure', params);
   }

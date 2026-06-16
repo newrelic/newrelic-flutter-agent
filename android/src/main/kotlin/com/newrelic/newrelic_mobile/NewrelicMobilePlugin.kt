@@ -313,16 +313,29 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val startTime: Long = call.argument("startTime")!!
                 val endTime: Long = call.argument("endTime")!!
                 val errorCode: Int = call.argument("errorCode")!!
+                val traceAttributes: HashMap<String, Any>? = call.argument("traceAttributes")
 
                 val nf = NetworkFailure.fromErrorCode(errorCode)
 
-                NewRelic.noticeNetworkFailure(
-                    url,
-                    httpMethod,
-                    startTime,
-                    endTime,
-                    nf
-                )
+                if (traceAttributes != null) {
+                    NewRelic.noticeNetworkFailure(
+                        url,
+                        httpMethod,
+                        startTime,
+                        endTime,
+                        nf,
+                        "",
+                        traceAttributes
+                    )
+                } else {
+                    NewRelic.noticeNetworkFailure(
+                        url,
+                        httpMethod,
+                        startTime,
+                        endTime,
+                        nf
+                    )
+                }
                 result.success("Network Failure Recorded")
 
             }
@@ -468,5 +481,4 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
         channel.setMethodCallHandler(null)
     }
 }
-
 
