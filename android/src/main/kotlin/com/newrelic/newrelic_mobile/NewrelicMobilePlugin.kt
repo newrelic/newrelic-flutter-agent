@@ -316,6 +316,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                 val traceAttributes: HashMap<String, Any>? = call.argument("traceAttributes")
 
                 val nf = NetworkFailure.fromErrorCode(errorCode)
+                val responseBody = ""
 
                 if (traceAttributes != null) {
                     NewRelic.noticeNetworkFailure(
@@ -324,7 +325,7 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
                         startTime,
                         endTime,
                         nf,
-                        "",
+                        responseBody,
                         traceAttributes
                     )
                 } else {
@@ -481,4 +482,3 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
         channel.setMethodCallHandler(null)
     }
 }
-
