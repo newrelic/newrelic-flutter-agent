@@ -571,6 +571,74 @@ void main() {
       'startTime': startTime,
       'endTime': endTime,
       'errorCode': NetworkFailure.unknown.code,
+      'traceAttributes': null,
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeNetworkFailure',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test(
+      'test noticeNetworkFailure should include Android distributed trace attributes',
+      () async {
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
+    when(platformManger.isIOS()).thenAnswer((realInvocation) => false);
+
+    var traceAttributes = {
+      DTTraceTags.id: traceData[DTTraceTags.id],
+      DTTraceTags.guid: traceData[DTTraceTags.guid],
+      DTTraceTags.traceId: traceData[DTTraceTags.traceId]
+    };
+
+    await NewrelicMobile.instance.noticeNetworkFailure(
+        url, httpMethod, startTime, endTime, NetworkFailure.unknown,
+        traceData: traceData);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'startTime': startTime,
+      'endTime': endTime,
+      'errorCode': NetworkFailure.unknown.code,
+      'traceAttributes': traceAttributes,
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeNetworkFailure',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test('test noticeNetworkFailure should include iOS distributed trace attributes',
+      () async {
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
+    when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
+
+    var traceAttributes = {
+      DTTraceTags.newrelic: traceData[DTTraceTags.newrelic],
+      DTTraceTags.traceState: traceData[DTTraceTags.traceState],
+      DTTraceTags.traceParent: traceData[DTTraceTags.traceParent]
+    };
+
+    await NewrelicMobile.instance.noticeNetworkFailure(
+        url, httpMethod, startTime, endTime, NetworkFailure.unknown,
+        traceData: traceData);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'startTime': startTime,
+      'endTime': endTime,
+      'errorCode': NetworkFailure.unknown.code,
+      'traceAttributes': traceAttributes,
     };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
@@ -1450,6 +1518,36 @@ void main() {
     expect(methodCalLogs, <Matcher>[
       isMethodCall(
         'noticeHttpTransaction',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test(
+      'test noticeNetworkFailure should be called with Empty TraceAttributes if distributedTracing is disabled',
+      () async {
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    Config config =
+        Config(accessToken: appToken, distributedTracingEnabled: false);
+    NewrelicMobile.instance.setAgentConfiguration(config);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => true);
+
+    await NewrelicMobile.instance.noticeNetworkFailure(
+        url, httpMethod, startTime, endTime, NetworkFailure.unknown,
+        traceData: traceData);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'startTime': startTime,
+      'endTime': endTime,
+      'errorCode': NetworkFailure.unknown.code,
+      'traceAttributes': null,
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeNetworkFailure',
         arguments: params,
       )
     ]);
