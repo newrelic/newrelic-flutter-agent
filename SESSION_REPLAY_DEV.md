@@ -216,6 +216,78 @@ For relative comparisons going forward (sim, debug, this code path):
 A new thingy or encoder change adding 0.5+ ms to any phase deserves
 investigation. We currently have ~3× headroom in the green band.
 
+## Android verification
+
+The capture pipeline is meant to be platform-agnostic (it walks Flutter's
+`RenderObject` tree, which is framework-level, above the Skia/Impeller
+rasterizer). Verified on an Android emulator (Pixel 8, API 36) by running
+the example app and using the debug dump buttons on Page 2 — no streaming,
+just `debugPrint`.
+
+Result: **the walker works on Android with no code changes.** Same IR
+structure, same thingies fire, valid rrweb JSON, comparable performance.
+
+### iOS sim vs Android emulator (same Page 2 screen)
+
+| metric            | iPhone 17 Pro sim | Pixel 8 emulator (API 36) |
+|-------------------|-------------------|---------------------------|
+| viewport (logical)| 402 × 874         | 411 × 914                 |
+| walk p95          | 0.73 ms           | 1.85 ms                   |
+| encode p95        | 0.28 ms           | 0.63 ms                   |
+| json p95          | 0.83 ms           | 1.09 ms                   |
+
+Android emulator runs ~2× slower than the iOS sim (different graphics
+stack + debug build), still well within budget. Node counts differ only
+because the example gained debug buttons between the two captures; the
+per-widget node cost is consistent.
+
+### Platform difference found: icon glyphs
+
+Material `Icon`s render via `RenderParagraph` with a single private-use
+Unicode codepoint. On **Android** that codepoint comes through
+`toPlainText()` intact (e.g. the back arrow captured as ``), so our
+icon thingy classifies it as `icon`. On **iOS** the same glyph surfaced as
+an empty string, so it was classified as an empty paragraph. The icon-font
+embedding work (rendering these glyphs in the browser) needs to account for
+both: codepoint-present (Android) and codepoint-absent (iOS).
+
+### Android build issues hit during verification
+
+The example app did not build on Android out of the box with Flutter 3.44;
+two unrelated breakages:
+
+1. **Toolchain drift (committed).** Flutter 3.44's embedding pulls
+   `androidx.core:core-ktx:1.18.0` (compiled against API 36), which requires
+   AGP ≥ 8.9.1 and `compileSdk` ≥ 36. The example pinned AGP 8.6.0 /
+   compileSdk 34. Bumped AGP → 8.9.1, Gradle wrapper → 8.11.1, and compileSdk
+   → 36 in both the example app and the plugin module. Flutter's Gradle
+   migrator also appended `android.builtInKotlin=false` / `android.newDsl=false`
+   to `example/android/gradle.properties` during the build; kept.
+2. **Missing resource — `network_security_config.xml` (NOT committed).**
+   `AndroidManifest.xml` references `@xml/network_security_config`
+   unconditionally, but `example/.gitignore` *deliberately ignores* that exact
+   path. So a fresh clone has the manifest reference without the resource and
+   fails AAPT (`resource xml/network_security_config not found`) — latent since
+   2022. For this verification a local file permitting cleartext was created
+   (kept out of git, per the existing ignore rule, so it does not appear in any
+   commit). **Open decision:** the unconditional-reference-vs-gitignored-file
+   mismatch is a real latent bug. Resolving it (commit a checked-in default,
+   ship a `network_security_config.xml.template` + copy step, or make the
+   manifest attribute conditional / drop it) is left open rather than silently
+   overriding the deliberate ignore rule. To build the example on Android
+   today, create
+   `example/android/app/src/main/res/xml/network_security_config.xml` with a
+   `<network-security-config>` permitting cleartext.
+
+### Capture-harness note (Android only)
+
+`debugPrint` output is interleaved in logcat with the native New Relic
+agent's own log lines (`I/newrelic(...)`), and Android's `debugPrint` can
+throttle/drop lines under a large burst. When extracting the JSON dump from
+`flutter run` logs, filter to `^I/flutter` lines first, then strip the
+`I/flutter ( PID): ` prefix. The Socket.IO streaming path avoids this
+entirely (events go over the socket, not the log).
+
 ## Notes & limitations
 
 - iOS simulator reaches `localhost:3000` on the host Mac directly. A real
