@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 import 'capture/render_walker.dart';
@@ -9,6 +10,8 @@ import 'rrweb/event.dart';
 import 'rrweb/full_snapshot_builder.dart';
 
 class SessionReplay {
+  static PointerRoute? _touchHandler;
+
   static IRNode? captureCurrentFrame() {
     final root = WidgetsBinding.instance.rootElement?.renderObject;
     if (root == null) return null;
@@ -67,6 +70,40 @@ class SessionReplay {
     }
     final json = const JsonEncoder.withIndent('  ').convert(event.toJson());
     debugPrint('[SessionReplay] rrweb FullSnapshot:\n$json');
+  }
+
+  static void startTouchCapture({
+    required void Function(RrwebEvent event) onEvent,
+  }) {
+    stopTouchCapture();
+    void handler(PointerEvent event) {
+      int? type;
+      if (event is PointerDownEvent) {
+        type = MouseInteractions.touchStart;
+      } else if (event is PointerUpEvent) {
+        type = MouseInteractions.touchEnd;
+      } else if (event is PointerCancelEvent) {
+        type = MouseInteractions.touchCancel;
+      }
+      if (type == null) return;
+      onEvent(IncrementalSnapshotEvent.mouseInteraction(
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+        type: type,
+        x: event.position.dx,
+        y: event.position.dy,
+      ));
+    }
+
+    _touchHandler = handler;
+    GestureBinding.instance.pointerRouter.addGlobalRoute(handler);
+  }
+
+  static void stopTouchCapture() {
+    final h = _touchHandler;
+    if (h != null) {
+      GestureBinding.instance.pointerRouter.removeGlobalRoute(h);
+    }
+    _touchHandler = null;
   }
 
   static FrameTimingStats? captureFrameTimings({int iterations = 30}) {

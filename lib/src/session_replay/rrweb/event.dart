@@ -33,6 +33,64 @@ class FullSnapshotEvent extends RrwebEvent {
       };
 }
 
+class IncrementalSource {
+  static const int mutation = 0;
+  static const int mouseMove = 1;
+  static const int mouseInteraction = 2;
+  static const int scroll = 3;
+  static const int viewportResize = 4;
+  static const int input = 5;
+  static const int touchMove = 6;
+}
+
+class MouseInteractions {
+  static const int mouseUp = 0;
+  static const int mouseDown = 1;
+  static const int click = 2;
+  static const int touchStart = 7;
+  static const int touchEnd = 9;
+  static const int touchCancel = 10;
+}
+
+class IncrementalSnapshotEvent extends RrwebEvent {
+  static const int eventType = 3;
+
+  final int timestamp;
+  final int source;
+  final Map<String, dynamic> sourceData;
+
+  IncrementalSnapshotEvent({
+    required this.timestamp,
+    required this.source,
+    required this.sourceData,
+  });
+
+  factory IncrementalSnapshotEvent.mouseInteraction({
+    required int timestamp,
+    required int type,
+    required double x,
+    required double y,
+    int nodeId = 1,
+  }) =>
+      IncrementalSnapshotEvent(
+        timestamp: timestamp,
+        source: IncrementalSource.mouseInteraction,
+        sourceData: {
+          'type': type,
+          'id': nodeId,
+          'x': x,
+          'y': y,
+        },
+      );
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': eventType,
+        'data': {'source': source, ...sourceData},
+        'timestamp': timestamp,
+      };
+}
+
 class MetaEvent extends RrwebEvent {
   static const int eventType = 4;
 
