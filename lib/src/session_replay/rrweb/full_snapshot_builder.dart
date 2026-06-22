@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../capture/node_id_registry.dart';
 import '../ir/ir_node.dart';
 import 'event.dart';
 import 'serialized_node.dart';
@@ -18,6 +19,9 @@ class FullSnapshotBuilder {
   static const int _idBody = 7;
 
   FullSnapshotEvent build(IRNode irRoot, {required int timestamp}) {
+    // Wrapper ids must stay below the content range so they can never collide
+    // with RenderObject-backed content ids.
+    assert(_idBody < NodeIdRegistry.contentIdBase);
     final viewport = _viewportFromIr(irRoot);
     final bodyChildren = <SerializedNode>[];
     _emit(irRoot, bodyChildren, null);
@@ -77,6 +81,11 @@ class FullSnapshotBuilder {
         ir.text != null &&
         ir.text!.isNotEmpty;
     if (hasText) {
+      // A text-bearing node must carry a distinct textId (the walker stamps it
+      // from a second Expando). Loud in debug; the `?? ir.id` fallback keeps
+      // release non-crashing if a future IR producer forgets to stamp it.
+      assert(ir.textId != null,
+          'text-bearing node (${ir.renderType}) reached encoder without a textId');
       children.insert(
         0,
         SerializedNode.textNode(
@@ -102,6 +111,12 @@ class FullSnapshotBuilder {
     if (ir.type == 'paragraph') attrs['class'] = 'nr-text';
     if (ir.type == 'icon') attrs['class'] = 'nr-icon';
 
+    // Content nodes must be stamped by the walker/registry (>= contentIdBase).
+    // An unstamped node (id == 0) would emit a duplicate-id, structurally
+    // invalid rrweb snapshot — fail loud in debug before the diff producer can
+    // trigger it.
+    assert(ir.id >= NodeIdRegistry.contentIdBase,
+        'unstamped content node (${ir.renderType}) reached encoder, id=${ir.id}');
     out.add(SerializedNode.elementNode(
       id: ir.id,
       tagName: ir.type == 'image' ? 'img' : 'div',

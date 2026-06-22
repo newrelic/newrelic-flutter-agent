@@ -11,13 +11,18 @@ import 'package:flutter/rendering.dart';
 /// Backed by [Expando], so:
 ///   * a disposed `RenderObject`'s id entry is reclaimed by GC automatically
 ///     — the registry never pins render objects and never leaks; and
-///   * because the counter is monotonic and never reused, a freshly created
-///     `RenderObject` can never inherit a dead one's id (no collisions).
+///   * because the counter is monotonic and not reused within any realistic
+///     capture session, a freshly created `RenderObject` can never inherit a
+///     dead one's id (no collisions).
 ///
 /// One registry instance is meant to live for a whole capture session. A
 /// throwaway instance per call gives one-shot semantics (ids unique within
 /// the single snapshot but not stable across calls), which is all the debug
 /// dump / single FullSnapshot paths need.
+///
+/// Not thread-safe, and intentionally so: capture runs as a single
+/// synchronous walk on the UI isolate, with no await between allocations, so
+/// the non-atomic `??=` cannot race.
 class NodeIdRegistry {
   /// Ids below this are reserved for the synthetic wrapper nodes
   /// (document / doctype / html / head / style / body) that the encoder

@@ -4,6 +4,7 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:newrelic_mobile/src/session_replay/capture/node_id_registry.dart';
 import 'package:newrelic_mobile/src/session_replay/ir/ir_node.dart';
 import 'package:newrelic_mobile/src/session_replay/ir/ir_style.dart';
 import 'package:newrelic_mobile/src/session_replay/rrweb/full_snapshot_builder.dart';
@@ -114,7 +115,7 @@ void main() {
       final html = (doc['childNodes'] as List)[1] as Map<String, dynamic>;
       final body = html['childNodes'][1] as Map<String, dynamic>;
       expect(body['tagName'], 'body');
-      expect(body['id'], lessThan(100),
+      expect(body['id'], lessThan(NodeIdRegistry.contentIdBase),
           reason: 'wrapper ids are reserved below the content base');
     });
 
@@ -263,6 +264,50 @@ void main() {
       expect(styled, contains('background-color:rgb(255,0,0)'));
       expect(styled, contains('border:1.0px solid rgb(0,0,0)'));
       expect(styled, contains('border-radius:4.0px'));
+    });
+  });
+
+  group('encoder guards (debug asserts)', () {
+    // These feed the builder directly (bypassing assignIds) to prove the
+    // encoder fails loud if a future IR producer reaches it unstamped.
+    test('an unstamped content node (id==0) trips an assertion', () {
+      final ir = IRNode(
+        type: 'box',
+        renderType: 'Root',
+        bounds: const IRRect(0, 0, 400, 800),
+        id: NodeIdRegistry.contentIdBase,
+        children: [
+          // id defaults to 0 — unstamped.
+          IRNode(
+            type: 'box',
+            renderType: 'Unstamped',
+            bounds: const IRRect(0, 0, 10, 10),
+          ),
+        ],
+      );
+      expect(() => FullSnapshotBuilder().build(ir, timestamp: 0),
+          throwsA(isA<AssertionError>()));
+    });
+
+    test('a text-bearing node without a textId trips an assertion', () {
+      final ir = IRNode(
+        type: 'box',
+        renderType: 'Root',
+        bounds: const IRRect(0, 0, 400, 800),
+        id: NodeIdRegistry.contentIdBase,
+        children: [
+          // id set, textId left null.
+          IRNode(
+            type: 'paragraph',
+            renderType: 'RenderParagraph',
+            bounds: const IRRect(0, 0, 10, 10),
+            text: 'x',
+            id: NodeIdRegistry.contentIdBase + 1,
+          ),
+        ],
+      );
+      expect(() => FullSnapshotBuilder().build(ir, timestamp: 0),
+          throwsA(isA<AssertionError>()));
     });
   });
 

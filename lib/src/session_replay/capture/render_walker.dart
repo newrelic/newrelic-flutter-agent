@@ -45,9 +45,19 @@ class RenderWalker {
 
     if (bounds == null && children.isEmpty) return null;
 
-    final isTextBearing =
-        bounds != null && (result.type == 'paragraph' || result.type == 'icon');
+    // Mirror the encoder's text-emit condition exactly (paragraph/icon with
+    // non-empty text) so a textId is allocated iff a text child is emitted —
+    // keeping "has a textId" <=> "has a text node" a stable invariant.
+    // 'editable' (TextField) is intentionally excluded: its text is user
+    // input, and emitting it is deferred until masking (maskUserInputText)
+    // exists, to avoid leaking input into snapshots.
+    final isTextBearing = bounds != null &&
+        (result.type == 'paragraph' || result.type == 'icon') &&
+        (result.text?.isNotEmpty ?? false);
 
+    // An id is allocated for every walked node, including passthroughs the
+    // encoder later flattens away; the content id space is deliberately
+    // sparse and traversal-ordered, not output-contiguous.
     return IRNode(
       type: bounds == null ? 'passthrough' : result.type,
       renderType: node.runtimeType.toString(),
