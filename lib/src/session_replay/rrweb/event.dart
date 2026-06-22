@@ -1,3 +1,4 @@
+import 'mutation_records.dart';
 import 'serialized_node.dart';
 
 abstract class RrwebEvent {
@@ -81,6 +82,16 @@ class IncrementalSnapshotEvent extends RrwebEvent {
           'x': x,
           'y': y,
         },
+      );
+
+  factory IncrementalSnapshotEvent.mutation({
+    required int timestamp,
+    required MutationData data,
+  }) =>
+      IncrementalSnapshotEvent(
+        timestamp: timestamp,
+        source: IncrementalSource.mutation,
+        sourceData: data.toJson(),
       );
 
   @override
