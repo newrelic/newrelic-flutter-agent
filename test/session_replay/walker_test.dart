@@ -96,4 +96,99 @@ void main() {
     expect(n.bounds!.width, 800);
     expect(n.bounds!.height, 600);
   });
+
+  group('stable ids', () {
+    testWidgets('a node keeps its id across a text-only rebuild',
+        (tester) async {
+      final reg = NodeIdRegistry();
+
+      await tester.pumpWidget(_ltr(const Text('count: 1')));
+      final p1 = findNode(SessionReplay.captureCurrentFrame(idRegistry: reg)!,
+          (n) => n.type == 'paragraph')!;
+
+      // Same widget structure, only the string changes => same RenderParagraph
+      // => same id; the diff would see a text mutation, not add/remove.
+      await tester.pumpWidget(_ltr(const Text('count: 2')));
+      final p2 = findNode(SessionReplay.captureCurrentFrame(idRegistry: reg)!,
+          (n) => n.type == 'paragraph')!;
+
+      expect(p1.text, 'count: 1');
+      expect(p2.text, 'count: 2');
+      expect(p2.id, p1.id, reason: 'stable RenderObject => stable id');
+      expect(p1.id, greaterThanOrEqualTo(NodeIdRegistry.contentIdBase));
+    });
+
+    testWidgets('paragraph element and its text child get distinct ids',
+        (tester) async {
+      final reg = NodeIdRegistry();
+      await tester.pumpWidget(_ltr(const Text('hi')));
+      final p = findNode(SessionReplay.captureCurrentFrame(idRegistry: reg)!,
+          (n) => n.type == 'paragraph')!;
+      expect(p.textId, isNotNull);
+      expect(p.textId, isNot(p.id));
+    });
+
+    testWidgets('a type swap at the same position yields a new id',
+        (tester) async {
+      final reg = NodeIdRegistry();
+
+      await tester.pumpWidget(_ltr(
+        const SizedBox(width: 20, height: 20, child: Text('x')),
+      ));
+      final pId = findNode(SessionReplay.captureCurrentFrame(idRegistry: reg)!,
+          (n) => n.type == 'paragraph')!.id;
+
+      // Text -> RawImage: the child RenderObject is replaced (different type),
+      // so it is a genuinely new instance and must not reuse the old id.
+      await tester.pumpWidget(_ltr(
+        const SizedBox(width: 20, height: 20, child: RawImage(width: 20, height: 20)),
+      ));
+      final imgId = findNode(SessionReplay.captureCurrentFrame(idRegistry: reg)!,
+          (n) => n.type == 'image')!.id;
+
+      expect(imgId, isNot(pId));
+    });
+
+    testWidgets('removing a sibling keeps the surviving sibling id stable',
+        (tester) async {
+      final reg = NodeIdRegistry();
+
+      await tester.pumpWidget(_ltr(
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [Text('keep'), Text('drop')],
+        ),
+      ));
+      final keep1 = findNode(SessionReplay.captureCurrentFrame(idRegistry: reg)!,
+          (n) => n.text == 'keep')!.id;
+
+      // Remove the trailing sibling; 'keep' stays at the same position so its
+      // Element/RenderObject persists.
+      await tester.pumpWidget(_ltr(
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [Text('keep')],
+        ),
+      ));
+      final ir2 = SessionReplay.captureCurrentFrame(idRegistry: reg)!;
+      final keep2 = findNode(ir2, (n) => n.text == 'keep')!.id;
+
+      expect(keep2, keep1);
+      expect(findNode(ir2, (n) => n.text == 'drop'), isNull);
+    });
+
+    testWidgets('a fresh registry restarts ids (one-shot semantics)',
+        (tester) async {
+      await tester.pumpWidget(_ltr(const Text('one-shot')));
+      final a = findNode(SessionReplay.captureCurrentFrame()!,
+          (n) => n.type == 'paragraph')!;
+      final b = findNode(SessionReplay.captureCurrentFrame()!,
+          (n) => n.type == 'paragraph')!;
+      // Different throwaway registries => identical allocation order => same
+      // id value here, but not because identity was tracked. Just assert both
+      // are in the content range (the contract for one-shot callers).
+      expect(a.id, greaterThanOrEqualTo(NodeIdRegistry.contentIdBase));
+      expect(b.id, greaterThanOrEqualTo(NodeIdRegistry.contentIdBase));
+    });
+  });
 }

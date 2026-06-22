@@ -41,9 +41,25 @@ List<Map<String, dynamic>> findAllEl(
 String styleOf(Map<String, dynamic> el) =>
     (el['attributes'] as Map)['style'] as String? ?? '';
 
+/// Stamps stable ids onto a hand-built IR tree the way the walker would,
+/// so the encoder receives realistic, unique, content-range ids. Mirrors
+/// NodeIdRegistry: element ids and (for paragraph/icon) text-child ids drawn
+/// from one monotonic counter starting at the content base.
+IRNode assignIds(IRNode root, [List<int>? counter]) {
+  counter ??= [100];
+  root.id = counter[0]++;
+  if (root.type == 'paragraph' || root.type == 'icon') {
+    root.textId = counter[0]++;
+  }
+  for (final c in root.children) {
+    assignIds(c, counter);
+  }
+  return root;
+}
+
 void main() {
   Map<String, dynamic> encode(IRNode ir, {int timestamp = 0}) =>
-      FullSnapshotBuilder().build(ir, timestamp: timestamp).toJson();
+      FullSnapshotBuilder().build(assignIds(ir), timestamp: timestamp).toJson();
 
   group('document wrapper', () {
     test('wraps content in document > html > head/body with doctype', () {
@@ -85,6 +101,52 @@ void main() {
       final css = (style['childNodes'] as List).first['textContent'] as String;
       expect(css, contains('width:411px'));
       expect(css, contains('height:914px'));
+    });
+
+    test('wrapper nodes use fixed reserved ids (< content base)', () {
+      final ir = IRNode(
+        type: 'box',
+        renderType: 'Root',
+        bounds: const IRRect(0, 0, 400, 800),
+      );
+      final doc = encode(ir)['data']['node'] as Map<String, dynamic>;
+      expect(doc['id'], 1); // document
+      final html = (doc['childNodes'] as List)[1] as Map<String, dynamic>;
+      final body = html['childNodes'][1] as Map<String, dynamic>;
+      expect(body['tagName'], 'body');
+      expect(body['id'], lessThan(100),
+          reason: 'wrapper ids are reserved below the content base');
+    });
+
+    test('all ids in the snapshot are unique', () {
+      final ir = IRNode(
+        type: 'box',
+        renderType: 'Root',
+        bounds: const IRRect(0, 0, 400, 800),
+        children: [
+          IRNode(
+            type: 'paragraph',
+            renderType: 'RenderParagraph',
+            bounds: const IRRect(0, 0, 100, 20),
+            text: 'a',
+          ),
+          IRNode(
+            type: 'image',
+            renderType: 'RenderImage',
+            bounds: const IRRect(0, 0, 50, 50),
+          ),
+        ],
+      );
+      final ids = <int>[];
+      void collect(Map<String, dynamic> n) {
+        ids.add(n['id'] as int);
+        for (final c in (n['childNodes'] as List? ?? const [])) {
+          collect(c as Map<String, dynamic>);
+        }
+      }
+
+      collect(encode(ir)['data']['node'] as Map<String, dynamic>);
+      expect(ids.toSet().length, ids.length, reason: 'no duplicate ids');
     });
 
     test('viewport is derived from the first laid-out descendant', () {
@@ -291,7 +353,7 @@ void main() {
   });
 }
 
-/// Convenience: encode and return the document node JSON.
+/// Convenience: assign ids, encode, and return the document node JSON.
 Map<String, dynamic> json(IRNode ir) =>
-    FullSnapshotBuilder().build(ir, timestamp: 0).toJson()['data']['node']
-        as Map<String, dynamic>;
+    FullSnapshotBuilder().build(assignIds(ir), timestamp: 0).toJson()['data']
+        ['node'] as Map<String, dynamic>;

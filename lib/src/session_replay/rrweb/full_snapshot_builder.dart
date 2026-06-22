@@ -5,9 +5,17 @@ import 'event.dart';
 import 'serialized_node.dart';
 
 class FullSnapshotBuilder {
-  int _nextId = 1;
-
-  int _id() => _nextId++;
+  // Fixed ids for the synthetic wrapper, which is the same 7 nodes every
+  // frame. Reserved below NodeIdRegistry.contentIdBase (100) so they can
+  // never collide with RenderObject-backed content ids. Constant ids keep
+  // the wrapper trivially stable across snapshots for diffing.
+  static const int _idDocument = 1;
+  static const int _idDoctype = 2;
+  static const int _idHtml = 3;
+  static const int _idHead = 4;
+  static const int _idStyle = 5;
+  static const int _idStyleText = 6;
+  static const int _idBody = 7;
 
   FullSnapshotEvent build(IRNode irRoot, {required int timestamp}) {
     final viewport = _viewportFromIr(irRoot);
@@ -15,23 +23,23 @@ class FullSnapshotBuilder {
     _emit(irRoot, bodyChildren, null);
 
     final root = SerializedNode.documentNode(
-      id: _id(),
+      id: _idDocument,
       childNodes: [
-        SerializedNode.documentTypeNode(id: _id(), name: 'html'),
+        SerializedNode.documentTypeNode(id: _idDoctype, name: 'html'),
         SerializedNode.elementNode(
-          id: _id(),
+          id: _idHtml,
           tagName: 'html',
           childNodes: [
             SerializedNode.elementNode(
-              id: _id(),
+              id: _idHead,
               tagName: 'head',
               childNodes: [
                 SerializedNode.elementNode(
-                  id: _id(),
+                  id: _idStyle,
                   tagName: 'style',
                   childNodes: [
                     SerializedNode.textNode(
-                      id: _id(),
+                      id: _idStyleText,
                       textContent: _baseCss(viewport),
                     ),
                   ],
@@ -39,7 +47,7 @@ class FullSnapshotBuilder {
               ],
             ),
             SerializedNode.elementNode(
-              id: _id(),
+              id: _idBody,
               tagName: 'body',
               attributes: {'style': 'margin:0;padding:0;'},
               childNodes: bodyChildren,
@@ -69,7 +77,13 @@ class FullSnapshotBuilder {
         ir.text != null &&
         ir.text!.isNotEmpty;
     if (hasText) {
-      children.insert(0, SerializedNode.textNode(id: _id(), textContent: ir.text!));
+      children.insert(
+        0,
+        SerializedNode.textNode(
+          id: ir.textId ?? ir.id,
+          textContent: ir.text!,
+        ),
+      );
     }
 
     final localBounds = parentBounds == null
@@ -89,7 +103,7 @@ class FullSnapshotBuilder {
     if (ir.type == 'icon') attrs['class'] = 'nr-icon';
 
     out.add(SerializedNode.elementNode(
-      id: _id(),
+      id: ir.id,
       tagName: ir.type == 'image' ? 'img' : 'div',
       attributes: attrs,
       childNodes: children,

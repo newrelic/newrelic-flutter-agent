@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
+import 'capture/node_id_registry.dart';
 import 'capture/render_walker.dart';
 import 'ir/ir_node.dart';
 import 'perf/frame_timings.dart';
@@ -12,14 +13,14 @@ import 'rrweb/full_snapshot_builder.dart';
 class SessionReplay {
   static PointerRoute? _touchHandler;
 
-  static IRNode? captureCurrentFrame() {
+  static IRNode? captureCurrentFrame({NodeIdRegistry? idRegistry}) {
     final root = WidgetsBinding.instance.rootElement?.renderObject;
     if (root == null) return null;
-    return RenderWalker().walk(root);
+    return RenderWalker(idRegistry: idRegistry).walk(root);
   }
 
-  static FullSnapshotEvent? buildFullSnapshot() {
-    final ir = captureCurrentFrame();
+  static FullSnapshotEvent? buildFullSnapshot({NodeIdRegistry? idRegistry}) {
+    final ir = captureCurrentFrame(idRegistry: idRegistry);
     if (ir == null) return null;
     return FullSnapshotBuilder().build(
       ir,
@@ -27,8 +28,11 @@ class SessionReplay {
     );
   }
 
-  static List<RrwebEvent>? buildEvents({String href = 'flutter://app'}) {
-    final ir = captureCurrentFrame();
+  static List<RrwebEvent>? buildEvents({
+    String href = 'flutter://app',
+    NodeIdRegistry? idRegistry,
+  }) {
+    final ir = captureCurrentFrame(idRegistry: idRegistry);
     if (ir == null) return null;
     final ts = DateTime.now().millisecondsSinceEpoch;
     final viewport = _viewportFromIr(ir);

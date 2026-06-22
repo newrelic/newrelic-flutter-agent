@@ -21,6 +21,15 @@ class IRNode {
   final IRStyle style;
   final List<IRNode> children;
 
+  /// Stable rrweb id for this node's element, assigned by the walker from a
+  /// [NodeIdRegistry] keyed on the backing `RenderObject`. 0 means unassigned
+  /// (e.g. hand-built test IR before `assignIds`). Mutable so a registry/test
+  /// helper can stamp it after the tree is built.
+  int id;
+
+  /// Stable id for the synthetic text child emitted for paragraph/icon nodes.
+  int? textId;
+
   IRNode({
     required this.type,
     required this.renderType,
@@ -28,6 +37,8 @@ class IRNode {
     this.text,
     this.style = IRStyle.empty,
     this.children = const [],
+    this.id = 0,
+    this.textId,
   });
 
   String toIndentedString([int depth = 0]) {
