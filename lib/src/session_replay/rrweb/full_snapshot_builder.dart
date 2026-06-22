@@ -103,12 +103,21 @@ class FullSnapshotBuilder {
     }
   }
 
-  FullSnapshotEvent build(IRNode irRoot, {required int timestamp}) {
+  /// Viewport (logical px) for a captured IR tree — the first laid-out node.
+  Size viewportOf(IRNode irRoot) => _viewportFromIr(irRoot);
+
+  FullSnapshotEvent build(IRNode irRoot, {required int timestamp}) =>
+      assemble(buildEmitted(irRoot), _viewportFromIr(irRoot),
+          timestamp: timestamp);
+
+  /// Wraps an already-built [EmittedTree] into a FullSnapshot. Lets a caller
+  /// that already has the EmittedTree (e.g. the diff path) emit a snapshot
+  /// without re-walking.
+  FullSnapshotEvent assemble(EmittedTree emitted, Size viewport,
+      {required int timestamp}) {
     // Wrapper ids must stay below the content range so they can never collide
     // with RenderObject-backed content ids.
     assert(idBody < NodeIdRegistry.contentIdBase);
-    final viewport = _viewportFromIr(irRoot);
-    final emitted = buildEmitted(irRoot);
 
     final root = SerializedNode.documentNode(
       id: _idDocument,

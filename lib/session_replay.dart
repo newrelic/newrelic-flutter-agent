@@ -4,6 +4,8 @@ export 'src/session_replay/ir/ir_style.dart';
 export 'src/session_replay/perf/frame_timings.dart';
 export 'src/session_replay/rrweb/event.dart';
 export 'src/session_replay/rrweb/serialized_node.dart';
+export 'src/session_replay/capture/frame_processor.dart';
 export 'src/session_replay/capture/node_id_registry.dart';
 export 'src/session_replay/capture/thingy/thingy.dart';
 export 'src/session_replay/capture/thingy/thingy_registry.dart';
+export 'src/session_replay/rrweb/mutation_records.dart';
