@@ -5,8 +5,8 @@ import '../rrweb/emitted_tree.dart';
 import '../rrweb/event.dart';
 import '../rrweb/full_snapshot_builder.dart';
 import '../rrweb/incremental_diff_generator.dart';
-import '../session_replay.dart';
 import 'node_id_registry.dart';
+import 'render_walker.dart';
 
 /// Turns a stream of captured IR frames into rrweb events: a Meta +
 /// FullSnapshot on the first frame, then IncrementalSnapshot mutations for
@@ -41,7 +41,9 @@ class FrameProcessor {
   /// processes it. This is the intended driver — it makes the stable-id
   /// contract automatic.
   List<RrwebEvent> processCurrentFrame({required int timestamp}) {
-    final ir = SessionReplay.captureCurrentFrame(idRegistry: _registry);
+    final root = WidgetsBinding.instance.rootElement?.renderObject;
+    if (root == null) return const [];
+    final ir = RenderWalker(idRegistry: _registry).walk(root);
     if (ir == null) return const [];
     return processFrame(ir, timestamp: timestamp);
   }

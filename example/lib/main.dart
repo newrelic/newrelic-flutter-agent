@@ -94,7 +94,8 @@ class MyApp extends StatelessWidget {
         'pageone': (context) => const Page1Screen(),
         'pagetwo': (context) => Page2Screen(),
         'pagethree': (context) => const Page3Screen(),
-        'pagefour': (context) => const Page4Screen()
+        'pagefour': (context) => const Page4Screen(),
+        'replaydemo': (context) => const SessionReplayDemoScreen(),
       },
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -341,11 +342,103 @@ class Page1Screen extends StatelessWidget {
                   },
                   child: const Text('Go to page 2'),
                 ),
+                ElevatedButton(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, 'replaydemo'),
+                  child: const Text('Session Replay Demo'),
+                ),
               ],
             ),
           ),
         ),
       );
+}
+
+/// A screen with dynamic content (counter, toggle, scrollable list,
+/// navigation) so session replay's incremental diffs exercise real activity:
+/// text mutations, add/remove, reorder, and scroll-driven list recycling.
+class SessionReplayDemoScreen extends StatefulWidget {
+  const SessionReplayDemoScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SessionReplayDemoScreen> createState() =>
+      _SessionReplayDemoScreenState();
+}
+
+class _SessionReplayDemoScreenState extends State<SessionReplayDemoScreen> {
+  int _counter = 0;
+  bool _showBanner = false;
+  final List<String> _items =
+      List.generate(8, (i) => 'Item #${i + 1}');
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Session Replay Demo')),
+      body: Column(
+        children: [
+          // Counter — taps mutate a single text node (TextRecord).
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Counter: $_counter',
+                    style: const TextStyle(fontSize: 20)),
+                ElevatedButton(
+                  onPressed: () => setState(() => _counter++),
+                  child: const Text('Increment'),
+                ),
+              ],
+            ),
+          ),
+          // Toggle — adds/removes a widget subtree (add/remove records).
+          SwitchListTile(
+            title: const Text('Show banner'),
+            value: _showBanner,
+            onChanged: (v) => setState(() => _showBanner = v),
+          ),
+          if (_showBanner)
+            Container(
+              width: double.infinity,
+              color: Colors.amber.shade200,
+              padding: const EdgeInsets.all(12),
+              child: const Text('👋 A banner appeared — node added!'),
+            ),
+          // Reorder — shuffles list order (reorder / move records).
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () => setState(() => _items.shuffle()),
+                  child: const Text('Shuffle list'),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: () => setState(
+                      () => _items.add('Item #${_items.length + 1}')),
+                  child: const Text('Add item'),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          // Scrollable list — scrolling drives sliver child recycling.
+          Expanded(
+            child: ListView.builder(
+              itemCount: _items.length,
+              itemBuilder: (context, i) => ListTile(
+                leading: CircleAvatar(child: Text('${i + 1}')),
+                title: Text(_items[i]),
+                subtitle: Text('tap count echoes counter: $_counter'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// The screen of the second page.

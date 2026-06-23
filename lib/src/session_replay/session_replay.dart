@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
+import 'capture/frame_processor.dart';
 import 'capture/node_id_registry.dart';
 import 'capture/render_walker.dart';
 import 'ir/ir_node.dart';
@@ -12,6 +14,8 @@ import 'rrweb/full_snapshot_builder.dart';
 
 class SessionReplay {
   static PointerRoute? _touchHandler;
+  static Timer? _liveTimer;
+  static FrameProcessor? _frameProcessor;
 
   static IRNode? captureCurrentFrame({NodeIdRegistry? idRegistry}) {
     final root = WidgetsBinding.instance.rootElement?.renderObject;
@@ -74,6 +78,39 @@ class SessionReplay {
     }
     final json = const JsonEncoder.withIndent('  ').convert(event.toJson());
     debugPrint('[SessionReplay] rrweb FullSnapshot:\n$json');
+  }
+
+  /// Drives session replay: emits a Meta + FullSnapshot on the first tick,
+  /// then an IncrementalSnapshot for each changed frame (nothing for an
+  /// unchanged frame), forwarding every rrweb event to [onEvent]. Owns a
+  /// persistent FrameProcessor (and thus a persistent id registry) so node
+  /// ids stay stable across frames. Default cadence ~1 fps.
+  static void startSessionReplay({
+    required void Function(RrwebEvent event) onEvent,
+    Duration interval = const Duration(seconds: 1),
+    String href = 'flutter://app',
+  }) {
+    stopSessionReplay();
+    final fp = FrameProcessor(href: href);
+    _frameProcessor = fp;
+    void tick() {
+      if (_frameProcessor != fp) return; // stopped/replaced
+      final ts = DateTime.now().millisecondsSinceEpoch;
+      for (final e in fp.processCurrentFrame(timestamp: ts)) {
+        onEvent(e);
+      }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      tick();
+      _liveTimer = Timer.periodic(interval, (_) => tick());
+    });
+  }
+
+  static void stopSessionReplay() {
+    _liveTimer?.cancel();
+    _liveTimer = null;
+    _frameProcessor = null;
   }
 
   static void startTouchCapture({
