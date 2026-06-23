@@ -182,8 +182,27 @@ IRNode _para(int id, int textId, String text, {int v = 0}) => IRNode(
       text: text,
     );
 
+IRNode _img(int id, {int v = 0}) => IRNode(
+      type: 'image',
+      renderType: 'RenderImage',
+      bounds: _r(id, v),
+      id: id,
+    );
+
 IRNode _passthrough(List<IRNode> children) =>
     IRNode(type: 'passthrough', renderType: 'RenderView', children: children);
+
+/// Applies each frame's diff to ONE mirror cumulatively (the real streaming
+/// scenario), asserting the apply-invariant after every frame.
+void _expectChain(List<IRNode> frames) {
+  final trees = frames.map(_builder.buildEmitted).toList();
+  final mirror = _initMirror(trees.first);
+  for (var i = 1; i < trees.length; i++) {
+    final mut = _gen.generateMutations(trees[i - 1], trees[i]);
+    if (mut != null) _apply(mut.toJson(), mirror);
+    expect(_mirrorRoots(mirror), _treeRoots(trees[i]), reason: 'frame $i');
+  }
+}
 
 // Root screen container all scenarios hang under.
 IRNode _screen(List<IRNode> children) => _box(100, children: children);
@@ -373,6 +392,59 @@ void main() {
       );
       expect(mut!.removes.any((r) => r.id == 101), isTrue);
       expect(mut.adds.any((a) => a.node.toJson()['id'] == 101), isTrue);
+    });
+
+    test('move + attribute change emits an AttributeRecord (player-independent)',
+        () {
+      final mut = _expectInvariant(
+        _screen([
+          _box(101, children: [_box(110)]),
+          _box(102),
+        ]),
+        _screen([
+          _box(101),
+          _box(102, children: [_box(110, v: 7)]),
+        ]),
+      );
+      expect(mut!.attributes.any((a) => a.id == 110), isTrue,
+          reason: 'a moved node whose attrs changed must still get an attr record');
+    });
+
+    test('move + text change emits a TextRecord (player-independent)', () {
+      final mut = _expectInvariant(
+        _screen([
+          _box(101, children: [_para(110, 210, 'old')]),
+          _box(102),
+        ]),
+        _screen([
+          _box(101),
+          _box(102, children: [_para(110, 210, 'new')]),
+        ]),
+      );
+      expect(mut!.texts.any((t) => t.id == 210), isTrue);
+    });
+
+    test('reclassification box -> image forces remove + add of an img', () {
+      final mut = _expectInvariant(
+        _screen([_box(101)]),
+        _screen([_img(101)]),
+      );
+      expect(mut!.removes.any((r) => r.id == 101), isTrue);
+      expect(
+          mut.adds.any((a) =>
+              a.node.toJson()['id'] == 101 &&
+              a.node.toJson()['tagName'] == 'img'),
+          isTrue);
+    });
+
+    test('multi-frame chain: cumulative apply across 5 frames', () {
+      _expectChain([
+        _screen([_box(101), _box(102)]),
+        _screen([_box(101), _box(102), _box(103)]), // add
+        _screen([_box(103), _box(101), _box(102)]), // reorder
+        _screen([_box(103), _para(101, 201, 'hi'), _box(102)]), // reclassify 101
+        _screen([_box(103), _para(101, 201, 'bye')]), // text change + remove 102
+      ]);
     });
 
     test('combined: text + style + add + remove + reorder in one frame', () {

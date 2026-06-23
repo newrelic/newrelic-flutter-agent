@@ -93,6 +93,22 @@ void main() {
     expect(_typeOf(second[1]), 2);
   });
 
+  testWidgets('processCurrentFrame uses the owned registry => stable ids',
+      (tester) async {
+    await tester.pumpWidget(_ltr(const Text('a')));
+    final fp = FrameProcessor();
+    final first = fp.processCurrentFrame(timestamp: 1);
+    expect(first.length, 2); // Meta + FullSnapshot
+
+    await tester.pumpWidget(_ltr(const Text('b')));
+    final second = fp.processCurrentFrame(timestamp: 2);
+    // A single incremental (NOT another full) proves ids stayed stable across
+    // frames via the processor's own persistent registry.
+    expect(second.length, 1);
+    expect(_typeOf(second.first), 3);
+    expect((second.first.toJson()['data']['texts'] as List).length, 1);
+  });
+
   testWidgets('reset() makes the next frame a fresh FullSnapshot',
       (tester) async {
     await tester.pumpWidget(_ltr(const Text('x')));

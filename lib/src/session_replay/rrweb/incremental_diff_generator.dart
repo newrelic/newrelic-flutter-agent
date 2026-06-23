@@ -63,6 +63,10 @@ class IncrementalDiffGenerator {
       }
     }
 
+    // Precompute each node's nextId once (O(n) total) instead of an indexOf +
+    // forward scan per re-added node (which is O(n^2) on a wide parent).
+    final nextIdOf = _precomputeNextIds(prev, next, needsAdd, needsAddText, common);
+
     final data = MutationData();
 
     // PHASE 1 — removes. Top-of-subtree only (the player prunes descendants);
@@ -87,7 +91,7 @@ class IncrementalDiffGenerator {
         if (needsAdd.contains(id)) {
           data.adds.add(AddRecord(
             parentId: next.parentOf[id]!,
-            nextId: _computeNextId(id, prev, next, needsAdd, needsAddText, common),
+            nextId: nextIdOf[id],
             node: _shallowSerialize(next, id, inlinedText),
           ));
         }
@@ -97,7 +101,7 @@ class IncrementalDiffGenerator {
       } else if (needsAddText.contains(id) && !inlinedText.contains(id)) {
         data.adds.add(AddRecord(
           parentId: next.parentOf[id]!,
-          nextId: _computeNextId(id, prev, next, needsAdd, needsAddText, common),
+          nextId: nextIdOf[id],
           node: SerializedNode.textNode(id: id, textContent: n.textContent!),
         ));
       }
@@ -107,22 +111,28 @@ class IncrementalDiffGenerator {
       dfs(id);
     }
 
-    // PHASE 3 — text content changes (not inlined / re-added this frame).
+    // PHASE 3 — text content changes. Emitted even when the text was inlined
+    // into a re-added (moved/reordered) div: a player that treats an add of an
+    // existing id as a bare move may not re-apply the inlined content, so the
+    // explicit TextRecord makes the change player-independent. Skipped only
+    // for genuinely-new text (its own add carries the content).
     for (final id in common) {
       final p = prev.byId[id]!;
       final n = next.byId[id]!;
       if (p.isText &&
           n.isText &&
-          !inlinedText.contains(id) &&
           !needsAddText.contains(id) &&
           p.textContent != n.textContent) {
         data.texts.add(TextRecord(id: id, value: n.textContent!));
       }
     }
 
-    // PHASE 4 — attribute changes on surviving, not-re-added elements.
+    // PHASE 4 — attribute changes. Emitted for surviving elements including
+    // moved/reordered ones (same reason as PHASE 3: a move-add may not carry
+    // attrs to the player). Skipped only for force-replaced nodes, whose fresh
+    // add already carries the new attributes.
     for (final id in common) {
-      if (needsAdd.contains(id)) continue;
+      if (forceReplace.contains(id)) continue;
       final p = prev.byId[id]!;
       final n = next.byId[id]!;
       if (p.isElement && n.isElement && !_mapEq(p.attributes!, n.attributes!)) {
@@ -184,24 +194,28 @@ class IncrementalDiffGenerator {
     }
   }
 
-  /// First following sibling of [id] under its next-parent that is already in
-  /// the mirror at apply time (in both frames under this parent, and not being
-  /// re-added this frame), or null to append. Never points at a pending add,
-  /// so it can't dangle.
-  int? _computeNextId(int id, EmittedTree prev, EmittedTree next,
+  /// For every node, its nextId: the first following sibling (under its
+  /// next-parent) that is already in the mirror at apply time — in both frames
+  /// under this parent and not itself being re-added — or null to append.
+  /// Never points at a pending add, so it can't dangle. Computed in one
+  /// right-to-left pass per parent (O(n) total) rather than a scan per node.
+  Map<int, int?> _precomputeNextIds(EmittedTree prev, EmittedTree next,
       Set<int> needsAdd, Set<int> needsAddText, Set<int> common) {
-    final parent = next.parentOf[id]!;
-    final siblings = _childrenOf(next, parent);
-    final i = siblings.indexOf(id);
-    for (var j = i + 1; j < siblings.length; j++) {
-      final s = siblings[j];
-      final survivor = common.contains(s) &&
-          prev.parentOf[s] == next.parentOf[s] &&
-          !needsAdd.contains(s) &&
-          !needsAddText.contains(s);
-      if (survivor) return s;
+    final out = <int, int?>{};
+    for (final parent in next.parentOf.values.toSet()) {
+      final siblings = _childrenOf(next, parent);
+      int? survivorAfter;
+      for (var j = siblings.length - 1; j >= 0; j--) {
+        final s = siblings[j];
+        out[s] = survivorAfter;
+        final isSurvivor = common.contains(s) &&
+            prev.parentOf[s] == next.parentOf[s] &&
+            !needsAdd.contains(s) &&
+            !needsAddText.contains(s);
+        if (isSurvivor) survivorAfter = s;
+      }
     }
-    return null;
+    return out;
   }
 
   /// Element with shallow children, except the text child (childIds[0] when a
