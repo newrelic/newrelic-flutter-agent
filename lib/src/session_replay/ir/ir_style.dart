@@ -11,6 +11,11 @@ class IRStyle {
   final String? fontFamily;
   final String? fontWeight;
 
+  /// CSS overflow ('hidden') for clipping render objects (scroll viewports,
+  /// clip rects) — without it, scrolled content paints outside its box (e.g.
+  /// a list over the app bar).
+  final String? overflow;
+
   const IRStyle({
     this.color,
     this.backgroundColor,
@@ -19,6 +24,7 @@ class IRStyle {
     this.fontSize,
     this.fontFamily,
     this.fontWeight,
+    this.overflow,
   });
 
   static const empty = IRStyle();
@@ -30,7 +36,19 @@ class IRStyle {
       borderRadius == null &&
       fontSize == null &&
       fontFamily == null &&
-      fontWeight == null;
+      fontWeight == null &&
+      overflow == null;
+
+  IRStyle copyWith({String? overflow}) => IRStyle(
+        color: color,
+        backgroundColor: backgroundColor,
+        border: border,
+        borderRadius: borderRadius,
+        fontSize: fontSize,
+        fontFamily: fontFamily,
+        fontWeight: fontWeight,
+        overflow: overflow ?? this.overflow,
+      );
 
   String toCss() {
     final buf = StringBuffer();
@@ -41,6 +59,7 @@ class IRStyle {
     if (fontSize != null) buf.write('font-size:$fontSize;');
     if (fontFamily != null) buf.write("font-family:'$fontFamily';");
     if (fontWeight != null) buf.write('font-weight:$fontWeight;');
+    if (overflow != null) buf.write('overflow:$overflow;');
     return buf.toString();
   }
 

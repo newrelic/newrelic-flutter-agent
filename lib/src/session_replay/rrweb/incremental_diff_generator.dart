@@ -53,12 +53,17 @@ class IncrementalDiffGenerator {
     // Re-adding a node re-adds its whole emitted subtree.
     _closeDownward(next, needsAdd);
 
-    // Text nodes added on their own (text appeared) whose div is NOT itself
-    // being re-added (otherwise the text child is inlined into the div's add).
+    // Text nodes are emitted as their OWN standalone add records — never
+    // nested in a div's node.childNodes — because rrweb's applyMutation builds
+    // added nodes with skipChild:true and drops nested children. A text node
+    // needs (re-)adding when it is newly appeared OR its owning div is being
+    // re-added (move/reorder/reclassify), since the div's add no longer
+    // carries it.
     final needsAddText = <int>{};
-    for (final id in addedIds) {
+    for (final id in next.byId.keys) {
       final n = next.byId[id]!;
-      if (n.isText && !needsAdd.contains(next.parentOf[id])) {
+      if (!n.isText) continue;
+      if (addedIds.contains(id) || needsAdd.contains(next.parentOf[id])) {
         needsAddText.add(id);
       }
     }
@@ -83,8 +88,8 @@ class IncrementalDiffGenerator {
     }
 
     // PHASE 2 — adds, in document order (DFS over next so a parent is added
-    // before its children). A re-added div inlines its text child.
-    final inlinedText = <int>{};
+    // before its children). Every node is a flat, childless add (rrweb builds
+    // adds with skipChild:true), so a div's text child arrives as its own add.
     void dfs(int id) {
       final n = next.byId[id]!;
       if (n.isElement) {
@@ -92,13 +97,13 @@ class IncrementalDiffGenerator {
           data.adds.add(AddRecord(
             parentId: next.parentOf[id]!,
             nextId: nextIdOf[id],
-            node: _shallowSerialize(next, id, inlinedText),
+            node: _shallowSerialize(next, id),
           ));
         }
         for (final c in n.childIds) {
           dfs(c);
         }
-      } else if (needsAddText.contains(id) && !inlinedText.contains(id)) {
+      } else if (needsAddText.contains(id)) {
         data.adds.add(AddRecord(
           parentId: next.parentOf[id]!,
           nextId: nextIdOf[id],
@@ -111,11 +116,8 @@ class IncrementalDiffGenerator {
       dfs(id);
     }
 
-    // PHASE 3 — text content changes. Emitted even when the text was inlined
-    // into a re-added (moved/reordered) div: a player that treats an add of an
-    // existing id as a bare move may not re-apply the inlined content, so the
-    // explicit TextRecord makes the change player-independent. Skipped only
-    // for genuinely-new text (its own add carries the content).
+    // PHASE 3 — text content changes for surviving text nodes. Skipped when
+    // the text is being (re-)added this frame (its add carries the content).
     for (final id in common) {
       final p = prev.byId[id]!;
       final n = next.byId[id]!;
@@ -218,25 +220,16 @@ class IncrementalDiffGenerator {
     return out;
   }
 
-  /// Element with shallow children, except the text child (childIds[0] when a
-  /// text node) is inlined to match the FullSnapshot. Element children arrive
-  /// as their own adds.
-  SerializedNode _shallowSerialize(EmittedTree next, int id, Set<int> inlined) {
+  /// A flat, childless element. rrweb's appendNode builds adds with
+  /// skipChild:true, so children (including the text child) must arrive as
+  /// their own add records, not nested here.
+  SerializedNode _shallowSerialize(EmittedTree next, int id) {
     final n = next.byId[id]!;
-    final childNodes = <SerializedNode>[];
-    if (n.childIds.isNotEmpty) {
-      final first = next.byId[n.childIds.first];
-      if (first != null && first.isText) {
-        childNodes.add(SerializedNode.textNode(
-            id: first.id, textContent: first.textContent!));
-        inlined.add(first.id);
-      }
-    }
     return SerializedNode.elementNode(
       id: n.id,
       tagName: n.tagName!,
       attributes: n.attributes!,
-      childNodes: childNodes,
+      childNodes: const [],
     );
   }
 

@@ -74,21 +74,21 @@ void _apply(Map<String, dynamic> data, Map<int, _MNode> m) {
     del(id);
   }
 
+  // Models rrweb's appendNode, which builds adds with skipChild:true — a
+  // node's nested childNodes are NOT built; every child must arrive as its
+  // own add. (If a producer nests children in an add, this faithfully drops
+  // them, so the apply-invariant catches it.)
   void register(Map node, int? parent) {
     final id = node['id'] as int;
     final type = node['type'] as int;
-    final kids = (node['childNodes'] as List?) ?? const [];
     m[id] = _MNode(
       parent: parent,
       tag: node['tagName'] as String?,
       attrs: (node['attributes'] as Map?)?.cast<String, String>() ?? {},
       text: node['textContent'] as String?,
-      children: kids.map((c) => (c as Map)['id'] as int).toList(),
+      children: [],
       isText: type == 3,
     );
-    for (final c in kids) {
-      register(c as Map, id);
-    }
   }
 
   for (final a in (data['adds'] as List)) {
@@ -410,7 +410,7 @@ void main() {
           reason: 'a moved node whose attrs changed must still get an attr record');
     });
 
-    test('move + text change emits a TextRecord (player-independent)', () {
+    test('move + text change re-adds the text node with the new content', () {
       final mut = _expectInvariant(
         _screen([
           _box(101, children: [_para(110, 210, 'old')]),
@@ -421,7 +421,10 @@ void main() {
           _box(102, children: [_para(110, 210, 'new')]),
         ]),
       );
-      expect(mut!.texts.any((t) => t.id == 210), isTrue);
+      // The moved div is re-added, so its text child is re-added standalone
+      // with the new content (not a TextRecord).
+      final textAdd = mut!.adds.firstWhere((a) => a.node.toJson()['id'] == 210);
+      expect(textAdd.node.toJson()['textContent'], 'new');
     });
 
     test('reclassification box -> image forces remove + add of an img', () {

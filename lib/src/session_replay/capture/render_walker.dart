@@ -55,6 +55,13 @@ class RenderWalker {
         (result.type == 'paragraph' || result.type == 'icon') &&
         (result.text?.isNotEmpty ?? false);
 
+    // Clipping render objects (scroll viewports, clip rects) must emit
+    // overflow:hidden so their content can't paint outside the box — e.g. a
+    // scrolled list over the app bar.
+    final style = bounds == null
+        ? IRStyle.empty
+        : (_clips(node) ? result.style.copyWith(overflow: 'hidden') : result.style);
+
     // An id is allocated for every walked node, including passthroughs the
     // encoder later flattens away; the content id space is deliberately
     // sparse and traversal-ordered, not output-contiguous.
@@ -63,12 +70,19 @@ class RenderWalker {
       renderType: node.runtimeType.toString(),
       bounds: bounds,
       text: result.text,
-      style: bounds == null ? IRStyle.empty : result.style,
+      style: style,
       children: children,
       id: idRegistry.idFor(node),
       textId: isTextBearing ? idRegistry.textIdFor(node) : null,
     );
   }
+
+  bool _clips(RenderObject node) =>
+      node is RenderClipRect ||
+      node is RenderClipRRect ||
+      node is RenderClipOval ||
+      node is RenderClipPath ||
+      node is RenderViewport;
 
   bool _isNavigatorOverlay(RenderObject node) {
     final name = node.runtimeType.toString();
