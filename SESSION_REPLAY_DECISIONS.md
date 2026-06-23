@@ -35,14 +35,60 @@ glyphs, true scroll events.
 
 ---
 
-## 2. Decisions already made (rationale)
+## 2. Decisions already made — alternatives considered & rationale
 
-| decision | why |
-|---|---|
-| **Dart-side render-tree capture** (not native view capture, not screenshots) | Flutter renders to one canvas; the native agents see only an opaque rectangle. RN can delegate to native because RN renders real native views — Flutter can't. |
-| **rrweb wire format** | Matches the iOS/Android agents byte-shape; reuses the same New Relic backend/player. |
-| **Capture is transport-agnostic** | `startSessionReplay(onEvent:)` — the callback is the swap point for any transport (socket, native bridge, HTTP). |
-| **Masking redacts in Dart, before events leave the device** | Capture is in Dart, so redaction must be too. |
+Two of these were genuine choices among live alternatives (2.1, 2.3); two
+were effectively *given/forced* by the goal or by an earlier decision (2.2,
+2.4). Recorded here with the rejected options so the team can challenge them.
+
+### 2.1 Dart-side render-tree capture — **genuine choice (3 options)**
+
+How do we capture what's on screen?
+
+- **Native view-tree capture** (what iOS/Android/RN do) — *rejected.* Flutter
+  renders its whole UI into a single canvas (`FlutterView`); the native agent
+  sees one opaque rectangle. RN can delegate to native only because RN renders
+  real native views. This is the blocker that started the investigation.
+- **Screenshot per frame** (`RenderRepaintBoundary.toImage()` → `<img>`) —
+  *rejected as the base mechanism.* Huge payloads, no semantic DOM (no text,
+  no masking granularity, no real incremental diffs — every frame is a full
+  image), heavy encode cost. **Not dead**, though: it's the likely fallback
+  for opaque subtrees (CustomPaint / PlatformView) — see open question G3.
+- **Semantics / accessibility tree** — *rejected.* Too lossy: only accessible
+  elements, no precise layout or styling.
+- **Render-tree walk** — **chosen.** Semantic rrweb DOM, per-widget masking
+  granularity, small diffable payloads. Cost: per-widget mappers ("thingies")
+  and blindness inside PlatformViews.
+
+### 2.2 rrweb wire format — **given, not a deliberation**
+
+The original goal was parity with the native agents ("send it in rrweb like
+the other agents"), and the New Relic backend + NR1 player already speak
+rrweb. A custom/proprietary format would require new ingest + a new player —
+never realistic. The only real sub-choices were rrweb *event-shape* details
+(e.g. inline vs standalone text nodes on incremental adds — which we initially
+got wrong and fixed during live validation).
+
+### 2.3 Transport-agnostic capture — **genuine (low-controversy) choice**
+
+- **Hardcode the transport into the capture layer** — *rejected.* The
+  transport decision (B1) is still open; coupling to it would block progress.
+- **Callback/sink abstraction** — **chosen.** `startSessionReplay(onEvent:)`
+  injects the transport, so socket / native-bridge / HTTP swap freely with no
+  change to capture. Separation of concerns; lets us build before transport
+  is decided.
+
+### 2.4 Redact (mask) in Dart — **forced by 2.1**
+
+- **Redact natively / at the bridge** — *rejected.* Raw PII (unmasked text and
+  pixels) would cross the Dart→native boundary and sit in native memory before
+  redaction — a worse privacy posture — and native lacks the Flutter widget
+  context to decide what to mask.
+- **Redact at the backend / ingest** — *rejected.* Sending raw PII off-device
+  defeats the purpose of masking.
+- **Redact in Dart** — **chosen (forced).** Capture is in Dart, so the raw
+  content is in Dart; redaction must happen there, before serialization, so
+  nothing sensitive ever leaves the device.
 
 ---
 
