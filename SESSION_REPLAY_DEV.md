@@ -15,9 +15,13 @@ no debug-only dependency leaks into production builds.
 - **`feature/session-replay` branch** — contains the SDK plumbing
   (`lib/src/session_replay/**`, debug dump methods, example app debug
   buttons). Commits `f2ae5f3` and `d7ae8e3`.
-- **Stash `socketio-streaming-dev`** — adds the `startLiveCapture` API,
-  `socket_io_client` dependency, and the example app's `_setupSessionReplayStreaming`
-  wiring. ~30 lines across three files.
+- **Stash `socketio-streaming-dev`** — the debug-only transport: the
+  `socket_io_client` dependency and the example app's
+  `_setupSessionReplayStreaming` wiring (two files: `example/lib/main.dart`,
+  `example/pubspec.yaml`). The capture engine itself —
+  `SessionReplay.startSessionReplay` (Meta + FullSnapshot, then incremental
+  mutations) — is now **committed** on the branch, so the stash only holds the
+  socket glue.
 - **`rrweb-live-streaming` repo** at
   `~/desktop/newrelic/rrweb-live-streaming` — Socket.IO server (`:3000`)
   and Vite viewer (`:5173`). Owned by the AppExp team.
@@ -70,41 +74,10 @@ git stash push -m socketio-streaming-dev -- \
 
 ## Recreating from scratch if the stash is lost
 
-The stash contains exactly three modifications:
+The capture engine (`SessionReplay.startSessionReplay`) is committed, so the
+stash is only the transport glue — two files:
 
-### 1. `lib/src/session_replay/session_replay.dart`
-
-Add `import 'dart:async';` and a `static Timer? _liveTimer;` field at the
-top of the `SessionReplay` class, plus two methods:
-
-```dart
-static void startLiveCapture({
-  required void Function(RrwebEvent event) onEvent,
-  Duration interval = const Duration(seconds: 1),
-  String href = 'flutter://app',
-}) {
-  stopLiveCapture();
-  void tick() {
-    final events = buildEvents(href: href);
-    if (events == null) return;
-    for (final e in events) {
-      onEvent(e);
-    }
-  }
-
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    tick();
-    _liveTimer = Timer.periodic(interval, (_) => tick());
-  });
-}
-
-static void stopLiveCapture() {
-  _liveTimer?.cancel();
-  _liveTimer = null;
-}
-```
-
-### 2. `example/pubspec.yaml`
+### 1. `example/pubspec.yaml`
 
 ```yaml
 dependencies:
@@ -112,7 +85,7 @@ dependencies:
   socket_io_client: ^2.0.3
 ```
 
-### 3. `example/lib/main.dart`
+### 2. `example/lib/main.dart`
 
 Add the import:
 
@@ -127,39 +100,36 @@ callback, after `runApp(...)`:
 if (kDebugMode) _setupSessionReplayStreaming();
 ```
 
-Then the helper:
+Then the helper. Two things matter: capture must start ONLY after the socket
+connects (the one-time Meta + FullSnapshot base would otherwise be dropped
+before the transport is ready, leaving the viewer with incrementals and no
+base); and the Android emulator reaches the host at `10.0.2.2`, the iOS
+simulator at `localhost`.
 
 ```dart
 void _setupSessionReplayStreaming() {
+  final host =
+      PlatformManager.instance.isAndroid() ? '10.0.2.2' : 'localhost';
   final socket = socket_io.io(
-    'http://localhost:3000',
+    'http://$host:3000',
     socket_io.OptionBuilder()
         .setTransports(['websocket'])
         .setQuery({'type': 'recorder'})
         .build(),
   );
 
-  var recorderStarted = false;
+  void emit(RrwebEvent event) {
+    if (socket.connected) socket.emit('rrweb-event', event.toJson());
+  }
 
   socket.onConnect((_) {
-    debugPrint('[SessionReplay] socket connected');
-    if (!recorderStarted) {
-      socket.emit('recorder-start');
-      recorderStarted = true;
-    }
+    socket.emit('recorder-start');
+    // (Re)start on each connect so a fresh base snapshot is always sent
+    // before any incremental.
+    SessionReplay.startSessionReplay(onEvent: emit);
+    SessionReplay.startTouchCapture(onEvent: emit);
   });
-  socket.onConnectError(
-      (err) => debugPrint('[SessionReplay] connect error: $err'));
-  socket.onDisconnect((_) {
-    debugPrint('[SessionReplay] socket disconnected');
-    recorderStarted = false;
-  });
-
-  SessionReplay.startLiveCapture(
-    onEvent: (event) {
-      if (socket.connected) socket.emit('rrweb-event', event.toJson());
-    },
-  );
+  socket.onDisconnect((_) => SessionReplay.stopSessionReplay());
 }
 ```
 
