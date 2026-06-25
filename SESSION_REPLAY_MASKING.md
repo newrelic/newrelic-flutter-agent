@@ -143,12 +143,21 @@ consume.
 
 ## Cross-platform inconsistencies — standardized for Flutter
 
-- Masking mode default → **`custom`** (iOS default; Android's `default` is the outlier).
-- Unmask list semantics → **union** (Android-style; iOS replaces).
-- `mask_all_user_touches` default → **`false`** (touches recorded unless opted in).
-- Custom-rule type string → **`unmask`** (avoid the legacy Android `un-mask` typo).
+These are **default-only**: when the server sends a field, both platforms use
+it and converge. Each platform is internally inconsistent on the *default*
+(verified — see `SESSION_REPLAY_DECISIONS.md` §F for cites), so Flutter picks
+one standard:
 
-Each deviation documented in code where it applies.
+- Masking mode default → **`custom`** (iOS leans custom; Android `SessionReplayConfiguration` defaults `default` while `MobileSessionReplayConfiguration` defaults `custom`).
+- `mask_all_user_touches` default → **`false`** (touches recorded unless opted in; iOS and Android both split between `false` and `true` across code paths).
+
+Local + server mask/unmask lists **union** on both platforms (the iOS
+"replace" code comment is stale — `addUnmasked*` appends with dedup). Custom
+rule type strings are `"mask"`/`"unmask"` on both (no `un-mask` typo exists —
+an earlier research claim that was refuted in source). So neither of those is
+a real divergence to reconcile.
+
+Each Flutter default deviation documented in code where it applies.
 
 ## Open questions (need product / design / native-team input)
 

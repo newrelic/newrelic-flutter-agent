@@ -94,6 +94,48 @@ got wrong and fixed during live validation).
 
 ## 3. Open decisions — grouped by who needs to weigh in
 
+### 3.0 The one axis that drives most of this
+
+Masking and transport look like two questions but **collapse into a single
+strategic axis: how much does Flutter lean on the native agent vs. stand
+alone?** The reasoning:
+
+- **Masking is always done in Flutter** — fixed in every option (native can't
+  see the views). Not a decision. What's pluggable is the two *edges* around
+  it: where the masking **config** comes from, and how events **get out**
+  (transport).
+- **Transport choice cascades into config + sampling ownership:**
+  - If **native uploads our events** → native also owns sampling +
+    recording-mode, and Flutter just *reads* the resolved masking config.
+  - If **Flutter uploads its own events** → Flutter must *also* own
+    sampling/recording-mode, and either fetch config itself or run on
+    app-provided config only.
+
+So the two coherent end-states:
+
+| | **Native-backed** (lean on native) | **Flutter-standalone** |
+|---|---|---|
+| Masking config | read native-resolved via a bridge | app-provided flags (± own fetch) |
+| Transport | native `recordSessionReplayEvent()` → native uploader | Flutter gzip/endpoint/offline/retry |
+| Sampling / recording mode | native owns it | Flutter must replicate |
+| Reuses proven infra | yes (all of it) | no (rebuild it) |
+| Cross-team dependency | yes (esp. iOS) | no (ships solo) |
+
+**The single pivotal question that resolves the axis:** *will the native
+iOS/Android agents accept and upload Flutter-produced rrweb blobs?* (B1)
+- **Yes** → native-backed is the clear path (consistent with every other
+  agent); the work is two native additions — a config *getter* and an event
+  *ingest* API.
+- **No** → Flutter-standalone is forced; we also need the ingest endpoint/auth
+  and must own sampling.
+
+**This does not block starting.** The masking *engine* (Flutter-side
+redaction — widgets, marker, resolver, redaction rendering, touch-drop, tests)
+is required identically in **both** end-states and depends on **neither** the
+config source nor the transport. It can be built now on app-provided
+`Config` flags + the programmatic APIs (privacy-on by default); the config
+source and transport are wired in later as two pluggable inputs. See §4.
+
 ### A. Product / Strategy
 
 - **A1. Is this targeting a shipped release, and on what timeline?** Drives
@@ -126,14 +168,28 @@ New Relic.
 
 ### C. Native-agent teams (iOS + Android)
 
-- **C1. Build the masking **config bridge****: a MethodChannel
+- **C1. Masking **config bridge****: a MethodChannel
   `getSessionReplayConfiguration` returning the resolved
   `{enabled, mode, recordingMode, 4 mask booleans, maskedClasses[],
   unmaskedClasses[], maskedKeys[], unmaskedKeys[]}`, plus a harvest-update
-  push. The server-driven masking config lives in the native agent; Dart
-  needs it. **None of this exists today.**
-- **C2. The `recordSessionReplayEvent` ingest API** (same as B1 if we go that
-  route).
+  push. No such bridge exists in the Flutter plugin today. **Readability is
+  asymmetric** (verified in source):
+  - **Android — self-serviceable now.** `AgentConfiguration.getSessionReplayConfiguration()`
+    is `public` on a public class (`AgentConfiguration.java:436`), returning
+    the resolved `SessionReplayConfiguration`. The plugin already depends on
+    the android-agent, so this is a **plugin-only addition, no agent-team
+    work** (one detail to confirm: obtaining the live `AgentConfiguration`
+    instance). Prototypable immediately.
+  - **iOS — blocked on the agent team.** The public `NewRelic.h` exposes only
+    the mask/record APIs — **no config getter.** The resolved config lives in
+    `NRMAHarvesterConfiguration` / `NRMAHarvestController`, which are **not in
+    the public umbrella header**, so a released-framework consumer can't reach
+    them. iOS needs a new public getter (e.g. `+ (NSDictionary*) sessionReplayConfiguration`).
+  - So C1 is the real iOS long-lead item, while Android can validate
+    end-to-end server config early.
+- **C2. The `recordSessionReplayEvent` ingest API** (the transport half of the
+  axis; same as B1). Required only on the native-backed path; needed on both
+  platforms.
 
 ### D. Recording mode & sampling ownership
 
@@ -166,21 +222,49 @@ New Relic.
 - **E6. Config delivery:** native→Dart **push** on harvest update (cleaner,
   more native plumbing) vs Dart **polls** at startAgent + timer.
 
-### F. Backend team — confirm intended defaults
+### F. Backend team — confirm intended *defaults*
 
-The native code paths disagree on several defaults; we need the single
-intended value before hardcoding Flutter:
+Important framing (verified in source): **these disagreements are
+default-only.** When the server's `session_replay` block *contains* a field,
+both platforms use the server value (iOS reads it at
+`NRMAHarvesterConfiguration.m:209/242/196`; Android deserializes present keys
+via GSON) — so they **converge once the server speaks.** The defaults bite
+only in two windows: before the first `/connect` response, or when a server
+response omits a specific field. Worth pinning the intended value anyway,
+because each platform is **internally inconsistent**:
 
-- **F1.** Masking **mode** default — iOS `custom` vs Android `default`.
-- **F2.** `mask_all_user_touches` default — `false` (parse) vs `true`
-  (fallbacks).
-- **F3.** `error_sampling_rate` default — `100` (parse) vs `0` (iOS runtime
-  fallback).
-- **F4.** Unmask-list semantics — union (Android) vs replace (iOS).
-- **F5.** Custom-rule `type` string — `unmask` vs legacy Android `un-mask`.
+- **F1. Masking `mode` default.** iOS: present-block-without-`mode` →
+  `"default"` (`m:212`); no-config / hardcoded-default paths → `"custom"`
+  (`m:303`, `m:354`). Android: `SessionReplayConfiguration.java:75` = `"default"`
+  but `MobileSessionReplayConfiguration.java:77` = `"custom"`. Both platforms
+  split.
+- **F2. `maskAllUserTouches` default.** iOS: present-block-without-key →
+  `false` (`m:246`); no-config/default paths → `true` (`m:306/358`). Android:
+  `SessionReplayConfiguration.java:78` = `false` vs
+  `MobileSessionReplayConfiguration.java:80` = `true`. Both platforms split.
+- **F3. `error_sampling_rate` default.** All config objects default `100.0`;
+  the divergence is iOS-only at *read* time — `isSessionReplayErrorSampled`
+  starts `0.0` and overwrites only if config isn't nil
+  (`NewRelicAgentInternal.m:1486-1488`), so error sampling is effectively 0
+  before the first harvest. (Related: full `samplingRate` defaults also differ
+  — Android `10.0` vs `0.0` across its two config classes.)
 
-*(Our current plan standardizes to: mode=`custom`, touches=`false`,
-union, `unmask`. Confirm.)*
+*Our plan standardizes Flutter to: mode=`custom`, touches=`false`. Confirm.*
+
+**Note for Flutter specifically:** because Flutter *reads* the
+native-resolved config (C1) rather than resolving the server response itself,
+for an *omitted* field it would **inherit whichever default the underlying
+native agent picked** — i.e. it would reproduce the per-platform split, not
+fix it. To be consistent across platforms regardless, Flutter must apply its
+*own* standardized default for those fields instead of trusting the
+native-resolved value when the field was absent.
+
+*(Removed from an earlier draft after source verification: a claimed
+"union vs replace" unmask divergence — iOS's `addUnmasked*` actually appends
+with dedup, seeded from local, so both platforms effectively **union**; the
+iOS "replace" code comment is stale. And a claimed `unmask` vs legacy
+`un-mask` typo — no such literal exists; the research conflated the
+`"nr-unmask"` view-tag with the `"unmask"` rule-type key.)*
 
 ### G. Visual fidelity (design choices, deferrable)
 
