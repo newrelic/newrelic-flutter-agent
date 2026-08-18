@@ -15,7 +15,7 @@ let package = Package(
         .library(name: "newrelic-mobile", targets: ["newrelic_mobile"])
     ],
     dependencies: [
-        .package(url: "https://github.com/newrelic/newrelic-ios-agent-spm", exact: "7.7.5")
+        .package(url: "https://github.com/newrelic/newrelic-ios-agent-spm", exact: "7.7.6")
     ],
     targets: [
         .target(
