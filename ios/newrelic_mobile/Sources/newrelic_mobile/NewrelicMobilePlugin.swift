@@ -111,7 +111,7 @@ public class NewrelicMobilePlugin: NSObject, FlutterPlugin {
             
             NewRelic.setPlatform(NRMAApplicationPlatform.platform_Flutter)
             let selector = NSSelectorFromString("setPlatformVersion:")
-            NewRelic.perform(selector, with:"1.2.11")
+            NewRelic.perform(selector, with:"1.3.0")
             
             if collectorAddress == nil && crashCollectorAddress == nil {
                 NewRelic.start(withApplicationToken: applicationToken!)
