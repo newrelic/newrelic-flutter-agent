@@ -345,7 +345,11 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
   Future addStream(Stream<List<int>> stream) async {
     try {
       var newStream = _readAndRecreateStream(stream);
-      return _httpClientRequest.addStream(newStream);
+      // await, not a bare return: _readAndRecreateStream is an async*
+      // generator, so its errors arrive through this Future. Returning it
+      // unawaited leaves the try block before they surface, so catch never
+      // runs and the StateError below escapes to the caller.
+      return await _httpClientRequest.addStream(newStream);
     } catch (err, stackTrace) {
       // Silently handle stream closure errors to prevent app crashes
       if (err is StateError) {

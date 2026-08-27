@@ -269,4 +269,45 @@ void main() {
           reason: 'the failure must be recorded once, not once per wrapper');
     });
   });
+
+  // #198 wrapped addStream in try/catch to swallow the StateError a cancelled
+  // request throws. _readAndRecreateStream is an async* generator, so its
+  // errors surface asynchronously through addStream's Future -- returning that
+  // Future without awaiting it inside the try meant catch never ran and the
+  // StateError escaped anyway. Analyzer flags this as
+  // unawaited_return_in_try_block.
+  group('addStream error handling', () {
+    /// Feeds [error] through an instrumented addStream and reports what the
+    /// caller saw.
+    Future<Object?> addStreamError(Object error) async {
+      final client = NewRelicHttpClient(client: HttpClient());
+      final request = await client.postUrl(uri());
+      try {
+        await request.addStream(Stream<List<int>>.error(error));
+        return null;
+      } catch (e) {
+        return e;
+      } finally {
+        // The request is left mid-stream; force-close tears it down without
+        // abort()'s asynchronous HttpException muddying the assertions.
+        client.close(force: true);
+      }
+    }
+
+    test('a StateError from a cancelled request does not reach the caller',
+        () async {
+      expect(await addStreamError(StateError('request was cancelled')), isNull,
+          reason: 'the #198 try/catch must actually swallow StateError');
+    });
+
+    test('a non-StateError is recorded and still surfaced to the caller',
+        () async {
+      final err = await addStreamError(const FormatException('bad payload'));
+
+      expect(err, isA<FormatException>(),
+          reason: 'errors other than StateError must still reach the caller');
+      expect(callsTo('recordError'), hasLength(1),
+          reason: 'reaching the catch block is what records the error');
+    });
+  });
 }
