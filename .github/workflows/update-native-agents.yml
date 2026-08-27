@@ -141,11 +141,11 @@ jobs:
           sed -i "s/^version: .*/version: ${{ steps.new_flutter_version.outputs.new_version }}/" pubspec.yaml
           echo "Updated pubspec.yaml"
 
-      - name: Update newrelic_mobile.dart
+      - name: Update lib/version.dart
         if: steps.check_updates.outputs.needs_update == 'true'
         run: |
-          sed -i "s/setAttribute(\"Flutter Agent Version\", \".*\")/setAttribute(\"Flutter Agent Version\", \"${{ steps.new_flutter_version.outputs.new_version }}\")/" lib/newrelic_mobile.dart
-          echo "Updated lib/newrelic_mobile.dart"
+          sed -i "s/^const String agentVersion = '.*';/const String agentVersion = '${{ steps.new_flutter_version.outputs.new_version }}';/" lib/version.dart
+          echo "Updated lib/version.dart"
 
       - name: Update newrelic_mobile_test.dart
         if: steps.check_updates.outputs.needs_update == 'true'
@@ -164,6 +164,87 @@ jobs:
         run: |
           sed -i "s/NewRelic.perform(selector, with:\".*\")/NewRelic.perform(selector, with:\"${{ steps.new_flutter_version.outputs.new_version }}\")/" ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift
           echo "Updated ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift"
+
+      # sed exits 0 when its pattern matches nothing, so a refactor that moves or
+      # renames a version literal silently stops being updated (this is how
+      # lib/version.dart drifted to 1.2.6 while pubspec.yaml reached 1.2.11).
+      # Assert every substitution above actually landed.
+      - name: Verify version substitutions applied
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          NEW_VERSION="${{ steps.new_flutter_version.outputs.new_version }}"
+          ANDROID_VERSION="${{ steps.android_version.outputs.version }}"
+          IOS_VERSION="${{ steps.ios_version.outputs.version }}"
+
+          # Escape dots so versions are compared literally, not as regex wildcards.
+          NEW_RE="${NEW_VERSION//./\\.}"
+          ANDROID_RE="${ANDROID_VERSION//./\\.}"
+          IOS_RE="${IOS_VERSION//./\\.}"
+
+          FAILED=0
+
+          # assert_updated <file> <extended-regex> <description>
+          assert_updated() {
+            file="$1"
+            pattern="$2"
+            desc="$3"
+
+            if [ ! -f "$file" ]; then
+              echo "::error file=$file::$desc - file does not exist. It was moved or renamed; update this workflow."
+              FAILED=1
+              return
+            fi
+
+            if ! grep -Eq -- "$pattern" "$file"; then
+              echo "::error file=$file::$desc - expected /$pattern/ after substitution but it is absent. The sed pattern for this file no longer matches; the version was NOT updated."
+              FAILED=1
+              return
+            fi
+
+            if git diff --quiet -- "$file"; then
+              echo "::error file=$file::$desc - file is unchanged. The version literal was not rewritten."
+              FAILED=1
+              return
+            fi
+
+            echo "OK: $file ($desc)"
+          }
+
+          # Always rewritten, because the plugin version is bumped on every update.
+          assert_updated pubspec.yaml \
+            "^version: ${NEW_RE}$" "pubspec plugin version"
+          assert_updated lib/version.dart \
+            "^const String agentVersion = '${NEW_RE}';$" "Dart agentVersion constant"
+          assert_updated test/newrelic_mobile_test.dart \
+            "const agentVersion = \"${NEW_RE}\"" "Dart test agentVersion constant"
+          assert_updated android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt \
+            "private const val AGENT_VERSION = \"${NEW_RE}\"" "Android AGENT_VERSION"
+          assert_updated ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift \
+            "NewRelic\.perform\(selector, with:\"${NEW_RE}\"\)" "iOS framework version"
+          assert_updated ios/newrelic_mobile.podspec \
+            "s\.version *= *'${NEW_RE}'" "podspec version"
+
+          # Rewritten only when the corresponding native agent actually changed.
+          if [ "${{ steps.current_versions.outputs.current_android }}" != "$ANDROID_VERSION" ]; then
+            assert_updated android/build.gradle \
+              "android-agent:${ANDROID_RE}'" "Android agent dependency"
+          fi
+
+          if [ "${{ steps.current_versions.outputs.current_ios }}" != "$IOS_VERSION" ]; then
+            assert_updated ios/newrelic_mobile.podspec \
+              "'NewRelicAgent', '~>${IOS_RE}'" "iOS agent podspec dependency"
+            assert_updated ios/newrelic_mobile/Package.swift \
+              "exact: \"${IOS_RE}\"" "iOS agent SPM dependency"
+          fi
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo ""
+            echo "One or more version substitutions did not apply. Fix the sed patterns in this workflow before releasing."
+            exit 1
+          fi
+
+          echo ""
+          echo "All version substitutions verified."
 
       - name: Update CHANGELOG.md
         if: steps.check_updates.outputs.needs_update == 'true'
@@ -229,7 +310,7 @@ jobs:
             - `ios/newrelic_mobile/Package.swift`
             - `ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift`
             - `pubspec.yaml`
-            - `lib/newrelic_mobile.dart`
+            - `lib/version.dart`
             - `test/newrelic_mobile_test.dart`
             - `CHANGELOG.md`
 
@@ -249,12 +330,15 @@ jobs:
           reviewers: |
             ${{ github.actor }}
 
+      # Gated on workflow_dispatch specifically: on a push or schedule event
+      # `inputs.create_pr` is null, and GitHub coerces `null == false` to true, so
+      # without the event check this step would commit straight to the pushed branch.
       - name: Commit and push changes directly
-        if: steps.check_updates.outputs.needs_update == 'true' && inputs.create_pr == false && github.event_name != 'schedule'
+        if: steps.check_updates.outputs.needs_update == 'true' && github.event_name == 'workflow_dispatch' && inputs.create_pr == false
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add android/build.gradle android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt ios/newrelic_mobile.podspec ios/newrelic_mobile/Package.swift ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift pubspec.yaml lib/newrelic_mobile.dart test/newrelic_mobile_test.dart CHANGELOG.md
+          git add android/build.gradle android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt ios/newrelic_mobile.podspec ios/newrelic_mobile/Package.swift ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift pubspec.yaml lib/version.dart test/newrelic_mobile_test.dart CHANGELOG.md
           git commit -m "chore: Update native agents to Android ${{ steps.android_version.outputs.version }} and iOS ${{ steps.ios_version.outputs.version }}
 
           - Updated Android agent from ${{ steps.current_versions.outputs.current_android }} to ${{ steps.android_version.outputs.version }}
