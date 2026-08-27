@@ -233,18 +233,42 @@ Future<NewRelicHttpClientResponse> _wrapResponse(
     return response;
   }
 
-  dynamic headersList =
-      await NewrelicMobile.instance.getHTTPHeadersTrackingFor();
-  Map<String, String> params = Map();
+  return NewRelicHttpClientResponse(response, request, timestamp, traceData,
+      params: await _collectTrackedHeaders(request));
+}
 
-  for (String header in headersList) {
-    if (request.headers.value(header) != null) {
-      params.putIfAbsent(header, () => request.headers.value(header)!);
+/// Collects the request headers the native agent asked to track.
+///
+/// This observes the request the caller made, so it must never throw: failing
+/// here would reject the Future returned by close()/done and break the very
+/// request being instrumented. Anything unusable is skipped instead.
+Future<Map<String, String>> _collectTrackedHeaders(
+    HttpClientRequest request) async {
+  final params = <String, String>{};
+
+  dynamic headersList;
+  try {
+    headersList = await NewrelicMobile.instance.getHTTPHeadersTrackingFor();
+  } catch (_) {
+    return params;
+  }
+
+  if (headersList is! Iterable) return params;
+
+  for (final header in headersList) {
+    if (header is! String) continue;
+    try {
+      // operator[] returns every value, where value() throws on more than one.
+      final values = request.headers[header];
+      if (values == null || values.isEmpty) continue;
+      params[header] = values.join(', ');
+    } catch (_) {
+      // Invalid header field name -- lookup validates it the same way add()
+      // does, and addHTTPHeadersTrackingFor() does not.
     }
   }
 
-  return NewRelicHttpClientResponse(response, request, timestamp, traceData,
-      params: params);
+  return params;
 }
 
 class NewRelicHttpClientRequest extends HttpClientRequest {
