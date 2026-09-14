@@ -26,12 +26,15 @@ rootProject.allprojects {
     }
 }
 
+def agpVersion = Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0].toInteger()
+
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+if (agpVersion < 9) {
+    apply plugin: 'kotlin-android'
+}
 
 android {
     compileSdkVersion 34
-    def agpVersion = Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0].toInteger()
     if (agpVersion >= 7) {
         namespace "com.newrelic.newrelic_mobile"
     }
@@ -44,8 +47,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = '1.8'
+    if (agpVersion < 9) {
+        kotlinOptions {
+            jvmTarget = '1.8'
+        }
     }
 
     sourceSets {
