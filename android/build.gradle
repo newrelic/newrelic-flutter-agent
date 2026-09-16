@@ -27,9 +27,11 @@ rootProject.allprojects {
 }
 
 def agpVersion = Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0].toInteger()
+def builtInKotlin = agpVersion >= 9 &&
+    (findProperty("android.builtInKotlin") ?: "true").toString().toBoolean()
 
 apply plugin: 'com.android.library'
-if (agpVersion < 9) {
+if (!builtInKotlin) {
     apply plugin: 'kotlin-android'
 }
 
@@ -47,7 +49,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    if (agpVersion < 9) {
+    if (!builtInKotlin) {
         kotlinOptions {
             jvmTarget = '1.8'
         }
