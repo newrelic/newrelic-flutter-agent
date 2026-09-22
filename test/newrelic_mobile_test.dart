@@ -560,6 +560,55 @@ void main() {
     ]);
   });
 
+  test(
+      'test noticeHttpTransaction should omit the newrelic trace attribute on iOS Platform when native does not provide one',
+      () async {
+    var platformManger = MockPlatformManager();
+    PlatformManager.setPlatformInstance(platformManger);
+    when(platformManger.isAndroid()).thenAnswer((realInvocation) => false);
+    when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
+
+    final traceDataWithoutNewrelicHeader = {
+      DTTraceTags.traceState: traceData[DTTraceTags.traceState],
+      DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
+    };
+
+    await NewrelicMobile.instance.noticeHttpTransaction(
+        url,
+        httpMethod,
+        statusCode,
+        startTime,
+        endTime,
+        bytesSent,
+        bytesReceived,
+        traceDataWithoutNewrelicHeader,
+        responseBody: responseBody,
+        httpParams: httpParams);
+
+    final traceAttributes = {
+      DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
+      DTTraceTags.traceState: traceData[DTTraceTags.traceState],
+    };
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'statusCode': statusCode,
+      'startTime': startTime,
+      'endTime': endTime,
+      'bytesSent': bytesSent,
+      'bytesReceived': bytesReceived,
+      'responseBody': responseBody,
+      'traceAttributes': traceAttributes,
+      'params': httpParams
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeHttpTransaction',
+        arguments: params,
+      )
+    ]);
+  });
+
   test('test noticeNetworkFailure should be called with NetworkFailure Enum',
       () async {
     await NewrelicMobile.instance.noticeNetworkFailure(

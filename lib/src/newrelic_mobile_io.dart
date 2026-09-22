@@ -330,7 +330,8 @@ class NewrelicMobile {
           traceAttributes = {
             DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
             DTTraceTags.traceState: traceData[DTTraceTags.traceState],
-            DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
+            if (traceData[DTTraceTags.newrelic] != null)
+              DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
           };
         }
       }
