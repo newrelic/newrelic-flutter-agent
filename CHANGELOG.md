@@ -18,6 +18,10 @@
 
 ### 1.2.11
 
+## Bug Fixes
+
+- Fixed the iOS bridge hardcoding `andParams: nil`, which silently dropped custom `httpParams` and tracked-header values from `MobileRequest`/`MobileRequestError` events. Android already forwarded params correctly.
+
 ## Enhancements
 
 - Updated the native Android agent to version 7.8.1.
