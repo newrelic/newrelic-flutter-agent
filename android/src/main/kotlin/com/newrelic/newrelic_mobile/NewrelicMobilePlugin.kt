@@ -316,12 +316,18 @@ class NewrelicMobilePlugin : FlutterPlugin, MethodCallHandler {
 
                 val nf = NetworkFailure.fromErrorCode(errorCode)
 
+                // Attribute the failure to the caller's distributed trace when one was supplied,
+                // the same way noticeHttpTransaction does.
+                val traceAttributes: HashMap<String, Any>? = call.argument("traceAttributes")
+
                 NewRelic.noticeNetworkFailure(
                     url,
                     httpMethod,
                     startTime,
                     endTime,
-                    nf
+                    nf,
+                    "",
+                    traceAttributes
                 )
                 result.success("Network Failure Recorded")
 

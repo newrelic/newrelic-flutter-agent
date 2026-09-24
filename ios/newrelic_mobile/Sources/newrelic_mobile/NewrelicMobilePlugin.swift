@@ -201,8 +201,13 @@ public class NewrelicMobilePlugin: NSObject, FlutterPlugin {
             result("return")
             
         case "noticeDistributedTrace":
-            
-            result(NewRelic.generateDistributedTracingHeaders())
+
+            // Returns one trace in both representations: the traceparent/tracestate headers the
+            // Dart HTTP client puts on the outbound request, and the trace.id/id/guid attributes
+            // it hands back to noticeHttpTransaction / noticeNetworkFailure. Reporting with the
+            // attributes means the native agent applies the identity directly instead of
+            // recovering it by re-parsing its own headers.
+            result(NewRelic.generateDistributedTracingContext())
             
         case "addHTTPHeadersTrackingFor":
             
@@ -240,7 +245,9 @@ public class NewrelicMobilePlugin: NSObject, FlutterPlugin {
             
             
             
-            NewRelic.noticeNetworkFailure(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), andFailureCode: Int(truncating: errorCode))
+            let traceHeaders = args?["traceAttributes"] as? [String : Any]
+
+            NewRelic.noticeNetworkFailure(for: URL.init(string: url), httpMethod: httpMethod, startTime: Double(truncating: startTime), endTime: Double(truncating: endTime), traceHeaders: traceHeaders, andFailureCode: Int(truncating: errorCode))
             result(true)
             
         case "shutDown":

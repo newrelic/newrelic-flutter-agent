@@ -153,7 +153,8 @@ class NewrelicMobile {
   }
 
   Future<void> noticeNetworkFailure(String url, String httpMethod,
-      int startTime, int endTime, NetworkFailure errorCode) async {
+      int startTime, int endTime, NetworkFailure errorCode,
+      {Map<String, dynamic>? traceData}) async {
     // No-op on web
   }
 
