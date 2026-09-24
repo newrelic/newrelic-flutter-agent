@@ -494,6 +494,8 @@ void main() {
     ]);
   });
 
+  // iOS receives the same trace attributes as Android: the native agent applies them to the event
+  // directly, rather than being handed the traceparent/tracestate headers to re-parse.
   test('test noticeHttpTransaction should be called on iOS Platform', () async {
     var platformManger = MockPlatformManager();
     PlatformManager.setPlatformInstance(platformManger);
@@ -501,9 +503,9 @@ void main() {
     when(platformManger.isIOS()).thenAnswer((realInvocation) => true);
 
     var traceAttributes = {
-      DTTraceTags.newrelic: traceData[DTTraceTags.newrelic],
-      DTTraceTags.traceState: traceData[DTTraceTags.traceState],
-      DTTraceTags.traceParent: traceData[DTTraceTags.traceParent]
+      DTTraceTags.id: traceData[DTTraceTags.id],
+      DTTraceTags.guid: traceData[DTTraceTags.guid],
+      DTTraceTags.traceId: traceData[DTTraceTags.traceId]
     };
     await NewrelicMobile.instance.noticeHttpTransaction(url, httpMethod,
         statusCode, startTime, endTime, bytesSent, bytesReceived, traceData,
@@ -571,6 +573,59 @@ void main() {
       'startTime': startTime,
       'endTime': endTime,
       'errorCode': NetworkFailure.unknown.code,
+      'traceAttributes': null
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeNetworkFailure',
+        arguments: params,
+      )
+    ]);
+  });
+
+  // A network-level failure reported with a trace must be attributed to that trace, on both
+  // platforms -- the same trace attributes noticeHttpTransaction sends.
+  test(
+      'test noticeNetworkFailure should be called with trace attributes when traceData is supplied',
+      () async {
+    await NewrelicMobile.instance.noticeNetworkFailure(
+        url, httpMethod, startTime, endTime, NetworkFailure.unknown,
+        traceData: traceData);
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'startTime': startTime,
+      'endTime': endTime,
+      'errorCode': NetworkFailure.unknown.code,
+      'traceAttributes': {
+        DTTraceTags.id: traceData[DTTraceTags.id],
+        DTTraceTags.guid: traceData[DTTraceTags.guid],
+        DTTraceTags.traceId: traceData[DTTraceTags.traceId]
+      }
+    };
+    expect(methodCalLogs, <Matcher>[
+      isMethodCall(
+        'noticeNetworkFailure',
+        arguments: params,
+      )
+    ]);
+  });
+
+  test(
+      'test noticeNetworkFailure should send no trace attributes when traceData is empty',
+      () async {
+    await NewrelicMobile.instance.noticeNetworkFailure(
+        url, httpMethod, startTime, endTime, NetworkFailure.unknown,
+        traceData: {});
+
+    final Map<String, dynamic> params = <String, dynamic>{
+      'url': url,
+      'httpMethod': httpMethod,
+      'startTime': startTime,
+      'endTime': endTime,
+      'errorCode': NetworkFailure.unknown.code,
+      'traceAttributes': null
     };
     expect(methodCalLogs, <Matcher>[
       isMethodCall(

@@ -306,6 +306,20 @@ class NewrelicMobile {
     return;
   }
 
+  /// The trace's identity, keyed by the attribute names the native agents record it under.
+  ///
+  /// Both platforms take this same shape, so there is no platform branch here and no W3C header
+  /// is sent: the native side applies these attributes to the event directly. iOS needed the
+  /// traceparent/tracestate headers instead until it gained +generateDistributedTracingContext,
+  /// which meant the iOS agent re-parsed a wire format it had produced itself moments earlier.
+  Map<String, dynamic> _traceAttributesFrom(Map<String, dynamic> traceData) {
+    return {
+      DTTraceTags.id: traceData[DTTraceTags.id],
+      DTTraceTags.guid: traceData[DTTraceTags.guid],
+      DTTraceTags.traceId: traceData[DTTraceTags.traceId]
+    };
+  }
+
   Future<void> noticeHttpTransaction(
       String url,
       String httpMethod,
@@ -320,19 +334,7 @@ class NewrelicMobile {
     Map<String, dynamic>? traceAttributes;
     if (config!.distributedTracingEnabled) {
       if (traceData != null && traceData.isNotEmpty) {
-        if (PlatformManager.instance.isAndroid()) {
-          traceAttributes = {
-            DTTraceTags.id: traceData[DTTraceTags.id],
-            DTTraceTags.guid: traceData[DTTraceTags.guid],
-            DTTraceTags.traceId: traceData[DTTraceTags.traceId]
-          };
-        } else if (PlatformManager.instance.isIOS()) {
-          traceAttributes = {
-            DTTraceTags.traceParent: traceData[DTTraceTags.traceParent],
-            DTTraceTags.traceState: traceData[DTTraceTags.traceState],
-            DTTraceTags.newrelic: traceData[DTTraceTags.newrelic]
-          };
-        }
+        traceAttributes = _traceAttributesFrom(traceData);
       }
     }
     final Map<String, dynamic> params = <String, dynamic>{
@@ -350,14 +352,25 @@ class NewrelicMobile {
     return await _channel.invokeMethod('noticeHttpTransaction', params);
   }
 
+  /// Records a failed request. Pass [traceData] -- the map returned by
+  /// [noticeDistributedTrace] -- to attribute the resulting MobileRequestError to that
+  /// distributed trace instead of one the native agent generates for itself.
   Future<void> noticeNetworkFailure(String url, String httpMethod,
-      int startTime, int endTime, NetworkFailure errorCode) async {
+      int startTime, int endTime, NetworkFailure errorCode,
+      {Map<String, dynamic>? traceData}) async {
+    Map<String, dynamic>? traceAttributes;
+    if ((config?.distributedTracingEnabled ?? false) &&
+        traceData != null &&
+        traceData.isNotEmpty) {
+      traceAttributes = _traceAttributesFrom(traceData);
+    }
     final Map<String, dynamic> params = <String, dynamic>{
       'url': url,
       'httpMethod': httpMethod,
       'startTime': startTime,
       'endTime': endTime,
-      'errorCode': errorCode.code
+      'errorCode': errorCode.code,
+      'traceAttributes': traceAttributes
     };
     return await _channel.invokeMethod('noticeNetworkFailure', params);
   }
