@@ -1,3 +1,9 @@
+### 1.3.3
+
+## Enhancements
+
+- Updated the native iOS agent to version 7.7.8.
+
 ### 1.3.2
 
 ## Enhancements
