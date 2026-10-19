@@ -12,3 +12,4 @@ newrelic_mobile.iml
 android/gradle/
 android/gradlew
 android/gradlew.bat
+/flutter-agent-next.mdx

@@ -30,6 +30,16 @@ Before submitting an Issue, please search for similar ones in the
 3. You may merge the Pull Request in once you have the sign-off of two other developers, or if you
    do not have permission to do that, you may request the second reviewer to merge it for you.
 
+## Release notes
+
+Release notes for the Flutter agent are drafted automatically and reviewed by a person before they are published on docs.newrelic.com. The automation is shared with the other mobile agents and lives in [newrelic/newrelic-android-agent `.github/actions/release-notes/`](https://github.com/newrelic/newrelic-android-agent/tree/develop/.github/actions/release-notes); its README explains how each bullet is built.
+
+**Every user-facing PR merged to `main` needs exactly one label:** `release-note:feature`, `release-note:enhancement` (including native agent version bumps), `release-note:bug` or `release-note:security`. The `Release notes - check` check comments on each PR with the bullet it will become. Put `[skip-docs]` in the description to leave a PR out.
+
+1. On every merge to `main`, `release-notes-append.yml` adds the PR's bullet to the `flutter-next` branch of `newrelic/docs-website`.
+2. On every release, publishing the GitHub release runs `release-notes-generate.yml`, which reconciles those bullets, the PRs since the previous tag and the version's `CHANGELOG.md` entries, and opens a **draft** PR on `newrelic/docs-website`. **Edit it before it merges**, and check its "PRs left out" list. To rebuild a note, run `release-notes-generate.yml` by hand with the version.
+3. Settings are in `.github/release-notes.json`. The workflows need the `BOT_PAT` and `BOT_EMAIL` repository secrets.
+
 ## Contributor License Agreement
 
 Keep in mind that when you submit your Pull Request, you'll need to sign the CLA via the
