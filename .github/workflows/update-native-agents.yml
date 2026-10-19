@@ -247,6 +247,7 @@ jobs:
           echo "All version substitutions verified."
 
       - name: Update CHANGELOG.md
+        id: changelog
         if: steps.check_updates.outputs.needs_update == 'true'
         run: |
           ANDROID_VERSION="${{ steps.android_version.outputs.version }}"
@@ -271,6 +272,13 @@ jobs:
           # Prepend to CHANGELOG.md
           echo -e "$CHANGELOG_ENTRY$(cat CHANGELOG.md)" > CHANGELOG.md
           echo "Updated CHANGELOG.md"
+
+          # The PR's docs-website release note: the CHANGELOG lines above, word for word, so the
+          # release lists each update once.
+          RELEASE_NOTE=""
+          [ "$CURRENT_ANDROID" = "$ANDROID_VERSION" ] || RELEASE_NOTE="Updated the native Android agent to version ${ANDROID_VERSION}."
+          [ "$CURRENT_IOS" = "$IOS_VERSION" ] || RELEASE_NOTE="${RELEASE_NOTE:+$RELEASE_NOTE }Updated the native iOS agent to version ${IOS_VERSION}."
+          echo "release_note=$RELEASE_NOTE" >> "$GITHUB_OUTPUT"
 
       - name: Run tests
         if: steps.check_updates.outputs.needs_update == 'true'
@@ -302,6 +310,10 @@ jobs:
             - **iOS Agent**: ${{ steps.current_versions.outputs.current_ios }} → ${{ steps.ios_version.outputs.version }}
             - **Flutter Plugin**: ${{ steps.current_versions.outputs.current_flutter }} → ${{ steps.new_flutter_version.outputs.new_version }}
 
+            ## Release note
+
+            ${{ steps.changelog.outputs.release_note }}
+
             ## Files Updated
 
             - `android/build.gradle`
@@ -327,6 +339,7 @@ jobs:
           labels: |
             enhancement
             automated
+            release-note:enhancement
           reviewers: |
             ${{ github.actor }}
 
