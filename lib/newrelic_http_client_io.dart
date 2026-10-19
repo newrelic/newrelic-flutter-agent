@@ -280,21 +280,7 @@ class NewRelicHttpClientRequest extends HttpClientRequest {
 
   NewRelicHttpClientRequest(
       this._httpClientRequest, this.timestamp, this.traceData,
-      [this.params]) {
-    var request = this;
-    request.done.then((value) {
-      var response = _wrapResponse(
-        value,
-        request,
-        this.timestamp,
-        this.traceData,
-      );
-      return response;
-    }, onError: (dynamic err) {
-      NewrelicMobile.instance.recordError(err, StackTrace.current);
-      throw err;
-    });
-  }
+      [this.params]);
 
   void _checkAndResetBufferIfRequired() {
     if (_sendBuffer != null && _sendBuffer!.length > 2048) {
