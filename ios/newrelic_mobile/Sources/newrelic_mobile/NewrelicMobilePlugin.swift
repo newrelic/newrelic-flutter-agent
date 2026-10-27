@@ -268,9 +268,9 @@ public class NewrelicMobilePlugin: NSObject, FlutterPlugin {
             
             let name = args!["name"] as! String
             let category = args!["category"] as! String
-            let value = args!["value"] as! NSNumber?
-            let countUnit = args!["countUnit"] as! String?
-            let valueUnit = args!["valueUnit"] as! String?
+            let value = args?["value"] as? NSNumber
+            let countUnit = args?["countUnit"] as? String
+            let valueUnit = args?["valueUnit"] as? String
             
             if(value != nil  && countUnit != nil && valueUnit != nil) {
                 NewRelic.recordMetric(withName: name, category: category, value: value!, valueUnits: valueUnit,countUnits: countUnit)
