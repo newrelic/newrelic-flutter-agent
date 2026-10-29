@@ -1,3 +1,9 @@
+### 1.3.5
+
+## Enhancements
+
+- Updated the native Android agent to version 7.8.5.
+
 ### 1.3.4
 
 ## Enhancements
