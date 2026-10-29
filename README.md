@@ -63,6 +63,12 @@ dependencies:
   
 ```
 
+### iOS: use Swift Package Manager
+
+> **CocoaPods trunk is becoming read-only.** [CocoaPods plans to make its trunk read-only on December 2, 2026](https://blog.cocoapods.org/CocoaPods-Specs-Repo/). Builds that use already-published pod versions keep working, but no new pod versions, including new releases of the `NewRelicAgent` pod, can be published after that date.
+
+This plugin ships a `Package.swift` (`ios/newrelic_mobile/Package.swift`) that pulls the New Relic iOS agent from [newrelic-ios-agent-spm](https://github.com/newrelic/newrelic-ios-agent-spm). We recommend enabling Flutter's Swift Package Manager support in your app so the agent is resolved through SPM instead of CocoaPods. See Flutter's [Swift Package Manager for app developers](https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-app-developers) guide.
+
 ## Flutter Setup
 
 1. Now open your `main.dart` and add the following code to launch NewRelic (don't forget to put proper
