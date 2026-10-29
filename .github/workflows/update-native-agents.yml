@@ -67,29 +67,45 @@ jobs:
             VERSION="${{ inputs.ios_version }}"
             echo "Using provided iOS version: $VERSION"
           else
-            # Fetch latest version from the newest non-prerelease GitHub release of the iOS agent SPM repo
-            VERSION=$(gh api repos/newrelic/newrelic-ios-agent-spm/releases/latest -q .tag_name | sed 's/^v//')
-            if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-              echo "::error::Could not determine the latest iOS agent version (got '$VERSION')"
-              exit 1
-            fi
+            # Highest X.Y.Z tag on the iOS agent SPM repo. Every production build pushes a tag there, but
+            # GitHub Releases are created by hand and some versions (e.g. 7.7.8) never got one.
+            VERSION=$(gh api --paginate 'repos/newrelic/newrelic-ios-agent-spm/tags?per_page=100' -q '.[].name' | \
+              grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
             echo "Fetched latest iOS version: $VERSION"
           fi
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Could not determine the iOS agent version (got '$VERSION')"
+            exit 1
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Only move the NewRelicAgent pod pin to versions that are on CocoaPods. The SPM tag can land before
+          # the pod, and once CocoaPods trunk is read-only new versions won't be published as pods at all; pinning
+          # a pod that doesn't exist breaks `pod install`. 1/a/2 is the CocoaPods CDN shard for NewRelicAgent.
+          if curl -sfL --retry 3 --max-time 30 -o /dev/null "https://cdn.cocoapods.org/Specs/1/a/2/NewRelicAgent/$VERSION/NewRelicAgent.podspec.json"; then
+            echo "pod_available=true" >> $GITHUB_OUTPUT
+          else
+            echo "::notice::NewRelicAgent $VERSION is not on CocoaPods; leaving the CocoaPods pin unchanged"
+            echo "pod_available=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get current versions
         id: current_versions
         run: |
           CURRENT_ANDROID=$(grep "implementation 'com.newrelic.agent.android:android-agent:" android/build.gradle | sed "s/.*android-agent:\(.*\)'.*/\1/")
-          CURRENT_IOS=$(grep "s.dependency 'NewRelicAgent'" ios/newrelic_mobile.podspec | sed "s/.*'NewRelicAgent', '~>\(.*\)'.*/\1/")
+          # The SPM pin tracks the latest iOS agent; the podspec dependency only moves when the pod exists, so it can lag.
+          CURRENT_IOS=$(grep 'newrelic-ios-agent-spm".*exact:' ios/newrelic_mobile/Package.swift | sed 's/.*exact:[[:space:]]*"\([^"]*\)".*/\1/')
+          CURRENT_IOS_POD=$(grep "s.dependency 'NewRelicAgent'" ios/newrelic_mobile.podspec | sed "s/.*'NewRelicAgent', '~>\(.*\)'.*/\1/")
           CURRENT_FLUTTER=$(grep '^version:' pubspec.yaml | sed 's/version: //')
 
           echo "current_android=$CURRENT_ANDROID" >> $GITHUB_OUTPUT
           echo "current_ios=$CURRENT_IOS" >> $GITHUB_OUTPUT
+          echo "current_ios_pod=$CURRENT_IOS_POD" >> $GITHUB_OUTPUT
           echo "current_flutter=$CURRENT_FLUTTER" >> $GITHUB_OUTPUT
 
           echo "Current Android version: $CURRENT_ANDROID"
           echo "Current iOS version: $CURRENT_IOS"
+          echo "Current iOS version (CocoaPods): $CURRENT_IOS_POD"
           echo "Current Flutter version: $CURRENT_FLUTTER"
 
       - name: Check if updates are needed
@@ -131,7 +147,10 @@ jobs:
         if: steps.check_updates.outputs.needs_update == 'true'
         run: |
           sed -i "s/s.version.*=.*'.*'/s.version          = '${{ steps.new_flutter_version.outputs.new_version }}'/" ios/newrelic_mobile.podspec
-          sed -i "s/s.dependency 'NewRelicAgent', '~>.*'/s.dependency 'NewRelicAgent', '~>${{ steps.ios_version.outputs.version }}'/" ios/newrelic_mobile.podspec
+          # The NewRelicAgent dependency only moves if that version of the pod is on CocoaPods
+          if [ "${{ steps.ios_version.outputs.pod_available }}" = "true" ]; then
+            sed -i "s/s.dependency 'NewRelicAgent', '~>.*'/s.dependency 'NewRelicAgent', '~>${{ steps.ios_version.outputs.version }}'/" ios/newrelic_mobile.podspec
+          fi
           echo "Updated iOS podspec"
 
       - name: Update iOS Package.swift
@@ -236,8 +255,10 @@ jobs:
           fi
 
           if [ "${{ steps.current_versions.outputs.current_ios }}" != "$IOS_VERSION" ]; then
-            assert_updated ios/newrelic_mobile.podspec \
-              "'NewRelicAgent', '~>${IOS_RE}'" "iOS agent podspec dependency"
+            if [ "${{ steps.ios_version.outputs.pod_available }}" = "true" ]; then
+              assert_updated ios/newrelic_mobile.podspec \
+                "'NewRelicAgent', '~>${IOS_RE}'" "iOS agent podspec dependency"
+            fi
             assert_updated ios/newrelic_mobile/Package.swift \
               "exact: \"${IOS_RE}\"" "iOS agent SPM dependency"
           fi
@@ -260,6 +281,16 @@ jobs:
           NEW_VERSION="${{ steps.new_flutter_version.outputs.new_version }}"
           CURRENT_ANDROID="${{ steps.current_versions.outputs.current_android }}"
           CURRENT_IOS="${{ steps.current_versions.outputs.current_ios }}"
+          CURRENT_IOS_POD="${{ steps.current_versions.outputs.current_ios_pod }}"
+
+          if [ "${{ steps.ios_version.outputs.pod_available }}" = "true" ]; then
+            IOS_NOTE="Updated the native iOS agent to version ${IOS_VERSION}."
+            IOS_PINS=""
+          else
+            IOS_NOTE="Updated the native iOS agent to version ${IOS_VERSION} for Swift Package Manager. CocoaPods installs stay on ${CURRENT_IOS_POD} because ${IOS_VERSION} is not available on CocoaPods."
+            IOS_PINS=" (Swift Package Manager only; \`NewRelicAgent\` ${IOS_VERSION} is not on CocoaPods, so the podspec stays at \`~>${CURRENT_IOS_POD}\`)"
+          fi
+          echo "ios_pins=$IOS_PINS" >> "$GITHUB_OUTPUT"
 
           # Create changelog entry
           CHANGELOG_ENTRY="### ${NEW_VERSION}\n\n## Enhancements\n\n"
@@ -269,7 +300,7 @@ jobs:
           fi
 
           if [ "$CURRENT_IOS" != "$IOS_VERSION" ]; then
-            CHANGELOG_ENTRY="${CHANGELOG_ENTRY}- Updated the native iOS agent to version ${IOS_VERSION}.\n"
+            CHANGELOG_ENTRY="${CHANGELOG_ENTRY}- ${IOS_NOTE}\n"
           fi
 
           CHANGELOG_ENTRY="${CHANGELOG_ENTRY}\n"
@@ -282,7 +313,7 @@ jobs:
           # release lists each update once.
           RELEASE_NOTE=""
           [ "$CURRENT_ANDROID" = "$ANDROID_VERSION" ] || RELEASE_NOTE="Updated the native Android agent to version ${ANDROID_VERSION}."
-          [ "$CURRENT_IOS" = "$IOS_VERSION" ] || RELEASE_NOTE="${RELEASE_NOTE:+$RELEASE_NOTE }Updated the native iOS agent to version ${IOS_VERSION}."
+          [ "$CURRENT_IOS" = "$IOS_VERSION" ] || RELEASE_NOTE="${RELEASE_NOTE:+$RELEASE_NOTE }${IOS_NOTE}"
           echo "release_note=$RELEASE_NOTE" >> "$GITHUB_OUTPUT"
 
       - name: Run tests
@@ -312,7 +343,7 @@ jobs:
             This PR updates the native agent versions:
 
             - **Android Agent**: ${{ steps.current_versions.outputs.current_android }} → ${{ steps.android_version.outputs.version }}
-            - **iOS Agent**: ${{ steps.current_versions.outputs.current_ios }} → ${{ steps.ios_version.outputs.version }}
+            - **iOS Agent**: ${{ steps.current_versions.outputs.current_ios }} → ${{ steps.ios_version.outputs.version }}${{ steps.changelog.outputs.ios_pins }}
             - **Flutter Plugin**: ${{ steps.current_versions.outputs.current_flutter }} → ${{ steps.new_flutter_version.outputs.new_version }}
 
             ## Release note
