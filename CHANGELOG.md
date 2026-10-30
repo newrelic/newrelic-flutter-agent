@@ -1,3 +1,10 @@
+### 1.3.5
+
+## Enhancements
+
+- Updated the native Android agent to version 7.8.5.
+- Updated the native iOS agent to version 7.7.10 for Swift Package Manager. CocoaPods installs stay on 7.7.9 because 7.7.10 is not available on CocoaPods.
+
 ### 1.3.4
 
 ## Enhancements
