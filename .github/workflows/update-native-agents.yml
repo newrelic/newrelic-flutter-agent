@@ -183,6 +183,12 @@ jobs:
           sed -i "s/private const val AGENT_VERSION = \".*\"/private const val AGENT_VERSION = \"${{ steps.new_flutter_version.outputs.new_version }}\"/" android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt
           echo "Updated android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt"
 
+      - name: Update Android framework version resource
+        if: steps.check_updates.outputs.needs_update == 'true'
+        run: |
+          sed -i "s|\(<string name=\"com_newrelic_application_framework_version\" translatable=\"false\">\)[^<]*|\1${{ steps.new_flutter_version.outputs.new_version }}|" android/src/main/res/values/com_newrelic_application_framework_version.xml
+          echo "Updated android/src/main/res/values/com_newrelic_application_framework_version.xml"
+
       - name: Update iOS platform version
         if: steps.check_updates.outputs.needs_update == 'true'
         run: |
@@ -243,6 +249,8 @@ jobs:
             "const agentVersion = \"${NEW_RE}\"" "Dart test agentVersion constant"
           assert_updated android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt \
             "private const val AGENT_VERSION = \"${NEW_RE}\"" "Android AGENT_VERSION"
+          assert_updated android/src/main/res/values/com_newrelic_application_framework_version.xml \
+            "translatable=\"false\">${NEW_RE}</string>" "Android framework version resource"
           assert_updated ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift \
             "NewRelic\.perform\(selector, with:\"${NEW_RE}\"\)" "iOS framework version"
           assert_updated ios/newrelic_mobile.podspec \
@@ -387,7 +395,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add android/build.gradle android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt ios/newrelic_mobile.podspec ios/newrelic_mobile/Package.swift ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift pubspec.yaml lib/version.dart test/newrelic_mobile_test.dart CHANGELOG.md
+          git add android/build.gradle android/src/main/kotlin/com/newrelic/newrelic_mobile/NewrelicMobilePlugin.kt android/src/main/res/values/com_newrelic_application_framework_version.xml ios/newrelic_mobile.podspec ios/newrelic_mobile/Package.swift ios/newrelic_mobile/Sources/newrelic_mobile/NewrelicMobilePlugin.swift pubspec.yaml lib/version.dart test/newrelic_mobile_test.dart CHANGELOG.md
           git commit -m "chore: Update native agents to Android ${{ steps.android_version.outputs.version }} and iOS ${{ steps.ios_version.outputs.version }}
 
           - Updated Android agent from ${{ steps.current_versions.outputs.current_android }} to ${{ steps.android_version.outputs.version }}

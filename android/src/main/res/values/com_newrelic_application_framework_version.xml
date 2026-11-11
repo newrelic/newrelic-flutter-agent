@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The plugin version the New Relic Android agent reports as platformVersion from the first session, even when the app
+         starts the agent natively before Flutter code runs. Kept equal to pubspec.yaml by the release workflow and
+         test/android_framework_resource_test.dart; do not edit it by hand. -->
+    <string name="com_newrelic_application_framework_version" translatable="false">1.3.5</string>
+</resources>
