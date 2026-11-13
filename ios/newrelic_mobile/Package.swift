@@ -22,6 +22,9 @@ let package = Package(
             name: "newrelic_mobile",
             dependencies: [
                 .product(name: "NewRelic", package: "newrelic-ios-agent-spm")
+            ],
+            resources: [
+                .process("Resources/NewRelicHybrid.plist")
             ]
         )
     ]

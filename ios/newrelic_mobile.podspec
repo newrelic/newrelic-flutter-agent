@@ -18,7 +18,8 @@ Flutter plugin for NewRelic Mobile.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'New Relic' => 'mobile-agents@newrelic.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'newrelic_mobile/Sources/newrelic_mobile/**/*'
+  s.source_files = 'newrelic_mobile/Sources/newrelic_mobile/**/*.swift'
+  s.resources = 'newrelic_mobile/Sources/newrelic_mobile/Resources/NewRelicHybrid.plist'
   s.dependency 'Flutter'
   s.platform = :ios, '15.0'
 
